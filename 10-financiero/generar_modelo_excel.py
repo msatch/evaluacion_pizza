@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Genera el modelo financiero XLSX editable usando LibreOffice UNO."""
+"""Genera un modelo financiero editable para LibreOffice Calc y Excel."""
 
 from __future__ import annotations
 
@@ -18,7 +18,24 @@ from com.sun.star.table import BorderLine2
 
 
 ROOT = Path(__file__).resolve().parents[1]
-OUT = ROOT / "10-financiero" / "evaluacion-economica-pizzeria-v2.xlsx"
+ODS_OUT = ROOT / "10-financiero" / "evaluacion-economica-pizzeria-libreoffice.ods"
+XLSX_OUT = ROOT / "10-financiero" / "evaluacion-economica-pizzeria-v3.xlsx"
+
+# Paleta de alto contraste sobre fondo claro: se evita completamente texto blanco.
+NAVY = 0x17324D
+BLUE = 0x1F4E79
+GREEN = 0x1D6F42
+RED = 0xB42318
+TEXT = 0x1F2937
+TITLE_FILL = 0xD9EAF7
+HEADER_FILL = 0xBDD7EE
+SECTION_FILL = 0xEAF2F8
+TOTAL_FILL = 0xD7E4F2
+INPUT_FILL = 0xFFF2CC
+FORMULA_FILL = 0xF7F9FB
+POSITIVE_FILL = 0xE2F0D9
+NEGATIVE_FILL = 0xFCE4D6
+GRID = 0xB7C9D6
 
 
 def prop(name, value):
@@ -100,24 +117,26 @@ def add_title(sheet, title, subtitle, end_col=6):
     sheet.getCellRangeByPosition(0, 1, end_col, 1).merge(True)
     set_text(sheet, 0, 1, subtitle)
     r0 = sheet.getCellRangeByPosition(0, 0, end_col, 0)
-    r0.CharHeight = 19
+    r0.CharHeight = 18
     r0.CharWeight = 150
-    r0.CellBackColor = 0x17324D
-    r0.CharColor = 0xFFFFFF
+    r0.CellBackColor = TITLE_FILL
+    r0.CharColor = NAVY
     r1 = sheet.getCellRangeByPosition(0, 1, end_col, 1)
     r1.CharHeight = 10
-    r1.CellBackColor = 0xDCE7EF
-    r1.CharColor = 0x17324D
+    r1.CellBackColor = 0xF6FAFD
+    r1.CharColor = TEXT
     sheet.Rows.getByIndex(0).Height = 900
     sheet.Rows.getByIndex(1).Height = 650
 
 
 def style_header(sheet, row, start=0, end=6):
     rng = sheet.getCellRangeByPosition(start, row, end, row)
-    rng.CellBackColor = 0x26734D
-    rng.CharColor = 0xFFFFFF
+    rng.CellBackColor = HEADER_FILL
+    rng.CharColor = NAVY
     rng.CharWeight = 150
+    rng.CharHeight = 10
     rng.IsTextWrapped = True
+    apply_border(rng, BLUE, 28)
     sheet.Rows.getByIndex(row).Height = 650
 
 
@@ -125,9 +144,11 @@ def style_section(sheet, row, label, end=6):
     sheet.getCellRangeByPosition(0, row, end, row).merge(True)
     set_text(sheet, 0, row, label)
     rng = sheet.getCellRangeByPosition(0, row, end, row)
-    rng.CellBackColor = 0xD97706
-    rng.CharColor = 0xFFFFFF
+    rng.CellBackColor = SECTION_FILL
+    rng.CharColor = NAVY
     rng.CharWeight = 150
+    rng.CharHeight = 11
+    apply_border(rng, BLUE, 24)
 
 
 def format_columns(sheet, widths):
@@ -135,12 +156,43 @@ def format_columns(sheet, widths):
         sheet.Columns.getByIndex(idx).Width = width
 
 
+def configure_print_layout(doc, sheets):
+    """Evita cortes horizontales y deja las hojas listas para impresión o PDF."""
+    styles = doc.StyleFamilies.getByName("PageStyles")
+    portrait = styles.getByName("Default")
+    portrait.HeaderIsOn = False
+    portrait.FooterIsOn = False
+    portrait.LeftMargin = 1000
+    portrait.RightMargin = 1000
+    portrait.TopMargin = 1000
+    portrait.BottomMargin = 1000
+    portrait.ScaleToPagesX = 1
+    portrait.ScaleToPagesY = 0
+
+    landscape_name = "Modelo apaisado"
+    if not styles.hasByName(landscape_name):
+        landscape = doc.createInstance("com.sun.star.style.PageStyle")
+        styles.insertByName(landscape_name, landscape)
+    landscape = styles.getByName(landscape_name)
+    landscape.IsLandscape = True
+    landscape.HeaderIsOn = False
+    landscape.FooterIsOn = False
+    landscape.LeftMargin = 900
+    landscape.RightMargin = 900
+    landscape.TopMargin = 900
+    landscape.BottomMargin = 900
+    landscape.ScaleToPagesX = 1
+    landscape.ScaleToPagesY = 0
+    for name in ["Inputs", "Flujo_Caja", "Escenarios", "Sensibilidad", "Fuentes"]:
+        sheets.getByName(name).PageStyle = landscape_name
+
+
 def money_format(doc):
     formats = doc.getNumberFormats()
     locale = uno.createUnoStruct("com.sun.star.lang.Locale")
     locale.Language = "es"
     locale.Country = "CL"
-    pattern = '[$$-es-CL] #.##0;[RED]-[$$-es-CL] #.##0'
+    pattern = '[$$-es-CL] #.##0;[RED]([$ $-es-CL] #.##0);-'
     key = formats.queryKey(pattern, locale, True)
     if key == -1:
         key = formats.addNew(pattern, locale)
@@ -180,7 +232,7 @@ def apply_border(rng, color=0xCCD6DD, width=18):
     rng.RightBorder = line
 
 
-def band_rows(sheet, first_row, last_row, first_col, last_col, colors=(0xFFFFFF, 0xF4F7F9)):
+def band_rows(sheet, first_row, last_row, first_col, last_col, colors=(0xFFFFFF, FORMULA_FILL)):
     for row in range(first_row, last_row + 1):
         rng = sheet.getCellRangeByPosition(first_col, row, last_col, row)
         rng.CellBackColor = colors[(row - first_row) % len(colors)]
@@ -189,27 +241,27 @@ def band_rows(sheet, first_row, last_row, first_col, last_col, colors=(0xFFFFFF,
 
 def style_total(sheet, row, first_col, last_col):
     rng = sheet.getCellRangeByPosition(first_col, row, last_col, row)
-    rng.CellBackColor = 0xDCE7EF
-    rng.CharColor = 0x17324D
+    rng.CellBackColor = TOTAL_FILL
+    rng.CharColor = NAVY
     rng.CharWeight = 150
-    apply_border(rng, 0x17324D, 28)
+    apply_border(rng, BLUE, 28)
 
 
 def style_kpi(sheet, row, label_col=0, value_col=1):
     rng = sheet.getCellRangeByPosition(label_col, row, value_col, row)
-    rng.CellBackColor = 0xF4F7F9
-    apply_border(rng, 0xB8C7D1, 24)
+    rng.CellBackColor = FORMULA_FILL
+    apply_border(rng, GRID, 24)
     sheet.getCellByPosition(label_col, row).CharWeight = 150
     value = sheet.getCellByPosition(value_col, row)
     value.CharWeight = 150
     value.CharHeight = 14
-    value.CharColor = 0x17324D
+    value.CharColor = NAVY
     sheet.Rows.getByIndex(row).Height = 750
 
 
 def build_inputs(doc, data, money_fmt, pct_fmt):
     sheet = doc.Sheets.getByName("Inputs")
-    add_title(sheet, "INPUTS DEL MODELO · VERSIÓN VISUAL 2", "Edite solamente las celdas amarillas de la columna C. Todas las demás hojas usan fórmulas.")
+    add_title(sheet, "INPUTS Y SUPUESTOS DEL MODELO", "Edite sólo las celdas amarillas con fuente azul.")
     headers = ["Categoría", "Parámetro", "Valor", "Unidad", "Confianza", "Fuente", "Nota"]
     for col, val in enumerate(headers):
         set_text(sheet, col, 3, val)
@@ -318,7 +370,7 @@ def build_inputs(doc, data, money_fmt, pct_fmt):
             last_category = category
         positions[key] = row
         data_rng = sheet.getCellRangeByPosition(0, row, 6, row)
-        data_rng.CellBackColor = 0xFFFFFF if row % 2 == 0 else 0xF4F7F9
+        data_rng.CellBackColor = 0xFFFFFF if row % 2 == 0 else FORMULA_FILL
         apply_border(data_rng)
         values = [category, label, None, item.get("unidad", ""), item.get("confianza", ""), item.get("fuente", ""), item.get("nota", "")]
         for col, val in enumerate(values):
@@ -329,7 +381,8 @@ def build_inputs(doc, data, money_fmt, pct_fmt):
         else:
             set_value(sheet, 2, row, value)
         cell = sheet.getCellByPosition(2, row)
-        cell.CellBackColor = 0xFFF2CC
+        cell.CellBackColor = INPUT_FILL
+        cell.CharColor = 0x0000FF
         cell.CharWeight = 150
         if kind == "money": cell.NumberFormat = money_fmt
         if kind == "pct": cell.NumberFormat = pct_fmt
@@ -337,13 +390,12 @@ def build_inputs(doc, data, money_fmt, pct_fmt):
         confidence = str(item.get("confianza", "")).upper()
         confidence_cell = sheet.getCellByPosition(4, row)
         confidence_cell.CharWeight = 150
-        confidence_cell.CharColor = {"VERIFICADO": 0x26734D, "ESTIMADO": 0x9A6700, "SUPUESTO": 0xB42318, "PENDIENTE": 0x6B7280}.get(confidence, 0x17324D)
+        confidence_cell.CharColor = {"VERIFICADO": GREEN, "ESTIMADO": 0x9A6700, "SUPUESTO": RED, "PENDIENTE": 0x6B7280}.get(confidence, TEXT)
         row += 1
     sheet.getCellRangeByPosition(0, 4, 6, row - 1).IsTextWrapped = True
     format_columns(sheet, [2500, 5200, 2800, 3400, 2700, 9000, 10500])
     sheet.getCellRangeByPosition(0, 3, 6, row - 1).Rows.OptimalHeight = True
-    sheet.getCellRangeByPosition(0, 3, 6, 3).CellBackColor = 0x26734D
-    sheet.TabColor = 0xD97706
+    sheet.TabColor = 0xF4B183
     return positions
 
 
@@ -356,9 +408,11 @@ def build_calc_block(sheet, start, name, refs, multipliers, money_fmt, pct_fmt):
     r = start
     set_text(sheet, 0, r, name)
     sheet.getCellRangeByPosition(0, r, 6, r).merge(True)
-    sheet.getCellRangeByPosition(0, r, 6, r).CellBackColor = 0x17324D
-    sheet.getCellRangeByPosition(0, r, 6, r).CharColor = 0xFFFFFF
-    sheet.getCellRangeByPosition(0, r, 6, r).CharWeight = 150
+    heading = sheet.getCellRangeByPosition(0, r, 6, r)
+    heading.CellBackColor = SECTION_FILL
+    heading.CharColor = NAVY
+    heading.CharWeight = 150
+    apply_border(heading, BLUE, 24)
     r += 1
     labels = ["Precio", "Volumen", "Costo variable", "Costo fijo", "CAPEX"]
     for i, (label, formula) in enumerate(zip(labels, multipliers)):
@@ -486,6 +540,10 @@ def main():
     doc = None
     try:
         doc = desktop.loadComponentFromURL("private:factory/scalc", "_blank", 0, ())
+        default_style = doc.StyleFamilies.getByName("CellStyles").getByName("Default")
+        default_style.CharFontName = "Liberation Sans"
+        default_style.CharColor = TEXT
+        default_style.CharHeight = 10
         sheets = doc.Sheets
         sheets.getByIndex(0).Name = "Resumen"
         for name in ["Inputs", "Inversion", "Flujo_Caja", "Escenarios", "Sensibilidad", "Fuentes", "Calculos"]:
@@ -520,17 +578,21 @@ def main():
         format_columns(calc, [5800, 3000, 3000, 3000, 3000, 3000, 3000])
 
         summary = sheets.getByName("Resumen")
-        add_title(summary, "EVALUACIÓN ECONÓMICA — PIZZERÍA B2B", "VERSIÓN VISUAL 2 · Flujo libre sin deuda · pesos nominales · horizonte de cinco años", 5)
+        add_title(summary, "EVALUACIÓN ECONÓMICA — PIZZERÍA B2B", "Flujo libre sin deuda · CLP nominales · 5 años", 5)
         style_section(summary, 3, "Decisión del escenario activo", 5)
         result_rows = blocks["Activo"]["results"]
-        labels = ["Inversión inicial", "Fondeo máximo", "VAN", "TIR", "Payback descontado", "Índice de rentabilidad", "Punto de equilibrio mensual"]
-        for i, label in enumerate(labels, 5):
+        labels = [
+            ("Inversión inicial", "Inversión inicial"), ("Fondeo máximo", "Fondeo máximo"),
+            ("VAN", "VAN"), ("TIR", "TIR"), ("Payback descontado", "Payback descontado"),
+            ("Índice de rentabilidad", "Índice de rentabilidad"), ("Punto equilibrio (u./mes)", "Punto de equilibrio mensual"),
+        ]
+        for i, (label, key) in enumerate(labels, 5):
             set_text(summary, 0, i, label)
-            set_formula(summary, 1, i, f"={addr(1,result_rows[label],'Calculos')}")
-            if label in ["Inversión inicial", "Fondeo máximo", "VAN"]: summary.getCellByPosition(1, i).NumberFormat = money_fmt
-            if label == "TIR": summary.getCellByPosition(1, i).NumberFormat = pct_fmt
-            if label in ["Payback descontado", "Índice de rentabilidad"]: summary.getCellByPosition(1, i).NumberFormat = decimal_fmt
-            if label == "Punto de equilibrio mensual": summary.getCellByPosition(1, i).NumberFormat = integer_fmt
+            set_formula(summary, 1, i, f"={addr(1,result_rows[key],'Calculos')}")
+            if key in ["Inversión inicial", "Fondeo máximo", "VAN"]: summary.getCellByPosition(1, i).NumberFormat = money_fmt
+            if key == "TIR": summary.getCellByPosition(1, i).NumberFormat = pct_fmt
+            if key in ["Payback descontado", "Índice de rentabilidad"]: summary.getCellByPosition(1, i).NumberFormat = decimal_fmt
+            if key == "Punto de equilibrio mensual": summary.getCellByPosition(1, i).NumberFormat = integer_fmt
             style_kpi(summary, i)
         set_text(summary, 3, 5, "Escenario")
         set_formula(summary, 4, 5, f"={refs['scenario']}")
@@ -544,12 +606,13 @@ def main():
         npv = addr(1, 7, "Resumen")
         irr = addr(1, 8, "Resumen")
         funding = addr(1, 6, "Resumen")
-        set_formula(summary, 4, 9, f'=IF(AND({npv}>0;{irr}>{refs["discount"]};{funding}<={refs["capital_limit"]});"VIABLE BAJO SUPUESTOS";"RECHAZAR O REDISEÑAR")')
+        set_formula(summary, 4, 9, f'=IF(AND({npv}>0;{irr}>{refs["discount"]};{funding}<={refs["capital_limit"]});"VIABLE · SUPUESTOS";"RECHAZAR / REDISEÑAR")')
         summary.getCellByPosition(4, 9).CharWeight = 150
         summary.getCellRangeByPosition(3, 5, 4, 12).CellBackColor = 0xE8F3EC
+        summary.getCellRangeByPosition(3, 5, 4, 12).CharColor = TEXT
         apply_border(summary.getCellRangeByPosition(3, 5, 4, 12), 0x8CB9A0, 24)
-        summary.getCellByPosition(4, 9).CellBackColor = 0xC6E0CD
-        summary.getCellByPosition(4, 9).CharColor = 0x14532D
+        summary.getCellByPosition(4, 9).CellBackColor = POSITIVE_FILL
+        summary.getCellByPosition(4, 9).CharColor = GREEN
         style_section(summary, 14, "Criterios de Ingeniería Económica", 5)
         notes = [
             "VAN > 0: el proyecto crea valor a la TMAR seleccionada.",
@@ -559,11 +622,28 @@ def main():
         ]
         for i, note in enumerate(notes, 16): set_text(summary, 0, i, "• " + note)
         summary.getCellRangeByPosition(0, 16, 5, 19).merge(False)
-        format_columns(summary, [4600, 3300, 300, 2800, 4500, 300])
-        summary.TabColor = 0x17324D
+        style_section(summary, 21, "Guía de lectura del modelo", 5)
+        set_text(summary, 0, 23, "Input editable")
+        set_text(summary, 1, 23, "Azul sobre amarillo")
+        set_text(summary, 3, 23, "Fórmula")
+        set_text(summary, 4, 23, "Negro sobre claro")
+        set_text(summary, 0, 24, "Vínculo interno")
+        set_text(summary, 1, 24, "Verde en Fuentes")
+        set_text(summary, 3, 24, "Alerta")
+        set_text(summary, 4, 24, "Rojo = alerta")
+        for row in [23, 24]:
+            band_rows(summary, row, row, 0, 4)
+        summary.getCellByPosition(1, 23).CharColor = 0x0000FF
+        summary.getCellByPosition(1, 23).CellBackColor = INPUT_FILL
+        summary.getCellByPosition(1, 24).CharColor = GREEN
+        summary.getCellByPosition(4, 24).CharColor = RED
+        summary.getCellRangeByPosition(0, 5, 4, 12).IsTextWrapped = True
+        summary.Rows.getByIndex(9).Height = 780
+        format_columns(summary, [4200, 3400, 200, 2400, 4000, 200])
+        summary.TabColor = 0x5B9BD5
 
         investment = sheets.getByName("Inversion")
-        add_title(investment, "INVERSIÓN INICIAL", "Detalle del escenario activo; todos los montos provienen de Inputs o de fórmulas.", 3)
+        add_title(investment, "INVERSIÓN INICIAL", "Escenario activo · montos desde Inputs y fórmulas.", 3)
         for c, h in enumerate(["Concepto", "Monto", "Tratamiento", "Referencia"]): set_text(investment, c, 3, h)
         style_header(investment, 3, 0, 3)
         b = blocks["Activo"]
@@ -580,16 +660,17 @@ def main():
             set_text(investment, 2, i, treatment); set_text(investment, 3, i, "Inputs / Calculos")
             investment.getCellByPosition(1, i).NumberFormat = money_fmt
         band_rows(investment, 4, 9, 0, 3)
+        investment.getCellRangeByPosition(1, 4, 1, 9).CharColor = TEXT
         set_text(investment, 0, 11, "INVERSIÓN INICIAL TOTAL")
         set_formula(investment, 1, 11, f"={addr(1,b['results']['Inversión inicial'],'Calculos')}")
         investment.getCellRangeByPosition(0, 11, 1, 11).CharWeight = 150
         investment.getCellByPosition(1, 11).NumberFormat = money_fmt
         style_total(investment, 11, 0, 3)
         format_columns(investment, [6500, 4200, 6500, 5000])
-        investment.TabColor = 0xD97706
+        investment.TabColor = 0xF4B183
 
         flow = sheets.getByName("Flujo_Caja")
-        add_title(flow, "FLUJO DE CAJA LIBRE DEL PROYECTO", "Escenario elegido en Inputs; cifras nominales, después de impuestos y antes de financiamiento.")
+        add_title(flow, "FLUJO DE CAJA LIBRE DEL PROYECTO", "Escenario de Inputs · CLP nominales · sin financiamiento.")
         flow_rows = ["Volumen", "Precio", "Ingresos", "Costos variables", "Costos fijos", "EBITDA", "Depreciación", "EBIT", "Pérdida tributaria inicial", "Renta imponible", "Impuesto", "Pérdida tributaria final", "Capital de trabajo", "Variación capital de trabajo", "Recuperaciones terminales", "Flujo libre", "Factor descuento", "Flujo descontado", "Flujo acumulado", "Flujo descontado acumulado"]
         for c, h in enumerate(["Concepto", "Año 0", "Año 1", "Año 2", "Año 3", "Año 4", "Año 5"]): set_text(flow, c, 3, h)
         style_header(flow, 3)
@@ -598,16 +679,17 @@ def main():
             srcrow = b["rows"][label]
             for c in range(1, 7): set_formula(flow, c, ri, f"={addr(c,srcrow,'Calculos')}")
         band_rows(flow, 4, 23, 0, 6)
+        flow.getCellRangeByPosition(1, 4, 6, 23).CharColor = TEXT
         flow.getCellRangeByPosition(1, 4, 6, 23).NumberFormat = money_fmt
         flow.getCellRangeByPosition(1, 4, 6, 4).NumberFormat = integer_fmt
         flow.getCellRangeByPosition(1, 20, 6, 20).NumberFormat = decimal_fmt
         for important in ["EBITDA", "EBIT", "Flujo libre", "Flujo descontado"]:
             style_total(flow, flow_rows.index(important) + 4, 0, 6)
         format_columns(flow, [6500, 3600, 3600, 3600, 3600, 3600, 3600])
-        flow.TabColor = 0x26734D
+        flow.TabColor = 0x70AD47
 
         scenarios = sheets.getByName("Escenarios")
-        add_title(scenarios, "ESCENARIOS", "Multiplicadores editables en Inputs; cada caso recalcula impuestos, capital de trabajo y valor terminal.")
+        add_title(scenarios, "ESCENARIOS", "Cada caso recalcula impuestos, capital de trabajo y valor terminal.")
         heads = ["Escenario", "VAN", "TIR", "Inversión inicial", "Fondeo máximo", "Payback descontado", "Punto equilibrio/mes"]
         for c, h in enumerate(heads): set_text(scenarios, c, 3, h)
         style_header(scenarios, 3)
@@ -625,28 +707,29 @@ def main():
         scenarios.getCellRangeByPosition(3, 4, 4, 6).NumberFormat = money_fmt
         scenarios.getCellRangeByPosition(5, 4, 5, 6).NumberFormat = decimal_fmt
         scenarios.getCellRangeByPosition(6, 4, 6, 6).NumberFormat = integer_fmt
+        scenarios.getCellRangeByPosition(1, 4, 6, 6).CharColor = TEXT
         format_columns(scenarios, [4200, 4200, 3000, 4200, 4200, 4200, 5000])
-        scenarios.TabColor = 0x6B4FA1
+        scenarios.TabColor = 0xA5A5A5
 
         sens = sheets.getByName("Sensibilidad")
-        add_title(sens, "SENSIBILIDAD DEL VAN", "Filas: multiplicador de volumen. Columnas: multiplicador de precio; costos y CAPEX permanecen en caso base.", 4)
+        add_title(sens, "SENSIBILIDAD DEL VAN", "Filas: cambio de volumen · columnas: cambio de precio · costos y CAPEX en caso base.", 4)
         set_text(sens, 0, 3, "Volumen \\ Precio")
         for c, formula in enumerate([refs["sens_price_low"], "1", refs["sens_price_high"]], 1):
-            set_formula(sens, c, 3, f"={formula}")
+            set_formula(sens, c, 3, f"=({formula})-1")
             sens.getCellByPosition(c, 3).NumberFormat = pct_fmt
         style_header(sens, 3, 0, 3)
         for vi, vm in enumerate([refs["sens_volume_low"], "1", refs["sens_volume_high"]], 4):
-            set_formula(sens, 0, vi, f"={vm}"); sens.getCellByPosition(0, vi).NumberFormat = pct_fmt
+            set_formula(sens, 0, vi, f"=({vm})-1"); sens.getCellByPosition(0, vi).NumberFormat = pct_fmt
             for pi in range(3):
                 rb = blocks[f"S{vi-4}{pi}"]["results"]
                 set_formula(sens, pi + 1, vi, f"={addr(1,rb['VAN'],'Calculos')}")
                 sens.getCellByPosition(pi + 1, vi).NumberFormat = money_fmt
         apply_border(sens.getCellRangeByPosition(0, 3, 3, 6), 0xB8C7D1, 24)
         format_columns(sens, [4200, 4800, 4800, 4800, 1500])
-        sens.TabColor = 0x6B4FA1
+        sens.TabColor = 0xA5A5A5
 
         sources = sheets.getByName("Fuentes")
-        add_title(sources, "TRAZABILIDAD Y FUENTES", "Copia documental de Inputs. Los cambios posteriores deben realizarse en Inputs.")
+        add_title(sources, "TRAZABILIDAD Y FUENTES", "Copia documental de Inputs; los cambios se realizan en Inputs.")
         for c, h in enumerate(["Parámetro", "Valor actual", "Unidad", "Confianza", "Fuente", "Nota"]): set_text(sources, c, 3, h)
         style_header(sources, 3, 0, 5)
         source_row = 4
@@ -655,10 +738,11 @@ def main():
             for c, source_col in enumerate([1, 2, 3, 4, 5, 6]): set_formula(sources, c, source_row, f"={addr(source_col,input_row,'Inputs')}")
             source_row += 1
         band_rows(sources, 4, source_row - 1, 0, 5)
+        sources.getCellRangeByPosition(0, 4, 5, source_row - 1).CharColor = GREEN
         format_columns(sources, [5400, 3000, 3600, 2800, 10000, 11000])
         sources.getCellRangeByPosition(0, 3, 5, source_row - 1).IsTextWrapped = True
         sources.getCellRangeByPosition(0, 3, 5, source_row - 1).Rows.OptimalHeight = True
-        sources.TabColor = 0x5F6B76
+        sources.TabColor = 0xA5A5A5
 
         # Controles de auditoría y metadatos.
         set_text(summary, 3, 11, "Control VAN")
@@ -670,11 +754,12 @@ def main():
         for row in range(4, 7):
             for col in range(1, 4):
                 cell = sens.getCellByPosition(col, row)
-                cell.CellBackColor = 0xE8F3EC if cell.Value >= 0 else 0xFCE8E6
-                cell.CharColor = 0x14532D if cell.Value >= 0 else 0xB42318
+                cell.CellBackColor = POSITIVE_FILL if cell.Value >= 0 else NEGATIVE_FILL
+                cell.CharColor = GREEN if cell.Value >= 0 else RED
                 cell.CharWeight = 150
-        calc.TabColor = 0x9CA3AF
+        calc.TabColor = 0xA5A5A5
         calc.IsVisible = False
+        configure_print_layout(doc, sheets)
         controller = doc.CurrentController
         for sheet_name, freeze_col, freeze_row in [("Inputs", 3, 4), ("Flujo_Caja", 1, 4), ("Fuentes", 1, 4)]:
             controller.setActiveSheet(sheets.getByName(sheet_name))
@@ -686,10 +771,13 @@ def main():
         doc.DocumentProperties.Subject = "Modelo financiero editable VAN, TIR y flujo de caja"
         doc.DocumentProperties.Author = "Dossier evaluación pizzería"
         doc.calculateAll()
-        OUT.parent.mkdir(parents=True, exist_ok=True)
-        url = uno.systemPathToFileUrl(str(OUT))
-        doc.storeAsURL(url, (prop("FilterName", "Calc MS Excel 2007 XML"), prop("Overwrite", True)))
-        print(OUT)
+        ODS_OUT.parent.mkdir(parents=True, exist_ok=True)
+        ods_url = uno.systemPathToFileUrl(str(ODS_OUT))
+        xlsx_url = uno.systemPathToFileUrl(str(XLSX_OUT))
+        doc.storeAsURL(ods_url, (prop("FilterName", "calc8"), prop("Overwrite", True)))
+        doc.storeToURL(xlsx_url, (prop("FilterName", "Calc MS Excel 2007 XML"), prop("Overwrite", True)))
+        print(ODS_OUT)
+        print(XLSX_OUT)
     finally:
         if doc is not None:
             try: doc.close(True)
