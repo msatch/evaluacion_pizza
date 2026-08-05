@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Evaluación financiera — VAN, TIR y flujo de caja</title>
+<link rel="stylesheet" href="../assets/estilo.css">
+<script src="modelo.js" defer></script>
+</head>
+<body><div class="envoltorio">
+<nav class="migas"><a href="../index.html">Dossier</a> › Evaluación financiera</nav>
+<header class="cabecera">
+  <span class="etapa">Etapa 10 · Ingeniería económica</span>
+  <h1>Evaluación financiera: VAN, TIR y flujo de caja</h1>
+  <p class="bajada">Modelo dinámico de flujo libre del proyecto, después de impuesto y sin deuda, conectado a los parámetros de las etapas anteriores.</p>
+  <div class="meta"><span><strong>Horizonte:</strong> 5 años</span><span><strong>Moneda:</strong> CLP nominales</span><span><strong>Financiamiento:</strong> 100% capital propio</span><span><strong>Base:</strong> 04-08-2026</span></div>
+</header>
+
+<div id="model-error" class="aviso aviso-riesgo" hidden><div class="aviso-titulo">Error de carga</div><p id="model-error-text"></p></div>
+<div id="decision" class="aviso aviso-dato"><div id="decision-title" class="aviso-titulo">Calculando evaluación…</div><p id="decision-text">Cargando los parámetros enlazados.</p></div>
+
+<div id="indicators" class="rejilla" aria-live="polite"></div>
+
+<div class="aviso aviso-riesgo"><div class="aviso-titulo">Cómo leer los indicadores</div>
+<p><strong>VAN y TIR no se comparan entre sí:</strong> tienen unidades distintas. El criterio correcto es aceptar si <code>VAN(TMAR) &gt; 0</code> y <code>TIR &gt; TMAR</code>, siempre que el flujo tenga el patrón convencional de una salida inicial seguida por entradas. Si los criterios discrepan, prima el VAN porque mide creación de valor en pesos a la tasa exigida.</p></div>
+
+<h2>1. Principios fundamentales del modelo</h2>
+<div class="rejilla">
+  <div class="tarjeta"><h4>Flujo incremental</h4><p>Solo entran cobros y desembolsos causados por ejecutar el proyecto. No se incorpora IVA recuperable, financiamiento ni costos hundidos.</p></div>
+  <div class="tarjeta"><h4>Consistencia nominal</h4><p>Precios y costos crecen con la misma inflación y se descuentan con una TMAR nominal. Mezclar flujo real con tasa nominal distorsionaría el VAN.</p></div>
+  <div class="tarjeta"><h4>Costo de oportunidad</h4><p>La nómina incluye el trabajo del titular aunque no se retire efectivo equivalente. Omitirlo convertiría trabajo personal en rentabilidad ficticia.</p></div>
+  <div class="tarjeta"><h4>Capital de trabajo</h4><p>Se financian cuentas por cobrar e inventario menos crédito de proveedores. El saldo se recupera al final, pero sus aumentos consumen caja durante el crecimiento.</p></div>
+</div>
+
+<div class="aviso aviso-dato"><div class="aviso-titulo">Ecuaciones</div>
+<p><code>EBITDA = ventas − costo variable − costo fijo</code><br>
+<code>FCL = EBITDA − impuesto sobre EBIT − ΔCT + recuperaciones</code><br>
+<code>VAN = Σ FCLₜ / (1 + TMAR)ᵗ</code><br>
+<code>TIR: tasa r que hace VAN(r) = 0</code><br>
+<code>Q equilibrio = costo fijo / (precio − costo variable unitario)</code></p></div>
+
+<h2>2. Inversión inicial completa</h2>
+<div class="tabla-envoltorio"><table>
+<caption>El capital de trabajo se calcula con ventas y costos del año 1; la garantía se recupera al término.</caption>
+<thead><tr><th>Partida</th><th class="num">CLP netos</th></tr></thead>
+<tbody id="investment-body"></tbody>
+<tfoot><tr><td>Inversión inicial total</td><td id="investment-total" class="num">—</td></tr></tfoot>
+</table></div>
+
+<h2>3. Flujo de caja esperado</h2>
+<div class="tabla-envoltorio"><table>
+<caption>El año 5 recupera capital de trabajo, garantía y valor residual neto de impuesto.</caption>
+<thead id="cashflow-head"></thead><tbody id="cashflow-body"></tbody>
+</table></div>
+
+<h2>4. Estructura económica del caso base</h2>
+<div class="rejilla">
+  <div class="tarjeta"><div class="cifra-etiqueta">Costo variable base</div><div id="cost-unit" class="cifra">—</div><div class="cifra-nota">por pizza, antes de inflación</div></div>
+  <div class="tarjeta"><div class="cifra-etiqueta">Costo fijo mensual</div><div id="fixed-month" class="cifra">—</div><div class="cifra-nota">incluye costo empresa y arriendo</div></div>
+  <div class="tarjeta"><div class="cifra-etiqueta">Arriendo mensual</div><div id="rent-month" class="cifra">—</div><div class="cifra-nota">superficie × CLP/m² mientras no exista local</div></div>
+  <div class="tarjeta"><div class="cifra-etiqueta">Depreciación anual</div><div id="depreciation" class="cifra">—</div><div class="cifra-nota">lineal para estimar escudo tributario</div></div>
+</div>
+
+<h2>5. Sensibilidad VAN: precio y volumen</h2>
+<p>Esta matriz recalcula todo el flujo, incluido capital de trabajo, para variaciones simultáneas del precio y del volumen. Los valores negativos muestran destrucción de valor a la TMAR.</p>
+<div class="tabla-envoltorio"><table><caption>Filas: cambio de volumen. Columnas: cambio de precio. Celda: VAN.</caption><thead id="sensitivity-head"></thead><tbody id="sensitivity-body"></tbody></table></div>
+
+<h2>6. Trazabilidad viva de parámetros</h2>
+<p>El navegador lee los JSON de las etapas al cargar la página. Si una etapa reemplaza un valor pendiente por uno verificado, el modelo lo usa automáticamente. La columna “usado” muestra cuándo operó un fallback de Etapa 10.</p>
+<div class="tabla-envoltorio"><table>
+<thead><tr><th>Variable</th><th>Valor upstream</th><th class="num">Valor usado</th><th>Origen</th><th>Confianza</th></tr></thead>
+<tbody id="trace-body"></tbody>
+</table></div>
+
+<h2>7. Gates de decisión</h2>
+<ol>
+  <li><strong>Demanda:</strong> no comprometer planta propia hasta validar precio y al menos el volumen mensual que cubre el punto de equilibrio con órdenes, pilotos o cartas de intención.</li>
+  <li><strong>Producto:</strong> sustituir gramajes, merma, ciclo y capacidad por pruebas de etapa 04; verificar que el abatidor sea realmente el cuello de botella.</li>
+  <li><strong>CAPEX:</strong> obtener dos cotizaciones por equipo, visita técnica del local y presupuesto de habilitación. Aplicar contingencia al estimado conceptual, no ocultarla.</li>
+  <li><strong>Caja:</strong> confirmar plazo de cobro, inventario y crédito de proveedores. La máxima necesidad acumulada, no solo el CAPEX, debe quedar bajo $50 millones.</li>
+  <li><strong>Tributario:</strong> confirmar régimen Pro Pyme, depreciación por activo y tratamiento de pérdidas con contador antes del cierre financiero.</li>
+</ol>
+
+<h2>8. Fuentes metodológicas y económicas</h2>
+<ul>
+  <li><a href="https://www.bcentral.cl/es/areas/politica-monetaria">Banco Central de Chile · política monetaria</a>: TPM y meta de inflación usadas para anclar la TMAR nominal.</li>
+  <li><a href="https://www.bcentral.cl/documents/33528/8413153/IPoM%2Bjunio%2B2026.pdf/93388589-0929-4ad6-b166-10981ca34946">Banco Central · IPoM junio 2026</a>: expectativas de inflación alrededor de 3% a uno y dos años.</li>
+  <li><a href="https://www.sii.cl/normativa_legislacion/circulares/2025/circu53.pdf">SII · Circular 53/2025</a>: IDPC Pro Pyme de 12,5% en 2025–2027, 15% en 2028 y tasa permanente posterior de 25%.</li>
+  <li><a href="https://www.sii.cl/valores_y_fechas/tabla_vida_util_activo_inmovilizado.html">SII · vida útil del activo inmovilizado</a>: referencia para reemplazar la depreciación conceptual por activo.</li>
+  <li><a href="https://calvac.cl/venta/abatidor-10-bandejas-2/">Calvac · abatidor 10 bandejas</a>, <a href="https://www.supermaq.cl/amasadoras/amasadora_20_kilos/">Supermaq · amasadora 20 kg</a> y <a href="https://www.supermaq.cl/hornos_pizza/horno_electrico_pizzero_2_camara_40x40.pdf">Supermaq · horno pizzero</a>: referencias públicas de CAPEX, aún no cotizaciones formales.</li>
+</ul>
+
+<div class="aviso aviso-vacio"><div class="aviso-titulo">Alcance de la conclusión</div><p>Este es un modelo de preinversión conceptual, no una recomendación de inversión ni una tasación. La matemática es reproducible; la calidad de la decisión sigue limitada por los parámetros <span class="b b-supuesto">Supuesto</span> y <span class="b b-pendiente">Pendiente</span>.</p></div>
+
+<footer class="pie"><span>Etapa 10 · Ingeniería económica</span><span>Modelo conectado a parámetros upstream</span><span><a href="../index.html">Volver al dossier</a></span></footer>
+</div></body></html>
