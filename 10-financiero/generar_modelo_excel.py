@@ -18,7 +18,7 @@ from com.sun.star.table import BorderLine2
 
 
 ROOT = Path(__file__).resolve().parents[1]
-OUT = ROOT / "10-financiero" / "evaluacion-economica-pizzeria.xlsx"
+OUT = ROOT / "10-financiero" / "evaluacion-economica-pizzeria-v2.xlsx"
 
 
 def prop(name, value):
@@ -209,7 +209,7 @@ def style_kpi(sheet, row, label_col=0, value_col=1):
 
 def build_inputs(doc, data, money_fmt, pct_fmt):
     sheet = doc.Sheets.getByName("Inputs")
-    add_title(sheet, "INPUTS DEL MODELO", "Edite solamente las celdas amarillas de la columna C. Todas las demás hojas usan fórmulas.")
+    add_title(sheet, "INPUTS DEL MODELO · VERSIÓN VISUAL 2", "Edite solamente las celdas amarillas de la columna C. Todas las demás hojas usan fórmulas.")
     headers = ["Categoría", "Parámetro", "Valor", "Unidad", "Confianza", "Fuente", "Nota"]
     for col, val in enumerate(headers):
         set_text(sheet, col, 3, val)
@@ -520,7 +520,7 @@ def main():
         format_columns(calc, [5800, 3000, 3000, 3000, 3000, 3000, 3000])
 
         summary = sheets.getByName("Resumen")
-        add_title(summary, "EVALUACIÓN ECONÓMICA — PIZZERÍA B2B", "Flujo libre del proyecto sin deuda · pesos nominales · horizonte de cinco años", 5)
+        add_title(summary, "EVALUACIÓN ECONÓMICA — PIZZERÍA B2B", "VERSIÓN VISUAL 2 · Flujo libre sin deuda · pesos nominales · horizonte de cinco años", 5)
         style_section(summary, 3, "Decisión del escenario activo", 5)
         result_rows = blocks["Activo"]["results"]
         labels = ["Inversión inicial", "Fondeo máximo", "VAN", "TIR", "Payback descontado", "Índice de rentabilidad", "Punto de equilibrio mensual"]
