@@ -1,0 +1,261 @@
+{
+  "_lea_esto_primero": {
+    "proposito": "Fuente única de verdad de los parámetros compartidos entre etapas del estudio. Ninguna etapa inventa un valor que ya exista aquí; ninguna etapa usa un valor propio sin escribirlo aquí.",
+    "regla_1": "NUNCA edites este archivo directamente: varias etapas corren en paralelo y se pisarían las escrituras. Escribe tus parámetros en 'datos/parametros-<tu-etapa>.json' usando el mismo esquema; el coordinador los consolida aquí al cerrar cada ola.",
+    "regla_2": "Si necesitas un parámetro que ya está aquí, úsalo tal cual. Si crees que está mal, dilo en tu entregable y en tu archivo de parámetros; no lo corrijas por tu cuenta aquí.",
+    "regla_3": "confianza ∈ {VERIFICADO, ESTIMADO, SUPUESTO, PENDIENTE}. PENDIENTE = valor null, aún no investigado.",
+    "regla_4": "Todo monto en CLP nominales 2026 salvo que 'unidad' diga otra cosa. No usar UF salvo arriendos e inmuebles.",
+    "consumidor_principal": "10-financiero (E10) lee este archivo completo para construir el modelo.",
+    "esquema_de_valor": {
+      "valor": "número o null",
+      "unidad": "string",
+      "confianza": "VERIFICADO | ESTIMADO | SUPUESTO | PENDIENTE",
+      "fuente": "URL o nombre de fuente primaria",
+      "consultado": "YYYY-MM-DD",
+      "etapa": "etapa responsable de llenarlo",
+      "nota": "método de estimación, supuestos, salvedades"
+    }
+  },
+
+  "meta": {
+    "proyecto": "Microfábrica de pizzas congeladas B2B — Temuco, La Araucanía",
+    "moneda_base": "CLP",
+    "fecha_base_estudio": "2026-08-04",
+    "horizonte_evaluacion_anios": 5,
+    "restriccion_capital_clp": 50000000,
+    "canal_objetivo": "HORECA"
+  },
+
+  "macro": {
+    "uf_clp": {
+      "valor": 40844.79,
+      "unidad": "CLP por UF",
+      "confianza": "VERIFICADO",
+      "fuente": "https://www.sii.cl/valores_y_fechas/uf/uf2026.htm",
+      "consultado": "2026-08-04",
+      "etapa": "base",
+      "nota": "UF al 04-08-2026. Se reajusta a diario; usar este valor congelado para todo el estudio y declararlo."
+    },
+    "usd_observado_clp": {
+      "valor": 924.89,
+      "unidad": "CLP por USD",
+      "confianza": "VERIFICADO",
+      "fuente": "https://www.sii.cl/valores_y_fechas/dolar/dolar2026.htm",
+      "consultado": "2026-08-04",
+      "etapa": "base",
+      "nota": "Dólar observado oficial SII al 04-08-2026. Crítico para maquinaria importada (E5). Los sitios de proyección daban ~964; se usa el oficial."
+    },
+    "ingreso_minimo_mensual_clp": {
+      "valor": 553553,
+      "unidad": "CLP/mes",
+      "confianza": "VERIFICADO",
+      "fuente": "Ley 21.751 — https://www.bcn.cl/leychile/navegar?idNorma=1214530",
+      "consultado": "2026-08-04",
+      "etapa": "base",
+      "nota": "Vigente desde 01-05-2026 para trabajadores de 18 a 65 años. Antes $539.000. Próximo reajuste 01-01-2027 según IPC mayo-diciembre 2026."
+    },
+    "iva_pct": {
+      "valor": 19,
+      "unidad": "%",
+      "confianza": "VERIFICADO",
+      "fuente": "DL 825, régimen general de IVA",
+      "consultado": "2026-08-04",
+      "etapa": "base",
+      "nota": "Todos los precios del estudio se expresan NETOS salvo indicación expresa."
+    },
+    "factor_costo_empresa": {
+      "valor": null,
+      "unidad": "multiplicador sobre sueldo bruto",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "09-rrhh",
+      "nota": "Leyes sociales + mutual + seguro cesantía. Referencia habitual 1,20–1,25; verificar tasa de mutualidad para CIIU de elaboración de alimentos."
+    },
+    "tasa_descuento_pct": {
+      "valor": null,
+      "unidad": "% anual",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "10-financiero",
+      "nota": "Costo de oportunidad del capital propio. Justificar; no usar un número por costumbre."
+    },
+    "ipc_proyectado_pct": {
+      "valor": null,
+      "unidad": "% anual",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "10-financiero",
+      "nota": "Meta Banco Central o encuesta de expectativas, para proyección a 5 años."
+    }
+  },
+
+  "mercado": {
+    "establecimientos_horeca_temuco": {
+      "valor": null, "unidad": "n° establecimientos", "confianza": "PENDIENTE",
+      "fuente": null, "consultado": null, "etapa": "01-mercado",
+      "nota": "Temuco + Padre Las Casas. Desglosar por rubro."
+    },
+    "establecimientos_horeca_anillo1": {
+      "valor": null, "unidad": "n° establecimientos", "confianza": "PENDIENTE",
+      "fuente": null, "consultado": null, "etapa": "01-mercado",
+      "nota": "Villarrica, Pucón, Angol, Victoria, Nueva Imperial."
+    },
+    "sam_pizzas_mes": {
+      "valor": null, "unidad": "unidades/mes", "confianza": "PENDIENTE",
+      "fuente": null, "consultado": null, "etapa": "01-mercado",
+      "nota": "Mercado servible: establecimientos alcanzables × consumo mensual estimado. Explicitar el método."
+    },
+    "som_ano1_pizzas_mes": {
+      "valor": null, "unidad": "unidades/mes", "confianza": "PENDIENTE",
+      "fuente": null, "consultado": null, "etapa": "01-mercado",
+      "nota": "Meta realista año 1. Es el driver de dimensionamiento de E4 y E5 y del ingreso de E10."
+    },
+    "indice_estacionalidad": {
+      "valor": null, "unidad": "índice mensual, base 100 = promedio", "confianza": "PENDIENTE",
+      "fuente": null, "consultado": null, "etapa": "01-mercado",
+      "nota": "12 valores. Invierno largo, temporada universitaria mar-dic, turismo lacustre en verano."
+    }
+  },
+
+  "precios": {
+    "precio_venta_b2b_individual_clp": {
+      "valor": null, "unidad": "CLP neto/unidad", "confianza": "PENDIENTE",
+      "fuente": null, "consultado": null, "etapa": "02-competencia",
+      "nota": "Precio mayorista objetivo, pizzeta/individual."
+    },
+    "precio_venta_b2b_familiar_clp": {
+      "valor": null, "unidad": "CLP neto/unidad", "confianza": "PENDIENTE",
+      "fuente": null, "consultado": null, "etapa": "02-competencia",
+      "nota": "Precio mayorista objetivo, formato familiar."
+    },
+    "precio_competencia_nacional_clp": {
+      "valor": null, "unidad": "CLP neto/unidad", "confianza": "PENDIENTE",
+      "fuente": null, "consultado": null, "etapa": "02-competencia",
+      "nota": "Referencia de marca nacional puesta en Temuco. Define el techo de precio."
+    },
+    "plazo_cobro_dias": {
+      "valor": null, "unidad": "días", "confianza": "PENDIENTE",
+      "fuente": null, "consultado": null, "etapa": "02-competencia",
+      "nota": "CRÍTICO para capital de trabajo en E10. Verificar la práctica real del canal HORECA local, no el ideal."
+    }
+  },
+
+  "insumos": {
+    "mozzarella_clp_kg": {
+      "valor": null, "unidad": "CLP neto/kg", "confianza": "PENDIENTE",
+      "fuente": null, "consultado": null, "etapa": "06-insumos",
+      "nota": "DRIVER DE COSTO N°1. Cotizar por escalón de volumen. Surlat tiene planta en Temuco; Colun en Los Ríos."
+    },
+    "harina_clp_kg": {
+      "valor": null, "unidad": "CLP neto/kg", "confianza": "PENDIENTE",
+      "fuente": null, "consultado": null, "etapa": "06-insumos", "nota": "Harina panadera/pizzera, saco 25 kg."
+    },
+    "salsa_tomate_clp_kg": {
+      "valor": null, "unidad": "CLP neto/kg", "confianza": "PENDIENTE",
+      "fuente": null, "consultado": null, "etapa": "06-insumos", "nota": null
+    },
+    "envase_clp_unidad": {
+      "valor": null, "unidad": "CLP neto/unidad", "confianza": "PENDIENTE",
+      "fuente": null, "consultado": null, "etapa": "06-insumos",
+      "nota": "Film + bandeja + etiqueta + caja prorrateada."
+    },
+    "costo_mp_unidad_individual_clp": {
+      "valor": null, "unidad": "CLP/unidad", "confianza": "PENDIENTE",
+      "fuente": null, "consultado": null, "etapa": "06-insumos",
+      "nota": "Materia prima + envase por pizza individual. Debe cuadrar con la formulación de E4."
+    },
+    "costo_mp_unidad_familiar_clp": {
+      "valor": null, "unidad": "CLP/unidad", "confianza": "PENDIENTE",
+      "fuente": null, "consultado": null, "etapa": "06-insumos", "nota": null
+    }
+  },
+
+  "local": {
+    "superficie_requerida_m2": {
+      "valor": null, "unidad": "m²", "confianza": "PENDIENTE",
+      "fuente": null, "consultado": null, "etapa": "07-local-habilitacion",
+      "nota": "Suma de zonas del layout: recepción, bodega seca, producción, congelado, despacho, vestidores, oficina."
+    },
+    "arriendo_clp_m2_mes": {
+      "valor": null, "unidad": "CLP/m²/mes", "confianza": "PENDIENTE",
+      "fuente": null, "consultado": null, "etapa": "07-local-habilitacion",
+      "nota": "Zona industrial/mixta de Temuco. Muchos se publican en UF: convertir con macro.uf_clp."
+    },
+    "arriendo_mensual_clp": {
+      "valor": null, "unidad": "CLP/mes", "confianza": "PENDIENTE",
+      "fuente": null, "consultado": null, "etapa": "07-local-habilitacion", "nota": null
+    },
+    "habilitacion_sanitaria_clp": {
+      "valor": null, "unidad": "CLP", "confianza": "PENDIENTE",
+      "fuente": null, "consultado": null, "etapa": "07-local-habilitacion",
+      "nota": "RIESGO PRINCIPAL DEL PRESUPUESTO. Pisos y muros sanitarios, lavamanos no manuales, campana, potencia trifásica, agua, residuos. Cotizar local vacío vs. local con RSA vigente."
+    },
+    "potencia_electrica_kw": {
+      "valor": null, "unidad": "kW", "confianza": "PENDIENTE",
+      "fuente": null, "consultado": null, "etapa": "05-maquinaria",
+      "nota": "Verificar si el local tiene trifásico. Empalme nuevo es caro y lento."
+    }
+  },
+
+  "produccion": {
+    "capacidad_instalada_pizzas_dia": {
+      "valor": null, "unidad": "unidades/día", "confianza": "PENDIENTE",
+      "fuente": null, "consultado": null, "etapa": "04-producto-proceso",
+      "nota": "Limitada por el cuello de botella real, normalmente el abatidor (ciclo de congelado), no el horno."
+    },
+    "ciclo_abatimiento_min": {
+      "valor": null, "unidad": "minutos", "confianza": "PENDIENTE",
+      "fuente": null, "consultado": null, "etapa": "04-producto-proceso",
+      "nota": "Tiempo hasta −18 °C en el centro del producto. Determina la capacidad de toda la planta."
+    },
+    "merma_pct": {
+      "valor": null, "unidad": "%", "confianza": "PENDIENTE",
+      "fuente": null, "consultado": null, "etapa": "04-producto-proceso", "nota": null
+    },
+    "vida_util_meses": {
+      "valor": null, "unidad": "meses", "confianza": "PENDIENTE",
+      "fuente": null, "consultado": null, "etapa": "04-producto-proceso",
+      "nota": "A −18 °C. Requiere respaldo de ensayo o bibliografía; afecta rotación y política de stock."
+    }
+  },
+
+  "capex": {
+    "equipamiento_austero_clp": {
+      "valor": null, "unidad": "CLP", "confianza": "PENDIENTE",
+      "fuente": null, "consultado": null, "etapa": "05-maquinaria", "nota": "Escenario usado/mínimo."
+    },
+    "equipamiento_base_clp": {
+      "valor": null, "unidad": "CLP", "confianza": "PENDIENTE",
+      "fuente": null, "consultado": null, "etapa": "05-maquinaria", "nota": "Mix nuevo/usado recomendado."
+    },
+    "equipamiento_holgado_clp": {
+      "valor": null, "unidad": "CLP", "confianza": "PENDIENTE",
+      "fuente": null, "consultado": null, "etapa": "05-maquinaria", "nota": "Todo nuevo." },
+    "tramites_y_constitucion_clp": {
+      "valor": null, "unidad": "CLP", "confianza": "PENDIENTE",
+      "fuente": null, "consultado": null, "etapa": "08-legal-normativo",
+      "nota": "Constitución, resolución sanitaria, patente, GS1, análisis de laboratorio, rotulado."
+    },
+    "capex_total_clp": {
+      "valor": null, "unidad": "CLP", "confianza": "PENDIENTE",
+      "fuente": null, "consultado": null, "etapa": "10-financiero",
+      "nota": "Equipamiento + habilitación + garantías de arriendo + trámites."
+    },
+    "capital_trabajo_clp": {
+      "valor": null, "unidad": "CLP", "confianza": "PENDIENTE",
+      "fuente": null, "consultado": null, "etapa": "10-financiero",
+      "nota": "CRÍTICO. Debe cubrir el ciclo de conversión de caja: stock de insumos + producto terminado + cuentas por cobrar a precios.plazo_cobro_dias − crédito de proveedores."
+    }
+  },
+
+  "historial": [
+    {
+      "fecha": "2026-08-04",
+      "etapa": "base",
+      "cambio": "Creación del archivo. Sembrados los parámetros macro verificados contra fuentes primarias (SII para UF y dólar observado, Ley 21.751 para ingreso mínimo). Todo lo demás queda PENDIENTE."
+    }
+  ]
+}

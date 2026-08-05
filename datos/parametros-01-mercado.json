@@ -1,0 +1,49 @@
+{
+  "mercado": {
+    "establecimientos_horeca_temuco": {
+      "valor": 1187,
+      "unidad": "n° empresas (universo tributario amplio)",
+      "confianza": "ESTIMADO",
+      "fuente": "https://www.sii.cl/sobre_el_sii/estadisticas_de_empresas.html",
+      "consultado": "2026-08-04",
+      "etapa": "01-mercado",
+      "nota": "Suma 2024 para Temuco y Padre Las Casas de actividades SII 551001, 551003, 551009, 561000, 562900, 563001 y 563009. Es un techo de prospección: incluye restaurantes/pizzerías y empresas sin encaje; no equivale a compradores potenciales validados."
+    },
+    "establecimientos_horeca_anillo1": {
+      "valor": 1588,
+      "unidad": "n° empresas (universo tributario amplio)",
+      "confianza": "ESTIMADO",
+      "fuente": "https://www.sii.cl/sobre_el_sii/estadisticas_de_empresas.html",
+      "consultado": "2026-08-04",
+      "etapa": "01-mercado",
+      "nota": "Suma 2024 para Villarrica, Pucón, Angol, Victoria y Nueva Imperial con la misma taxonomía del núcleo. No incluye minimarkets porque el código SII no permite aislar estaciones de servicio."
+    },
+    "sam_pizzas_mes": {
+      "valor": null,
+      "unidad": "unidades/mes",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "01-mercado",
+      "nota": "Requiere cribar el universo nominal y medir consumo por segmento mediante entrevistas."
+    },
+    "som_ano1_pizzas_mes": {
+      "valor": null,
+      "unidad": "unidades/mes",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "01-mercado",
+      "nota": "Se define después de validación comercial, tasa de conversión y capacidad de reparto."
+    },
+    "indice_estacionalidad": {
+      "valor": null,
+      "unidad": "índice mensual, base 100 = promedio",
+      "confianza": "PENDIENTE",
+      "fuente": "https://regiones.ine.gob.cl/araucania/estadisticas-regionales/economia/comercio-servicios-y-turismo/actividad-del-turismo",
+      "consultado": "2026-08-04",
+      "etapa": "01-mercado",
+      "nota": "INE confirma variación mensual del turismo regional, pero no permite convertirla en estacionalidad de compra de pizza HORECA sin datos de clientes."
+    }
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "precios": {
+    "precio_venta_b2b_individual_clp": {
+      "valor": null,
+      "unidad": "CLP neto/unidad",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "02-competencia",
+      "nota": "El retail neto observado no sustituye disposición a pagar B2B ni precio puesto en el local."
+    },
+    "precio_venta_b2b_familiar_clp": {
+      "valor": null,
+      "unidad": "CLP neto/unidad",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "02-competencia",
+      "nota": "Validar con ofertas reales y entrevistas de etapa 03."
+    },
+    "precio_competencia_nacional_clp": {
+      "valor": 3016.81,
+      "unidad": "CLP neto/unidad familiar PF 430–465 g",
+      "confianza": "ESTIMADO",
+      "fuente": "https://super.eltit.cl/search?product_types=pizzas-congeladas&q=",
+      "consultado": "2026-08-04",
+      "etapa": "02-competencia",
+      "nota": "Precio regional publicado $3.590 IVA incluido dividido por 1,19. Es promoción retail, no tarifa B2B ni precio permanente."
+    },
+    "plazo_cobro_dias": {
+      "valor": null,
+      "unidad": "días",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "02-competencia",
+      "nota": "No se encontró una fuente pública que establezca la práctica de pago HORECA local. Preguntar por segmento y tamaño de cuenta."
+    }
+  }
+}

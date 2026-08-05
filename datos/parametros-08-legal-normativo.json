@@ -1,0 +1,40 @@
+{
+  "capex": {
+    "tramites_y_constitucion_clp": {
+      "valor": null,
+      "unidad": "CLP",
+      "confianza": "PENDIENTE",
+      "fuente": "https://www.chileatiende.gob.cl/fichas/172-autorizacion-sanitaria-de-alimentos ; https://www.registrodeempresasysociedades.cl/AyudaTarifasNotariasles.aspx ; https://transparencia.temuco.cl/h_tramites/FinanzasOK.htm",
+      "consultado": "2026-08-04",
+      "etapa": "08-legal-normativo",
+      "nota": "No se suma todavía: autorización sanitaria varía entre $12.100 y $899.700 más 0,5% del capital declarado; patente depende de capital/UTM; análisis, rotulado y GS1 requieren cotización."
+    },
+    "firma_notarial_res_uf": {
+      "valor": 0.26,
+      "unidad": "UF por actuación",
+      "confianza": "VERIFICADO",
+      "fuente": "https://www.registrodeempresasysociedades.cl/AyudaTarifasNotariasles.aspx",
+      "consultado": "2026-08-04",
+      "etapa": "08-legal-normativo",
+      "nota": "Solo aplica si no se firma con FEA propia; el acto en el Registro de Empresas y Sociedades es gratuito."
+    },
+    "arancel_sanitario_base_min_clp": {
+      "valor": 12100,
+      "unidad": "CLP, antes del 0,5% del capital",
+      "confianza": "VERIFICADO",
+      "fuente": "https://www.chileatiende.gob.cl/fichas/172-autorizacion-sanitaria-de-alimentos",
+      "consultado": "2026-08-04",
+      "etapa": "08-legal-normativo",
+      "nota": "Extremo inferior publicado; no se presume que sea la categoría aplicable a la planta."
+    },
+    "arancel_sanitario_base_max_clp": {
+      "valor": 899700,
+      "unidad": "CLP, antes del 0,5% del capital",
+      "confianza": "VERIFICADO",
+      "fuente": "https://www.chileatiende.gob.cl/fichas/172-autorizacion-sanitaria-de-alimentos",
+      "consultado": "2026-08-04",
+      "etapa": "08-legal-normativo",
+      "nota": "Extremo superior publicado; confirmar clasificación y arancel exacto en SEREMI en Línea."
+    }
+  }
+}

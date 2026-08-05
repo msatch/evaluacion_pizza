@@ -1,0 +1,49 @@
+{
+  "local": {
+    "superficie_requerida_m2": {
+      "valor": null,
+      "unidad": "m²",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "07-local-habilitacion",
+      "nota": "Debe salir del layout y capacidad de etapa 04; no se inventa un metraje antes de definir flujo y equipos."
+    },
+    "arriendo_clp_m2_mes": {
+      "valor": 6331,
+      "unidad": "CLP/m²/mes",
+      "confianza": "ESTIMADO",
+      "fuente": "https://chilepropiedades.cl/ver-publicacion/arriendo-mensual/temuco/bodega/bodega-nueva-de-1-500-m2-acceso-norte-de-tco-162267/117714745 ; https://propiedades.bmi.cl/6057",
+      "consultado": "2026-08-04",
+      "etapa": "07-local-habilitacion",
+      "nota": "Punto medio entre avisos industriales de 0,15 y 0,16 UF/m²/mes, convertido con UF base $40.844,79. Son bodegas mayores; no prueba precio de un local alimentario pequeño."
+    },
+    "arriendo_mensual_clp": {
+      "valor": null,
+      "unidad": "CLP/mes",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "07-local-habilitacion",
+      "nota": "Depende del metraje, gastos comunes y de encontrar un inmueble compatible con uso de suelo y habilitación sanitaria."
+    },
+    "habilitacion_sanitaria_clp": {
+      "valor": null,
+      "unidad": "CLP",
+      "confianza": "PENDIENTE",
+      "fuente": "https://www.chileatiende.gob.cl/fichas/172-autorizacion-sanitaria-de-alimentos",
+      "consultado": "2026-08-04",
+      "etapa": "07-local-habilitacion",
+      "nota": "El arancel de autorización no aproxima obras. Requiere visita técnica y presupuesto para pisos, muros, agua, drenajes, extracción, electricidad y separación de zonas."
+    },
+    "potencia_electrica_kw": {
+      "valor": null,
+      "unidad": "kW",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "05-maquinaria",
+      "nota": "Se conserva la responsabilidad de etapa 05; verificar empalme trifásico en cada candidato."
+    }
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "insumos": {
+    "mozzarella_clp_kg": {
+      "valor": 8403.36,
+      "unidad": "CLP neto/kg",
+      "confianza": "ESTIMADO",
+      "fuente": "https://www.mercadolibre.cl/queso-mozzarella-barra-35-kg-aprox-molfino-argentino/up/MLCU67695246",
+      "consultado": "2026-08-04",
+      "etapa": "06-insumos",
+      "nota": "Publicación de vendedor de Temuco a $10.000/kg IVA incluido, con factura y reparto refrigerado; normalizado /1,19. No es cotización por volumen ni demuestra suministro estable."
+    },
+    "harina_clp_kg": {
+      "valor": 840,
+      "unidad": "CLP neto/kg",
+      "confianza": "VERIFICADO",
+      "fuente": "https://metafood.cl/REV10100_Harina_Pizza",
+      "consultado": "2026-08-04",
+      "etapa": "06-insumos",
+      "nota": "Saco de harina para pizza 25 kg publicado a $21.000 + IVA. Falta confirmar flete y disponibilidad en Temuco."
+    },
+    "salsa_tomate_clp_kg": {
+      "valor": 2383.8,
+      "unidad": "CLP neto/kg",
+      "confianza": "VERIFICADO",
+      "fuente": "https://metafood.cl/REV10130_Tomate_Pelado_Lata_Bolsa",
+      "consultado": "2026-08-04",
+      "etapa": "06-insumos",
+      "nota": "Tomate pelado bolsa 5 kg a $11.919 + IVA. Es insumo para formular salsa, no salsa terminada; falta flete a Temuco."
+    },
+    "envase_clp_unidad": {
+      "valor": null,
+      "unidad": "CLP neto/unidad",
+      "confianza": "PENDIENTE",
+      "fuente": "https://chileenvases.com/tienda/",
+      "consultado": "2026-08-04",
+      "etapa": "06-insumos",
+      "nota": "Hay precios públicos de cajas, pero no puede definirse film, bandeja, etiqueta y caja prorrateada sin formato y especificación de barrera de etapa 04."
+    },
+    "costo_mp_unidad_individual_clp": {
+      "valor": null,
+      "unidad": "CLP/unidad",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "06-insumos",
+      "nota": "Requiere formulación y gramajes de etapa 04."
+    },
+    "costo_mp_unidad_familiar_clp": {
+      "valor": null,
+      "unidad": "CLP/unidad",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "06-insumos",
+      "nota": "Requiere formulación y gramajes de etapa 04."
+    }
+  }
+}
