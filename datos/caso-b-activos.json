@@ -1,0 +1,142 @@
+{
+  "_lea_esto_primero": {
+    "que_es": "CASO ALTERNATIVO B. Overlay de una lista concreta de activos y dos insumos, sobre la MISMA base del caso principal (mercado, competencia, local, legal, RRHH, comercial, precio de venta y volúmenes).",
+    "por_que_no_se_llama_parametros": "A propósito NO usa el prefijo 'parametros-' para que consolidar.py no lo funda en datos/supuestos.json. Es un caso paralelo, no una etapa del estudio base: mezclarlo corrompería el caso A.",
+    "como_se_corre": "build_model(data, overrides={...}) con las rutas de 'overrides_modelo'. No modifica ningún archivo del caso base.",
+    "consultado": "2026-08-06"
+  },
+  "overrides_modelo": {
+    "capex.equipamiento_base_clp": 6094350,
+    "produccion.capacidad_instalada_pizzas_dia": 15,
+    "insumos.harina_clp_kg": 2319.6
+  },
+  "resultado": {
+    "capex_total_clp": 24400000,
+    "fondeo_maximo_clp": 240600000,
+    "van_clp": -153500000,
+    "equilibrio_pizzas_mes": 2502,
+    "equilibrio_sobre_capacidad_pct": 758,
+    "_nota": "Calculado el 06-08-2026 con el motor de 10-financiero. Comparar contra el caso A: fondeo $125,5M, VAN −$91,8M, equilibrio 2.170/mes, 164% de la capacidad."
+  },
+  "equipos": {
+    "abatidor_ventus_5gn_clp": {
+      "valor": 3907600,
+      "unidad": "CLP neto",
+      "confianza": "VERIFICADO",
+      "fuente": "https://lacasita.cl/producto/abatidor-de-temperatura-5-gn-1-1-ventus/",
+      "consultado": "2026-08-06",
+      "etapa": "14-caso-b-activos",
+      "nota": "5 bandejas GN 1/1 (530×325 mm), separación 67 mm. Ficha: 12 kg/ciclo de +90 °C a −18 °C y 18 kg de +90 °C a +3 °C. No declara tiempo de ciclo. La geometría limita a 1 disco de 30 cm por bandeja, luego 5 pizzas/ciclo, muy por debajo de las ~27 que permitiría el peso."
+    },
+    "abatidor_ventus_3gn_clp": {
+      "valor": 2739500,
+      "unidad": "CLP neto",
+      "confianza": "VERIFICADO",
+      "fuente": "https://lacasita.cl/producto/abatidor-de-temperatura-3-gn-1-1-ventus/",
+      "consultado": "2026-08-06",
+      "etapa": "14-caso-b-activos",
+      "nota": "Alternativa menor: 3 bandejas GN 1/1, 8 kg/ciclo de congelación. 3 pizzas/ciclo = 198/mes. No se usa en el caso B por ser aún más restrictivo."
+    },
+    "horno_gastromaq_clp": {
+      "valor": 495800,
+      "unidad": "CLP neto",
+      "confianza": "VERIFICADO",
+      "fuente": "https://lacasita.cl/producto/horno-de-piso-electrico-1-camara-2-bandejas-40x60-gastromaq/",
+      "consultado": "2026-08-06",
+      "etapa": "14-caso-b-activos",
+      "nota": "1 cámara, 2 bandejas de 40×60 cm: 2 discos de 30 cm por bandeja, 4 por hornada. MEJOR que la cámara de 400×400 mm del caso A, que solo admite uno. La ficha no declara potencia ni voltaje, ambos necesarios para dimensionar el empalme."
+    },
+    "amasadora_maigas_12kg_clp": {
+      "valor": 899990,
+      "unidad": "CLP, base no declarada",
+      "confianza": "ESTIMADO",
+      "fuente": "https://maigas.cl/amasadora-12-kg",
+      "consultado": "2026-08-06",
+      "etapa": "14-caso-b-activos",
+      "nota": "Modelo HS30, motor 2,2 HP / 1,7 kW, 220 V. Precio con 20% de descuento sobre $1.124.988. La página no declara si es neto o con IVA, y la ficha no aclara si los 12 kg son de harina o de masa total: la diferencia cambia el dimensionamiento del lote."
+    },
+    "selladora_dz260_clp": {
+      "valor": 497980,
+      "unidad": "CLP neto",
+      "confianza": "VERIFICADO",
+      "fuente": "https://calvac.cl/venta/selladora-al-vacio-brother-dz260/",
+      "consultado": "2026-08-06",
+      "etapa": "14-caso-b-activos",
+      "nota": "NO SIRVE PARA ESTE PRODUCTO: cámara de vacío de 380×280×120 mm y barra de sellado de 260 mm, contra un disco de 300 mm que no entra por el lado corto. Mismo defecto que la etapa 05 detectó en la DZ300 del caso A, agravado."
+    },
+    "meson_inox_ventus_clp": {
+      "valor": 132990,
+      "unidad": "CLP, base no declarada",
+      "confianza": "ESTIMADO",
+      "fuente": "https://www.ventuscorp.cl/meson-de-trabajo-mural-c-repisa-infer-eco-wt-1800e-ventus/p?idsku=38",
+      "consultado": "2026-08-06",
+      "etapa": "14-caso-b-activos",
+      "nota": "180×60×85 cm, acero inoxidable 430 de 1,2 mm. Un solo mesón no cubre un flujo con separación de crudo y producto terminado que exige el DS 977."
+    },
+    "visi_cooler_lg100_clp": {
+      "valor": 159990,
+      "unidad": "CLP, base no declarada",
+      "confianza": "ESTIMADO",
+      "fuente": "https://www.ventuscorp.cl/visi-cooler-sobremesa-1-pta-100-lts-lg-100-ventus/p?idsku=318",
+      "consultado": "2026-08-06",
+      "etapa": "14-caso-b-activos",
+      "nota": "NO ES CONGELADOR: rango declarado 2 °C a 12 °C, 92 litros útiles. Es un enfriador de bebidas. El producto exige −18 °C en conservación."
+    },
+    "congeladora_clp": {
+      "valor": null,
+      "unidad": "CLP",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "14-caso-b-activos",
+      "nota": "Aparece en la lista sin enlace ni precio. Es el equipo que efectivamente conserva a −18 °C y sin él la cadena de frío no cierra. El caso A cotizó un congelador de 500 L AISI 304 en $1.298.350 y estimó que hacen falta dos."
+    },
+    "pala_pizza_racks_lavado_extraccion_clp": {
+      "valor": null,
+      "unidad": "CLP",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "14-caso-b-activos",
+      "nota": "Sin enlace ni precio. El caso A asignaba $1.200.000 a racks, bandejas e instrumentos y $1.800.000 a acero, lavado y extracción, ambas líneas auditadas como supuesto puro por la etapa 05."
+    }
+  },
+  "insumos": {
+    "harina_caputo_clp_kg": {
+      "valor": 2319.6,
+      "unidad": "CLP/kg, base no declarada",
+      "confianza": "ESTIMADO",
+      "fuente": "https://leefood.cl/harina-fuerza-00-pizzeria-caputo-25kg",
+      "consultado": "2026-08-06",
+      "etapa": "14-caso-b-activos",
+      "nota": "Saco de 25 kg a $57.990. Es 2,76 veces la harina pizzera de $840/kg que costeó la etapa 06. Sube el punto de equilibrio de 2.170 a 2.502 pizzas/mes. La página no declara si el precio es neto y anuncia solo 7 unidades en stock."
+    },
+    "mozzarella_icb_clp_kg": {
+      "valor": null,
+      "unidad": "CLP/kg",
+      "confianza": "PENDIENTE",
+      "fuente": "https://www.icbfs.cl/catalogo/104500500",
+      "consultado": "2026-08-06",
+      "etapa": "14-caso-b-activos",
+      "nota": "El catálogo de ICB no entrega precio sin ejecutar JavaScript; la ficha devolvió página vacía. Es el mayor componente del costo variable —$840 de los $2.433 por pizza en el caso A— y no se sustituye por una estimación. Cerrar pidiendo lista de precios a ICB."
+    },
+    "salsa_tomate_icb_clp_kg": {
+      "valor": null,
+      "unidad": "CLP/kg",
+      "confianza": "PENDIENTE",
+      "fuente": "https://www.icbfs.cl/catalogo/108004050",
+      "consultado": "2026-08-06",
+      "etapa": "14-caso-b-activos",
+      "nota": "Misma limitación de catálogo que la mozzarella."
+    },
+    "pepperoni_icb_clp_kg": {
+      "valor": null,
+      "unidad": "CLP/kg",
+      "confianza": "PENDIENTE",
+      "fuente": "https://www.icbfs.cl/catalogo/103001080",
+      "consultado": "2026-08-06",
+      "etapa": "14-caso-b-activos",
+      "nota": "Misma limitación. Además es un ingrediente que el caso A no costea por separado: entraría en 'otros ingredientes', hoy en $550/unidad como supuesto."
+    }
+  }
+}

@@ -19,6 +19,22 @@
 <div id="model-error" class="aviso aviso-riesgo" hidden><div class="aviso-titulo">Error de carga</div><p id="model-error-text"></p></div>
 <div id="decision" class="aviso aviso-dato"><div id="decision-title" class="aviso-titulo">Calculando evaluación…</div><p id="decision-text">Cargando los parámetros enlazados.</p></div>
 
+<section class="estado-decision" aria-labelledby="readiness-title">
+  <div class="estado-decision-cabecera">
+    <div><span class="etapa">Control de decisión</span><h2 id="readiness-title">Estado del escenario</h2></div>
+    <span id="readiness-status" class="b b-pendiente">Cargando</span>
+  </div>
+  <div class="selector-escenario" role="radiogroup" aria-label="Configuración evaluada">
+    <label><input type="radio" name="scenario" value="planta" checked> Planta propia</label>
+    <label><input type="radio" name="scenario" value="maquila"> Maquila</label>
+  </div>
+  <p><strong id="scenario-name">—</strong> · <span id="scenario-note">Cargando configuración.</span></p>
+  <p id="readiness-count">Cargando controles de evidencia.</p>
+  <ul id="readiness-missing" class="lista-critica" aria-live="polite"></ul>
+  <h3 class="subtitulo-control">Gates externos para cerrar</h3>
+  <ul id="readiness-gates" class="lista-critica"></ul>
+</section>
+
 <div class="aviso aviso-clave"><div class="aviso-titulo">Modelo editable en LibreOffice / Excel</div>
 <p>El archivo nativo para LibreOffice preserva la presentación, los formatos de número y las fórmulas. Edite sólo las celdas amarillas de <code>Inputs</code>.</p>
 <p><a href="evaluacion-economica-pizzeria-libreoffice.ods" download><strong>Descargar modelo para LibreOffice Calc (.ods) →</strong></a><br><a href="evaluacion-economica-pizzeria-v3.xlsx" download>Descargar copia compatible con Excel (.xlsx)</a></p></div>
@@ -66,11 +82,11 @@
 </div>
 
 <h2>5. Sensibilidad VAN: precio y volumen</h2>
-<p>Esta matriz recalcula todo el flujo, incluido capital de trabajo, para variaciones simultáneas del precio y del volumen. Los valores negativos muestran destrucción de valor a la TMAR.</p>
+<p>Esta matriz recalcula el escenario seleccionado, incluido capital de trabajo, para variaciones simultáneas del precio y del volumen. Los valores negativos muestran destrucción de valor a la TMAR; no sustituyen los datos críticos pendientes.</p>
 <div class="tabla-envoltorio"><table><caption>Filas: cambio de volumen. Columnas: cambio de precio. Celda: VAN.</caption><thead id="sensitivity-head"></thead><tbody id="sensitivity-body"></tbody></table></div>
 
 <h2>6. Trazabilidad viva de parámetros</h2>
-<p>El navegador lee los JSON de las etapas al cargar la página. Si una etapa reemplaza un valor pendiente por uno verificado, el modelo lo usa automáticamente. La columna “usado” muestra cuándo operó un fallback de Etapa 10.</p>
+<p>El navegador lee los JSON de las etapas al cargar la página. Si una etapa reemplaza un valor pendiente por uno verificado, el modelo lo usa automáticamente. La columna “usado” muestra cuándo operó un fallback de Etapa 10. Mientras exista un vacío crítico, el resultado se marca como exploratorio y no emite una recomendación de inversión.</p>
 <div class="tabla-envoltorio"><table>
 <thead><tr><th>Variable</th><th>Valor upstream</th><th class="num">Valor usado</th><th>Origen</th><th>Confianza</th></tr></thead>
 <tbody id="trace-body"></tbody>
@@ -95,7 +111,7 @@
   <li><a href="https://calvac.cl/venta/abatidor-10-bandejas-2/">Calvac · abatidor 10 bandejas</a>, <a href="https://www.supermaq.cl/amasadoras/amasadora_20_kilos/">Supermaq · amasadora 20 kg</a> y <a href="https://www.supermaq.cl/hornos_pizza/horno_electrico_pizzero_2_camara_40x40.pdf">Supermaq · horno pizzero</a>: referencias públicas de CAPEX, aún no cotizaciones formales.</li>
 </ul>
 
-<div class="aviso aviso-vacio"><div class="aviso-titulo">Alcance de la conclusión</div><p>Este es un modelo de preinversión conceptual, no una recomendación de inversión ni una tasación. La matemática es reproducible; la calidad de la decisión sigue limitada por los parámetros <span class="b b-supuesto">Supuesto</span> y <span class="b b-pendiente">Pendiente</span>.</p></div>
+<div class="aviso aviso-vacio"><div class="aviso-titulo">Alcance de la conclusión</div><p>Este es un modelo de preinversión conceptual, no una recomendación de inversión ni una tasación. La matemática es reproducible; la calidad de la decisión sigue limitada por los parámetros <span class="b b-supuesto">Supuesto</span> y <span class="b b-pendiente">Pendiente</span>. Una maquila con tarifa vacía se muestra solo como cota superior, nunca como aprobación.</p></div>
 
 <footer class="pie"><span>Etapa 10 · Ingeniería económica</span><span><a href="evaluacion-economica-pizzeria-libreoffice.ods" download>Descargar modelo ODS</a></span><span><a href="../index.html">Volver al dossier</a></span></footer>
 </div></body></html>

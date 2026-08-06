@@ -319,6 +319,36 @@ caption {
 .aviso-vacio  { border-left-color: var(--alerta); background: var(--alerta-suave); }
 .aviso-vacio .aviso-titulo { color: var(--alerta); }
 
+/* ---------------------------------------------- estado de decisión ---- */
+
+.estado-decision {
+  margin: 2rem 0;
+  padding: 1.15rem 1.2rem;
+  border: 1px solid var(--borde-fuerte);
+  border-radius: var(--radio);
+  background: var(--bg-elev);
+  box-shadow: var(--sombra);
+}
+.estado-decision h2 { margin: 0; padding: 0; border: 0; font-size: 1.25rem; }
+.estado-decision .etapa { margin: 0 0 .45rem; }
+.estado-decision-cabecera { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: .9rem; }
+.selector-escenario { display: flex; flex-wrap: wrap; gap: .5rem; margin: .9rem 0; }
+.selector-escenario label {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  padding: .45rem .65rem;
+  border: 1px solid var(--borde-fuerte);
+  border-radius: 4px;
+  background: var(--bg-sunken);
+  font-size: .9rem;
+  cursor: pointer;
+}
+.selector-escenario input { accent-color: var(--acento); }
+.lista-critica { margin: .7rem 0 0; padding-left: 1.25rem; color: var(--texto-suave); }
+.lista-critica li { margin-bottom: .15rem; }
+.subtitulo-control { margin: 1.25rem 0 0; font-size: .9rem; font-family: var(--sans); }
+
 /* -------------------------------------------------------- barras ---- */
 
 .barra { background: var(--bg-sunken); border-radius: 3px; height: 8px; overflow: hidden; margin: .3rem 0; }

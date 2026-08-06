@@ -1,0 +1,60 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Caso B · Lista de activos alternativa — Microfábrica de pizzas</title><link rel="stylesheet" href="../assets/estilo.css"></head>
+<body><div class="envoltorio">
+<nav class="migas"><a href="../index.html">Dossier</a> › Caso B · Lista de activos alternativa</nav>
+<header class="cabecera"><span class="etapa">Caso B · Evaluación de activos</span><h1>Lista de activos alternativa</h1><p class="bajada">Evaluación de una lista concreta de equipos y proveedores, con la misma base de mercado, local, personal y precios que el caso principal. Solo cambian los equipos y dos insumos.</p><div class="meta"><span><strong>Moneda:</strong> CLP</span><span><strong>Base:</strong> idéntica al caso A</span><span><strong>Consulta:</strong> 06-08-2026</span></div></header>
+
+<div class="aviso aviso-riesgo"><div class="aviso-titulo">Resultado: la lista es más barata y sale mucho peor</div><p>Los equipos verificables suman <strong>$6.094.350</strong> contra los $10.120.237 del envolvente del caso A: cuesta <strong>$4 millones menos</strong>. Pero la capacidad cae de 1.320 a <strong>330 pizzas/mes</strong>, porque los abatidores usan bandeja GN 1/1 y en ella cabe <strong>un solo disco de 30 cm</strong>. El fondeo máximo sube de $125,5M a <strong>$240,6M</strong> y el VAN cae de −$91,8M a <strong>−$153,5M</strong>. Ahorrar $4 millones en equipo cuesta $115 millones de caja.</p></div>
+
+<h2>1. La geometría de la bandeja decide</h2>
+<p>El caso A deriva su capacidad de una bandeja de 600×400 mm, donde caben dos discos de 30 cm. Los abatidores de esta lista son <strong>GN 1/1, que mide 530×325 mm</strong>: un disco de 300 mm entra una sola vez, porque dos exigirían 600 mm de largo. No es una estimación conservadora: es aritmética de la ficha del fabricante.</p>
+<div class="tabla-envoltorio"><table><caption>Discos de 30 cm por bandeja = ⌊largo/300⌋ × ⌊ancho/300⌋. Tres ciclos por día de 240 minutos, 22 días al mes, los mismos supuestos del caso A.</caption><thead><tr><th>Abatidor</th><th class="num">Bandejas</th><th class="num">Pizzas/ciclo</th><th class="num">Pizzas/mes</th><th>Límite</th></tr></thead><tbody>
+<tr><td>Ventus 3 GN 1/1</td><td class="num">3</td><td class="num">3</td><td class="num">198</td><td>La ficha declara 8 kg/ciclo de congelación, que serían ~18 pizzas por peso. Manda la geometría, no el peso.</td></tr>
+<tr><td><strong>Ventus 5 GN 1/1</strong></td><td class="num">5</td><td class="num">5</td><td class="num">330</td><td>Ficha: 12 kg/ciclo ≈ 27 pizzas por peso. Otra vez manda la geometría.</td></tr>
+<tr><td>Calvac 10 bandejas (caso A)</td><td class="num">10</td><td class="num">20</td><td class="num">1.320</td><td>Bandeja 600×400: dos discos por bandeja.</td></tr>
+</tbody></table></div>
+<p>El punto de equilibrio del caso B es de <strong>2.502 pizzas/mes</strong> —sube respecto del caso A porque la harina es más cara—, es decir <strong>758% de la capacidad instalada</strong>. El caso A ya era inalcanzable a 164%; éste lo es por un factor cuatro veces mayor.</p>
+
+<h2>2. Dos equipos no sirven para este producto</h2>
+<div class="aviso aviso-riesgo"><div class="aviso-titulo">Verificado por dimensión, no por opinión</div><p><strong>La selladora Brother DZ260 no puede envasar esta pizza.</strong> Su cámara de vacío mide <strong>380×280×120 mm</strong> y el disco es de 300 mm: no entra por el lado corto. La barra de sellado de 260 mm es aún menor. Es el mismo defecto que la etapa 05 ya había detectado en la DZ300 del caso A, agravado.</p><p><strong>El visi cooler LG-100 no es un congelador.</strong> Opera entre <strong>2 °C y 12 °C</strong>: es un enfriador de bebidas. El producto de este proyecto exige −18 °C en el centro térmico y conservación bajo esa temperatura. En la lista aparece «Congeladora» sin enlace ni precio, de modo que <strong>el almacenamiento en frío no está cotizado</strong>.</p></div>
+<p>En sentido contrario, un equipo de la lista es <strong>mejor</strong> que el del caso A: el horno Gastromaq de 2 bandejas de 40×60 cm admite dos discos por bandeja, cuatro por hornada, contra la cámara de 400×400 mm del caso A que solo admite uno. El horno no era el cuello de botella y sigue sin serlo.</p>
+
+<h2>3. Precios verificados</h2>
+<div class="tabla-envoltorio"><table><caption>Precios de publicación consultados el 06-08-2026. «Sin declarar» significa que la página no indica si el precio es neto o incluye IVA: no se netearon para no inventar una base.</caption><thead><tr><th>Ítem</th><th class="num">Precio</th><th>Base</th><th>Confianza</th><th>Lectura</th></tr></thead><tbody>
+<tr><td>Abatidor Ventus 5 GN 1/1</td><td class="num">$3.907.600</td><td>Neto</td><td><span class="b b-verificado">Verificado</span></td><td>Es el 64% del equipo y el que fija la capacidad.</td></tr>
+<tr><td>Amasadora 12 kg Maigas HS30</td><td class="num">$899.990</td><td>Sin declarar</td><td><span class="b b-estimado">Estimado</span></td><td>Precio con 20% de descuento sobre $1.124.988. La ficha no aclara si los 12 kg son de harina o de masa.</td></tr>
+<tr><td>Selladora Brother DZ260</td><td class="num">$497.980</td><td>Neto</td><td><span class="b b-verificado">Verificado</span></td><td>No sirve para este formato: ver sección 2.</td></tr>
+<tr><td>Horno Gastromaq 1 cámara</td><td class="num">$495.800</td><td>Neto</td><td><span class="b b-verificado">Verificado</span></td><td>La ficha no declara potencia ni voltaje; ambos hacen falta para el empalme.</td></tr>
+<tr><td>Visi cooler LG-100 92 L</td><td class="num">$159.990</td><td>Sin declarar</td><td><span class="b b-estimado">Estimado</span></td><td>2 °C a 12 °C: no es congelador.</td></tr>
+<tr><td>Mesón mural inox 180×60×85</td><td class="num">$132.990</td><td>Sin declarar</td><td><span class="b b-estimado">Estimado</span></td><td>Acero 430 de 1,2 mm. Un solo mesón no cubre un flujo con separación de crudo y terminado.</td></tr>
+<tr><td>Congeladora, pala, racks, lavado, extracción</td><td class="num">—</td><td>—</td><td><span class="b b-pendiente">Pendiente</span></td><td>Sin enlace ni precio. El caso A les asignaba $3.000.000 sin desagregar.</td></tr>
+</tbody><tfoot><tr><td>Suma verificable</td><td class="num">$6.094.350</td><td colspan="3">Contra $10.120.237 del envolvente base del caso A, con partidas faltantes.</td></tr></tfoot></table></div>
+
+<h2>4. Insumos: la harina Caputo cambia el costo unitario</h2>
+<p>La harina de fuerza 00 Caputo cuesta <strong>$57.990 el saco de 25 kg</strong>, es decir <strong>$2.320/kg</strong>, contra los $840/kg de la harina pizzera que costeó la etapa 06: <strong>2,76 veces más cara</strong>. Es harina italiana de especificación superior y puede justificarse por producto, pero sube el costo variable y con él el punto de equilibrio, de 2.170 a 2.502 pizzas/mes. La página no declara si el precio es neto y anuncia solo 7 unidades en stock.</p>
+<p>Los tres productos de ICB —mozzarella, salsa de tomate y pepperoni— <strong>no pudieron consultarse</strong>: el catálogo de icbfs.cl no entrega precio sin ejecutar JavaScript y las tres fichas devolvieron página vacía. Quedan pendientes: son el mayor componente de costo variable y no se sustituyen por una estimación.</p>
+
+<h2>5. Comparación de los dos casos</h2>
+<div class="tabla-envoltorio"><table><caption>Ambos casos con la misma base de mercado, local, personal, precio de venta y volúmenes. Solo cambian los equipos, la capacidad que de ellos se deriva y el precio de la harina.</caption><thead><tr><th>Indicador</th><th class="num">Caso A</th><th class="num">Caso B</th><th>Lectura</th></tr></thead><tbody>
+<tr><td>Equipos</td><td class="num">$10.120.237</td><td class="num">$6.094.350</td><td>B es más barato, pero le faltan partidas.</td></tr>
+<tr><td>Capacidad instalada</td><td class="num">1.320/mes</td><td class="num">330/mes</td><td>La bandeja GN 1/1 divide la capacidad por cuatro.</td></tr>
+<tr><td>Punto de equilibrio</td><td class="num">2.170/mes</td><td class="num">2.502/mes</td><td>Sube por la harina Caputo.</td></tr>
+<tr><td>Equilibrio sobre capacidad</td><td class="num">164%</td><td class="num">758%</td><td>Inalcanzable en ambos; en B por un margen cuatro veces mayor.</td></tr>
+<tr><td>CAPEX total</td><td class="num">$29,7M</td><td class="num">$24,4M</td><td>B ahorra $5,3M de inversión.</td></tr>
+<tr><td><strong>Fondeo máximo</strong></td><td class="num">$125,5M</td><td class="num">$240,6M</td><td>B casi lo duplica: produce menos, vende menos y quema caja más años.</td></tr>
+<tr><td><strong>VAN a 20,46%</strong></td><td class="num">−$91,8M</td><td class="num">−$153,5M</td><td>Ahorrar $4M en equipo cuesta $61,7M de valor.</td></tr>
+</tbody></table></div>
+<div class="aviso aviso-clave"><div class="aviso-titulo">Qué habría que cambiar para que la lista sirva</div><p>El problema no es la marca ni el precio: es el <strong>formato de bandeja</strong>. Un abatidor con bandeja de 600×400 mm duplica los discos por bandeja respecto de GN 1/1, y ahí está la diferencia entre 330 y 1.320 pizzas/mes. Antes de comprar, la pregunta al proveedor es una sola: <em>¿cuántos discos de 30 cm caben por bandeja y cuántos minutos toma el ciclo hasta −18 °C en el centro térmico?</em> Ninguna de las fichas consultadas declara el tiempo de ciclo, y ése sigue siendo el número que no se ha medido en todo el estudio.</p></div>
+
+<h2>6. Fuentes</h2>
+<ul>
+<li><a href="https://lacasita.cl/producto/abatidor-de-temperatura-5-gn-1-1-ventus/">La Casita · abatidor Ventus 5 GN 1/1</a> y <a href="https://lacasita.cl/producto/abatidor-de-temperatura-3-gn-1-1-ventus/">3 GN 1/1</a>, precio neto, bandejas y kg por ciclo.</li>
+<li><a href="https://lacasita.cl/producto/horno-de-piso-electrico-1-camara-2-bandejas-40x60-gastromaq/">La Casita · horno Gastromaq 1 cámara 2 bandejas 40×60</a>.</li>
+<li><a href="https://calvac.cl/venta/selladora-al-vacio-brother-dz260/">Calvac · selladora Brother DZ260</a>, cámara de 380×280×120 mm y barra de 260 mm.</li>
+<li><a href="https://maigas.cl/amasadora-12-kg">Maigas · amasadora 12 kg HS30</a>, motor 1,7 kW, 220 V.</li>
+<li><a href="https://www.ventuscorp.cl/visi-cooler-sobremesa-1-pta-100-lts-lg-100-ventus/p?idsku=318">Ventus · visi cooler LG-100</a>, rango 2 °C a 12 °C, y <a href="https://www.ventuscorp.cl/meson-de-trabajo-mural-c-repisa-infer-eco-wt-1800e-ventus/p?idsku=38">mesón mural WT-1800E</a>.</li>
+<li><a href="https://leefood.cl/harina-fuerza-00-pizzeria-caputo-25kg">Leefood · harina Caputo fuerza 00, saco 25 kg</a>.</li>
+<li><a href="https://www.icbfs.cl/catalogo/104500500">ICB Food Service · mozzarella</a>, <a href="https://www.icbfs.cl/catalogo/108004050">salsa de tomate</a> y <a href="https://www.icbfs.cl/catalogo/103001080">pepperoni</a>: consultadas sin obtener precio.</li>
+</ul>
+
+<footer class="pie"><span>Caso B · Evaluación de activos</span><span>Consulta: 6 de agosto de 2026</span><span><a href="../index.html">Volver al dossier</a></span></footer>
+</div></body></html>

@@ -3,7 +3,7 @@
     "proposito": "Fuente única de verdad de los parámetros compartidos entre etapas del estudio. Ninguna etapa inventa un valor que ya exista aquí; ninguna etapa usa un valor propio sin escribirlo aquí.",
     "regla_1": "NUNCA edites este archivo directamente: varias etapas corren en paralelo y se pisarían las escrituras. Escribe tus parámetros en 'datos/parametros-<tu-etapa>.json' usando el mismo esquema; el coordinador los consolida aquí al cerrar cada ola.",
     "regla_2": "Si necesitas un parámetro que ya está aquí, úsalo tal cual. Si crees que está mal, dilo en tu entregable y en tu archivo de parámetros; no lo corrijas por tu cuenta aquí.",
-    "regla_3": "confianza ∈ {VERIFICADO, ESTIMADO, SUPUESTO, PENDIENTE}. PENDIENTE = valor null, aún no investigado.",
+    "regla_3": "confianza ∈ {VERIFICADO, ESTIMADO, SUPUESTO, PENDIENTE}. PENDIENTE = valor null, aún no investigado. Un ESTIMADO o SUPUESTO crítico solo puede cerrar un gate si incluye aprobado_para_decision: true, responsable_aprobacion y fecha_aprobacion.",
     "regla_4": "Todo monto en CLP nominales 2026 salvo que 'unidad' diga otra cosa. No usar UF salvo arriendos e inmuebles.",
     "consumidor_principal": "10-financiero (E10) lee este archivo completo para construir el modelo.",
     "esquema_de_valor": {
@@ -13,7 +13,10 @@
       "fuente": "URL o nombre de fuente primaria",
       "consultado": "YYYY-MM-DD",
       "etapa": "etapa responsable de llenarlo",
-      "nota": "método de estimación, supuestos, salvedades"
+      "nota": "método de estimación, supuestos, salvedades",
+      "aprobado_para_decision": "booleano opcional; solo para un estimado o supuesto crítico autorizado explícitamente",
+      "responsable_aprobacion": "rol o persona que autorizó el uso del estimado, requerido si aprobado_para_decision es true",
+      "fecha_aprobacion": "YYYY-MM-DD, requerido si aprobado_para_decision es true"
     }
   },
   "meta": {

@@ -1,0 +1,59 @@
+{
+  "meta": {
+    "proposito": "Registro operativo de lo que falta para transformar la investigación pública en una decisión de inversión.",
+    "estado_global": "VALIDACION_PENDIENTE",
+    "regla": "Un gate se cierra solo con evidencia fechada y enlazada al parámetro dueño; una estimación no sustituye evidencia de terreno o una cotización vigente."
+  },
+  "gates": [
+    {
+      "id": "G1-mercado",
+      "estado": "ABIERTO",
+      "responsable": "Responsable comercial",
+      "evidencia_requerida": "30 entrevistas válidas, pedidos piloto pagados, recompra a 60 días, precio aceptado y plazo de pago ponderado por volumen.",
+      "parametros_a_cerrar": [
+        "mercado.som_ano1_pizzas_mes",
+        "precios.precio_venta_b2b_familiar_clp",
+        "precios.plazo_cobro_dias"
+      ],
+      "criterio_de_salida": "Los datos se registran con fuente, fecha, segmento y evidencia de compra; se recalcula el caso base sin fallbacks de demanda, precio ni cobranza."
+    },
+    {
+      "id": "G2-operacion",
+      "estado": "ABIERTO",
+      "responsable": "Responsable de operaciones",
+      "evidencia_requerida": "Tres lotes piloto con registro de peso, merma, tiempo de abatimiento, temperatura de centro térmico y capacidad por jornada.",
+      "parametros_a_cerrar": [
+        "produccion.merma_pct",
+        "produccion.ciclo_abatimiento_min",
+        "produccion.capacidad_instalada_pizzas_dia"
+      ],
+      "criterio_de_salida": "La capacidad demostrada se compara con el punto de equilibrio y cumple las condiciones sanitarias definidas por el dossier."
+    },
+    {
+      "id": "G3-costos-y-ruta",
+      "estado": "ABIERTO",
+      "responsable": "Responsable de abastecimiento",
+      "evidencia_requerida": "Cotizaciones comparables y vigentes de insumos, envase, maquila, distribución, seguro, arriendo y habilitación; dos alternativas cuando el mercado lo permita.",
+      "parametros_a_cerrar": [
+        "insumos.mozzarella_clp_kg",
+        "insumos.envase_clp_unidad",
+        "local.arriendo_mensual_clp",
+        "local.habilitacion_sanitaria_clp",
+        "produccion.costo_maquila_clp_unidad"
+      ],
+      "criterio_de_salida": "Cada cotización incluye alcance, moneda, impuestos, vigencia, volumen, flete y condiciones de pago; el modelo usa una alternativa seleccionada y conserva las comparables."
+    },
+    {
+      "id": "G4-decision",
+      "estado": "BLOQUEADO_POR_G1_G3",
+      "responsable": "Titular del proyecto con contador",
+      "evidencia_requerida": "Modelo reconciliado, régimen tributario confirmado, fuente de fondos documentada y una configuración operativa única.",
+      "parametros_a_cerrar": [
+        "escenario.aprobado",
+        "capital.requerido_clp",
+        "financiamiento.fuente_confirmada"
+      ],
+      "criterio_de_salida": "Emitir una sola resolución: aprobar maquila, aprobar una planta rediseñada o rechazar/postergar. No se aprueba una ruta con datos críticos pendientes."
+    }
+  ]
+}

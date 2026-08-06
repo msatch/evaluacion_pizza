@@ -53,8 +53,51 @@ function discountedPayback(rate, flows) {
   return null;
 }
 
-function buildModel(data, priceMultiplier = 1, volumeMultiplier = 1) {
-  const { base, market, prices, inputs, local, legal, financial } = data;
+function cloneWithOverrides(data, overrides) {
+  const clone = JSON.parse(JSON.stringify(data));
+  for (const [path, value] of Object.entries(overrides)) {
+    let applied = false;
+    for (const source of Object.values(clone)) {
+      if (!source || typeof source !== "object") continue;
+      const parts = path.split(".");
+      let current = source;
+      for (const part of parts.slice(0, -1)) {
+        if (!current || typeof current !== "object" || !(part in current)) {
+          current = null;
+          break;
+        }
+        current = current[part];
+      }
+      const last = parts.at(-1);
+      if (current && typeof current[last] === "object" && current[last] !== null) {
+        current[last].valor = value;
+        applied = true;
+      }
+    }
+    if (!applied) throw new Error(`No se pudo aplicar el override ${path}.`);
+  }
+  return clone;
+}
+
+function maquilaOverrides(data) {
+  const baseEnergy = get(data.base, "producto.energia_variable_clp_unidad",
+    get(data.financial, "producto.energia_variable_clp_unidad"));
+  const maquilaFee = get(data.financial, "produccion.costo_maquila_clp_unidad", 0);
+  return {
+    "capex.equipamiento_base_clp": 0,
+    "local.habilitacion_sanitaria_clp": 0,
+    "produccion.capacidad_instalada_pizzas_dia": 100000,
+    // El fee se agrega a la energía base porque ambos son costos variables por
+    // unidad. Con tarifa pendiente (= null), este escenario es una cota, no
+    // una proyección aprobable.
+    "producto.energia_variable_clp_unidad": baseEnergy + maquilaFee
+  };
+}
+
+function buildModel(data, priceMultiplier = 1, volumeMultiplier = 1, scenario = "planta") {
+  const overrides = scenario === "maquila" ? maquilaOverrides(data) : {};
+  const source = Object.keys(overrides).length ? cloneWithOverrides(data, overrides) : data;
+  const { base, market, prices, inputs, local, legal, financial } = source;
   const inflation = get(financial, "modelo.inflacion_anual_pct") / 100;
   const discount = get(base, "macro.tasa_descuento_pct", get(financial, "modelo.tasa_descuento_nominal_pct")) / 100;
   const priceBase = get(prices, "precios.precio_venta_b2b_familiar_clp", get(financial, "modelo.precio_b2b_familiar_base_clp"));
@@ -229,19 +272,103 @@ function buildModel(data, priceMultiplier = 1, volumeMultiplier = 1) {
     peakFunding, capitalLimit,
     contribution, breakEven,
     capacityYear, capacityUse: capacityYear === null ? null : volumes[volumes.length - 1] / capacityYear,
-    breakEvenUse: capacityYear === null || breakEven === null ? null : breakEven / capacityYear
+    breakEvenUse: capacityYear === null || breakEven === null ? null : breakEven / capacityYear,
+    scenario,
+    maquilaFee: scenario === "maquila"
+      ? get(data.financial, "produccion.costo_maquila_clp_unidad")
+      : null
   };
 }
 
-function render(data) {
-  const model = buildModel(data);
-  const viable = model.npv > 0 && model.irr !== null && model.irr > model.discount
+const criticalInputs = {
+  planta: [
+    ["market", "mercado.som_ano1_pizzas_mes", "Volumen vendido del año 1"],
+    ["prices", "precios.precio_venta_b2b_familiar_clp", "Precio B2B familiar"],
+    ["prices", "precios.plazo_cobro_dias", "Plazo de cobro"],
+    ["inputs", "insumos.mozzarella_clp_kg", "Cotización industrial de mozzarella"],
+    ["inputs", "insumos.envase_clp_unidad", "Costo de envase"],
+    ["base", "produccion.merma_pct", "Merma medida en piloto"],
+    ["base", "produccion.capacidad_instalada_pizzas_dia", "Capacidad demostrada"],
+    ["local", "local.arriendo_mensual_clp", "Arriendo del local"],
+    ["local", "local.habilitacion_sanitaria_clp", "Presupuesto de habilitación"]
+  ],
+  maquila: [
+    ["market", "mercado.som_ano1_pizzas_mes", "Volumen vendido del año 1"],
+    ["prices", "precios.precio_venta_b2b_familiar_clp", "Precio B2B familiar"],
+    ["prices", "precios.plazo_cobro_dias", "Plazo de cobro"],
+    ["inputs", "insumos.mozzarella_clp_kg", "Cotización industrial de mozzarella"],
+    ["inputs", "insumos.envase_clp_unidad", "Costo de envase"],
+    ["base", "produccion.merma_pct", "Merma medida en piloto"],
+    ["financial", "produccion.costo_maquila_clp_unidad", "Tarifa de maquila"]
+  ]
+};
+
+function entryAt(obj, path) {
+  let current = obj;
+  for (const key of path.split(".")) current = current?.[key];
+  return current && typeof current === "object" ? current : null;
+}
+
+function missingCriticalInputs(data, scenario) {
+  return criticalInputs[scenario]
+    .filter(([bucket, path]) => {
+      const item = entryAt(data[bucket], path);
+      return item?.valor === null || item?.valor === undefined
+        || (item?.confianza !== "VERIFICADO" && item?.aprobado_para_decision !== true);
+    })
+    .map(([bucket, path, label]) => {
+      const item = entryAt(data[bucket], path);
+      if (item?.valor === null || item?.valor === undefined) return label;
+      return `${label} (${item.confianza?.toLowerCase() ?? "sin estado"})`;
+    });
+}
+
+function setTextList(element, values) {
+  element.replaceChildren();
+  values.forEach((value) => {
+    const item = document.createElement("li");
+    item.textContent = value;
+    element.append(item);
+  });
+}
+
+function render(data, scenario = "planta") {
+  const model = buildModel(data, 1, 1, scenario);
+  const missing = missingCriticalInputs(data, scenario);
+  const decisionReady = missing.length === 0;
+  const viable = decisionReady && model.npv > 0 && model.irr !== null && model.irr > model.discount
     && model.peakFunding <= model.capitalLimit;
   $("decision").className = `aviso ${viable ? "aviso-clave" : "aviso-riesgo"}`;
-  $("decision-title").textContent = viable ? "Viable bajo el escenario base, aún no validado" : "No viable bajo el escenario base";
-  $("decision-text").innerHTML = viable
-    ? `El VAN es positivo, la TIR supera la TMAR y el fondeo máximo calculado cabe bajo $50 millones. El margen de caja es ${clp.format(model.capitalLimit - model.peakFunding)}, pero la conclusión depende de volúmenes, precio, habilitación y capital de trabajo todavía etiquetados como supuestos.`
-    : `El VAN no remunera la TMAR o la TIR no la supera. El escenario debe rechazarse o rediseñarse; no corresponde comparar VAN y TIR entre sí.`;
+  if (!decisionReady) {
+    $("decision-title").textContent = `Escenario ${scenario}: cálculo exploratorio, no decisión de inversión`;
+    $("decision-text").textContent = "El motor muestra el efecto de los supuestos heredados, pero bloquea una recomendación hasta cerrar los datos críticos listados abajo.";
+  } else if (viable) {
+    $("decision-title").textContent = `Escenario ${scenario}: viable bajo parámetros validados`;
+    $("decision-text").textContent = `El VAN es positivo, la TIR supera la TMAR y el fondeo máximo calculado cabe bajo ${clp.format(model.capitalLimit)}. El margen de caja es ${clp.format(model.capitalLimit - model.peakFunding)}.`;
+  } else {
+    $("decision-title").textContent = `Escenario ${scenario}: no viable con parámetros validados`;
+    $("decision-text").textContent = "El VAN no remunera la TMAR, la TIR no la supera o el fondeo excede el límite. Rediseñe o rechace esta configuración.";
+  }
+
+  $("readiness-status").textContent = decisionReady ? "Listo para decisión" : "Validación pendiente";
+  $("readiness-status").className = `b ${decisionReady ? "b-verificado" : "b-pendiente"}`;
+  $("readiness-count").textContent = decisionReady
+    ? "Todos los parámetros críticos requeridos están informados."
+    : `${missing.length} parámetros críticos requieren evidencia verificada o aprobación formal antes de decidir.`;
+  setTextList($("readiness-missing"), missing.length ? missing : ["No quedan vacíos críticos para este escenario."]);
+  const relevantGates = (data.gates?.gates ?? []).filter((gate) => {
+    if (scenario === "planta") return true;
+    return gate.id !== "G2-operacion" || gate.estado !== "CERRADO";
+  });
+  setTextList($("readiness-gates"), relevantGates.map((gate) =>
+    `${gate.id} · ${gate.estado.replaceAll("_", " ")} — ${gate.criterio_de_salida}`));
+  const scenarioLabel = scenario === "maquila" ? "Maquila" : "Planta propia";
+  $("scenario-name").textContent = scenarioLabel;
+  $("scenario-note").textContent = scenario === "maquila"
+    ? (model.maquilaFee === null
+      ? "Cota superior: aún no incorpora una tarifa real de maquila."
+      : `Incluye tarifa de maquila de ${clp.format(model.maquilaFee)} por pizza.`)
+    : "Mantiene la capacidad, equipos y habilitación de la planta estudiada.";
 
   const indicators = [
     ["Inversión inicial", clp.format(model.initialInvestment), "CAPEX + garantía + CT"],
@@ -291,9 +418,9 @@ function render(data) {
   const volumeCases = [0.8, 1, 1.2];
   $("sensitivity-head").innerHTML = `<tr><th>Volumen \ Precio</th>${priceCases.map((p) => `<th class="num">${pct(p - 1)}</th>`).join("")}</tr>`;
   $("sensitivity-body").innerHTML = volumeCases.map((v) => `<tr><td>${pct(v - 1)}</td>${priceCases.map((p) => {
-    const scenario = buildModel(data, p, v);
-    const cls = scenario.npv > 0 ? "b-verificado" : "b-supuesto";
-    return `<td class="num"><span class="b ${cls}">${clp.format(scenario.npv)}</span></td>`;
+    const sensitivityScenario = buildModel(data, p, v, scenario);
+    const cls = sensitivityScenario.npv > 0 ? "b-verificado" : "b-supuesto";
+    return `<td class="num"><span class="b ${cls}">${clp.format(sensitivityScenario.npv)}</span></td>`;
   }).join("")}</tr>`).join("");
 
   // La confianza se lee de la hoja de origen, nunca se escribe a mano: esta es
@@ -315,6 +442,7 @@ function render(data) {
     ["Distribución por unidad", get(data.base, "producto.distribucion_variable_clp_unidad"), model.distribution, "11-comercial", conf(data.base, "producto.distribucion_variable_clp_unidad")],
     ["Rampa año 2", get(data.base, "comercial.rampa_ano2_factor"), model.years[1].volume / model.years[0].volume, "11-comercial", conf(data.base, "comercial.rampa_ano2_factor")],
     ["TMAR", get(data.base, "macro.tasa_descuento_pct"), model.discount * 100, "12-riesgos", conf(data.base, "macro.tasa_descuento_pct")],
+    ...(scenario === "maquila" ? [["Tarifa de maquila", get(data.financial, "produccion.costo_maquila_clp_unidad"), model.maquilaFee, "13-financiamiento", conf(data.financial, "produccion.costo_maquila_clp_unidad")]] : []),
     ["Plazo de cobro", get(data.prices, "precios.plazo_cobro_dias"), model.receivableDays, "02-competencia · 03-validación", conf(data.prices, "precios.plazo_cobro_dias")]
   ];
   $("trace-body").innerHTML = traces.map(([name, upstream, used, source, confidence]) => `<tr><td>${name}</td><td>${upstream === null ? "Pendiente" : num.format(upstream)}</td><td class="num">${used === null ? "Pendiente" : num.format(used)}</td><td>${source}</td><td>${badge(confidence)}</td></tr>`).join("");
@@ -333,14 +461,19 @@ async function start() {
     inputs: "../datos/parametros-06-insumos.json",
     local: "../datos/parametros-07-local-habilitacion.json",
     legal: "../datos/parametros-08-legal-normativo.json",
-    financial: "../datos/parametros-10-financiero.json"
+    financial: "../datos/parametros-10-financiero.json",
+    gates: "../datos/gates-decision.json"
   };
   const entries = await Promise.all(Object.entries(files).map(async ([key, url]) => {
     const response = await fetch(url, { cache: "no-store" });
     if (!response.ok) throw new Error(`${url}: HTTP ${response.status}`);
     return [key, await response.json()];
   }));
-  render(Object.fromEntries(entries));
+  const data = Object.fromEntries(entries);
+  const controls = document.querySelectorAll('input[name="scenario"]');
+  const redraw = () => render(data, document.querySelector('input[name="scenario"]:checked').value);
+  controls.forEach((control) => control.addEventListener("change", redraw));
+  redraw();
 }
 
 start().catch((error) => {
