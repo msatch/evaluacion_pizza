@@ -179,8 +179,24 @@ function buildModel(data, priceMultiplier = 1, volumeMultiplier = 1) {
     year.deltaNwc = year.nwc - previousNwc;
     year.terminal = 0;
     if (index === years.length - 1) {
-      const residualNet = residualGross * (1 - taxRates[index]);
-      year.terminal = residualNet + year.nwc + guarantee;
+      // El impuesto de enajenación grava el RESULTADO (precio menos valor
+      // libro), no el precio de venta. Con vida depreciable mayor que el
+      // horizonte el valor libro supera al residual y la venta da pérdida.
+      // Esa pérdida engrosa la pérdida tributaria acumulada, pero al cerrar
+      // el horizonte no queda renta futura contra la cual imputarla: no
+      // genera caja. Reconocer aquí un escudo sobrestimaría el proyecto.
+      const bookValue = Math.max(0, depreciableCapex - depreciation * years.length);
+      const disposalResult = residualGross - bookValue;
+      let disposalTax = 0;
+      if (disposalResult > 0) {
+        const offset = Math.min(taxLoss, disposalResult);
+        taxLoss -= offset;
+        disposalTax = (disposalResult - offset) * taxRates[index];
+      }
+      year.bookValue = bookValue;
+      year.disposalResult = disposalResult;
+      year.disposalTax = disposalTax;
+      year.terminal = residualGross - disposalTax + year.nwc + guarantee;
     }
     year.fcf = year.ebitda - year.tax - year.deltaNwc + year.terminal;
     flows.push(year.fcf);

@@ -76,6 +76,265 @@ def up(base, path, fallback):
     return resolved(maybe(base, path), fallback)
 
 
+# ---------------------------------------------------------------------------
+# Motor de cálculo en Python.
+#
+# Es un ESPEJO LÍNEA A LÍNEA de buildModel() en modelo.js, no una segunda
+# formulación. Existe para alimentar tornado, valores de quiebre y Monte Carlo
+# —que no caben como fórmulas vivas— y para ser comparado contra el harness de
+# Node. Invariante del proyecto: tres motores (JS, Python, Calc), una prueba.
+# Si se toca modelo.js hay que tocar esto en el mismo commit.
+# ---------------------------------------------------------------------------
+
+EQUIPMENT_KEYS = ["abatidor", "amasadora", "horno", "selladora_vacio",
+                  "meson_refrigerado", "congeladores", "acero_lavado_extraccion",
+                  "racks_bandejas_instrumentos"]
+OTHER_FIXED_KEYS = ["servicios_fijos", "mantenimiento", "administracion", "ventas", "seguros"]
+
+
+def gv(obj, path, fallback=None):
+    """Equivalente de get() en modelo.js: devuelve .valor, o el fallback si la
+    ruta no existe o el valor es null."""
+    cur = obj
+    for key in path.split("."):
+        if not isinstance(cur, dict) or key not in cur:
+            return fallback
+        cur = cur[key]
+    val = cur.get("valor") if isinstance(cur, dict) else None
+    return fallback if val is None else val
+
+
+def npv_of(rate, flows):
+    return sum(f / ((1 + rate) ** t) for t, f in enumerate(flows))
+
+
+def irr_of(flows):
+    """Bisección idéntica a modelo.js: None si no hay cambio de signo."""
+    low, high = -0.99, 10.0
+    low_v, high_v = npv_of(low, flows), npv_of(high, flows)
+    if low_v * high_v > 0:
+        return None
+    for _ in range(240):
+        mid = (low + high) / 2
+        v = npv_of(mid, flows)
+        if abs(v) < 0.01:
+            return mid
+        if low_v * v <= 0:
+            high = mid
+        else:
+            low, low_v = mid, v
+    return (low + high) / 2
+
+
+def payback_of(rate, flows):
+    cumulative = flows[0]
+    for year in range(1, len(flows)):
+        disc = flows[year] / ((1 + rate) ** year)
+        previous = cumulative
+        cumulative += disc
+        if cumulative >= 0:
+            return (year - 1) + (-previous / disc)
+    return None
+
+
+def build_model(data, price_mult=1.0, volume_mult=1.0, overrides=None):
+    """overrides: {"ruta.punteada": valor} para tornado / quiebre / Monte Carlo.
+    Se aplica sobre la lectura, sin mutar los JSON en disco."""
+    ov = overrides or {}
+
+    def g(bucket, path, fallback=None):
+        if path in ov:
+            return ov[path]
+        return gv(data[bucket], path, fallback)
+
+    base, financial = "base", "financial"
+
+    inflation = g(financial, "modelo.inflacion_anual_pct") / 100
+    discount = g(base, "macro.tasa_descuento_pct",
+                 g(financial, "modelo.tasa_descuento_nominal_pct")) / 100
+    price_base = g("prices", "precios.precio_venta_b2b_familiar_clp",
+                   g(financial, "modelo.precio_b2b_familiar_base_clp"))
+
+    som_month = g("market", "mercado.som_ano1_pizzas_mes")
+    stub_year1 = g(financial, "modelo.volumen_ano1_unidades")
+    year1_volume = som_month * 12 if som_month is not None else stub_year1
+    volumes = []
+    for year in range(1, 6):
+        if year == 1:
+            volumes.append(year1_volume * volume_mult)
+            continue
+        ramp_fallback = g(financial, f"modelo.volumen_ano{year}_unidades") / stub_year1
+        ramp = g(base, f"comercial.rampa_ano{year}_factor", ramp_fallback)
+        volumes.append(year1_volume * ramp * volume_mult)
+
+    capacity_day = g(base, "produccion.capacidad_instalada_pizzas_dia")
+    operating_days = g(base, "produccion.dias_operacion_mes")
+    capacity_year = (capacity_day * operating_days * 12
+                     if capacity_day is not None and operating_days is not None else None)
+    if capacity_year is not None:
+        volumes = [min(v, capacity_year) for v in volumes]
+
+    tax_rates = [g(financial, f"modelo.impuesto_ano{y}_pct") / 100 for y in range(1, 6)]
+
+    def gram(key):
+        return g(base, f"producto.{key}", g(financial, f"producto.{key}"))
+
+    flour = g("inputs", "insumos.harina_clp_kg") * gram("harina_kg_unidad")
+    sauce = g("inputs", "insumos.salsa_tomate_clp_kg") * gram("salsa_kg_unidad")
+    cheese = g("inputs", "insumos.mozzarella_clp_kg") * gram("mozzarella_kg_unidad")
+    others = gram("otros_ingredientes_clp_unidad")
+    waste = g(base, "produccion.merma_pct", g(financial, "producto.merma_pct")) / 100
+    packaging = g("inputs", "insumos.envase_clp_unidad", g(financial, "producto.envase_clp_unidad"))
+    energy = g(base, "producto.energia_variable_clp_unidad",
+               g(financial, "producto.energia_variable_clp_unidad"))
+    distribution = g(base, "producto.distribucion_variable_clp_unidad",
+                     g(financial, "producto.distribucion_variable_clp_unidad"))
+    variable_base = (flour + sauce + cheese + others) * (1 + waste) + packaging + energy + distribution
+
+    area = g("local", "local.superficie_requerida_m2", g(financial, "operacion.superficie_m2"))
+    rent_base = g("local", "local.arriendo_mensual_clp",
+                  area * g("local", "local.arriendo_clp_m2_mes"))
+    employer_factor = g(base, "macro.factor_costo_empresa",
+                        g(financial, "operacion.factor_costo_empresa"))
+    payroll_gross = g(base, "rrhh.nomina_bruta_mensual_clp",
+                      g(financial, "operacion.nomina_bruta_mensual_clp"))
+    payroll_total = g(base, "rrhh.costo_personal_mensual_regimen_clp")
+    payroll_base = payroll_total if payroll_total is not None else payroll_gross * employer_factor
+    other_fixed = sum(g(base, f"operacion.{k}_mensual_clp",
+                        g(financial, f"operacion.{k}_mensual_clp")) for k in OTHER_FIXED_KEYS)
+    fixed_monthly = rent_base + payroll_base + other_fixed
+
+    equipment_lines = sum(g(financial, f"inversion.{k}_clp") for k in EQUIPMENT_KEYS)
+    equipment = g(base, "capex.equipamiento_base_clp", equipment_lines)
+    installation = equipment * g(base, "inversion.flete_instalacion_pct",
+                                 g(financial, "inversion.flete_instalacion_pct")) / 100
+    habilitation = g("local", "local.habilitacion_sanitaria_clp",
+                     g(financial, "inversion.habilitacion_sanitaria_clp"))
+    before_contingency = equipment + installation + habilitation
+    contingency = before_contingency * g(base, "inversion.contingencia_pct",
+                                         g(financial, "inversion.contingencia_pct")) / 100
+    permits = g("legal", "capex.tramites_y_constitucion_clp",
+                g(financial, "inversion.tramites_analisis_rotulado_clp"))
+    preoperation = g(financial, "inversion.preoperacion_clp")
+    depreciable = before_contingency + contingency
+    total_capex = depreciable + permits + preoperation
+    depreciation = depreciable / g(base, "inversion.vida_depreciable_anios",
+                                   g(financial, "inversion.vida_depreciable_anios"))
+    guarantee = rent_base * g(financial, "inversion.garantia_arriendo_meses")
+    residual_gross = depreciable * g(base, "inversion.valor_residual_pct",
+                                     g(financial, "inversion.valor_residual_pct")) / 100
+
+    receivable_days = g("prices", "precios.plazo_cobro_dias",
+                        g(financial, "operacion.dias_cuentas_cobrar"))
+    inventory_days = g(financial, "operacion.dias_inventario")
+    payable_days = g(financial, "operacion.dias_cuentas_pagar")
+
+    years = []
+    for idx, volume in enumerate(volumes):
+        esc = (1 + inflation) ** (idx + 1)
+        price = price_base * price_mult * esc
+        variable_unit = variable_base * esc
+        revenue = volume * price
+        variable_cost = volume * variable_unit
+        fixed_cost = fixed_monthly * 12 * esc
+        nwc = (revenue * receivable_days / 365
+               + variable_cost * inventory_days / 365
+               - variable_cost * payable_days / 365)
+        years.append({"year": idx + 1, "volume": volume, "price": price,
+                      "variableUnit": variable_unit, "revenue": revenue,
+                      "variableCost": variable_cost, "fixedCost": fixed_cost, "nwc": nwc})
+
+    tax_loss = 0.0
+    for idx, y in enumerate(years):
+        y["ebitda"] = y["revenue"] - y["variableCost"] - y["fixedCost"]
+        y["depreciation"] = depreciation
+        y["ebit"] = y["ebitda"] - depreciation
+        if y["ebit"] < 0:
+            tax_loss += -y["ebit"]
+            y["taxable"] = 0.0
+            y["tax"] = 0.0
+        else:
+            offset = min(tax_loss, y["ebit"])
+            tax_loss -= offset
+            y["taxable"] = y["ebit"] - offset
+            y["tax"] = y["taxable"] * tax_rates[idx]
+        y["taxRate"] = tax_rates[idx]
+        y["taxLossClosing"] = tax_loss
+
+    initial_nwc = years[0]["nwc"]
+    initial_investment = total_capex + guarantee + initial_nwc
+    flows = [-initial_investment]
+    for idx, y in enumerate(years):
+        previous_nwc = initial_nwc if idx == 0 else years[idx - 1]["nwc"]
+        y["deltaNwc"] = y["nwc"] - previous_nwc
+        y["terminal"] = 0.0
+        if idx == len(years) - 1:
+            book_value = max(0.0, depreciable - depreciation * len(years))
+            disposal_result = residual_gross - book_value
+            disposal_tax = 0.0
+            if disposal_result > 0:
+                offset = min(tax_loss, disposal_result)
+                tax_loss -= offset
+                disposal_tax = (disposal_result - offset) * tax_rates[idx]
+            y["bookValue"] = book_value
+            y["disposalResult"] = disposal_result
+            y["disposalTax"] = disposal_tax
+            y["terminal"] = residual_gross - disposal_tax + y["nwc"] + guarantee
+        y["fcf"] = y["ebitda"] - y["tax"] - y["deltaNwc"] + y["terminal"]
+        flows.append(y["fcf"])
+
+    project_npv = npv_of(discount, flows)
+    project_irr = irr_of(flows)
+    payback = payback_of(discount, flows)
+    pv_inflows = sum(f / ((1 + discount) ** (i + 1)) for i, f in enumerate(flows[1:]))
+    cumulative = 0.0
+    minimum = 0.0
+    for f in flows:
+        cumulative += f
+        minimum = min(minimum, cumulative)
+    peak_funding = -minimum
+    capital_limit = data["base"]["meta"]["restriccion_capital_clp"]
+    first_esc = 1 + inflation
+    contribution = price_base * price_mult * first_esc - variable_base * first_esc
+    break_even = years[0]["fixedCost"] / contribution if contribution > 0 else None
+
+    return {
+        "inflation": inflation, "discount": discount, "priceBase": price_base,
+        "variableBase": variable_base, "flour": flour, "sauce": sauce, "cheese": cheese,
+        "packaging": packaging, "waste": waste, "energy": energy, "distribution": distribution,
+        "area": area, "rentBase": rent_base, "payrollGross": payroll_gross,
+        "employerFactor": employer_factor, "payrollBase": payroll_base,
+        "fixedMonthlyBase": fixed_monthly, "equipment": equipment, "installation": installation,
+        "habilitation": habilitation, "contingency": contingency, "permits": permits,
+        "preoperation": preoperation, "depreciableCapex": depreciable, "totalCapex": total_capex,
+        "guarantee": guarantee, "initialNwc": initial_nwc, "initialInvestment": initial_investment,
+        "depreciation": depreciation, "residualGross": residual_gross,
+        "receivableDays": receivable_days, "years": years, "flows": flows,
+        "npv": project_npv, "irr": project_irr, "payback": payback,
+        "profitabilityIndex": pv_inflows / initial_investment,
+        "peakFunding": peak_funding, "capitalLimit": capital_limit,
+        "contribution": contribution, "breakEven": break_even,
+        "capacityYear": capacity_year,
+        "capacityUse": None if capacity_year is None else volumes[-1] / capacity_year,
+        "breakEvenUse": None if capacity_year is None or break_even is None else break_even / capacity_year,
+    }
+
+
+DATA_FILES = {
+    "base": "supuestos.json",
+    "market": "parametros-01-mercado.json",
+    "prices": "parametros-02-competencia.json",
+    "inputs": "parametros-06-insumos.json",
+    "local": "parametros-07-local-habilitacion.json",
+    "legal": "parametros-08-legal-normativo.json",
+    "financial": "parametros-10-financiero.json",
+}
+
+
+def load_all():
+    return {k: load(v) for k, v in DATA_FILES.items()}
+
+
 def connect_office():
     profile = tempfile.mkdtemp(prefix="pizzeria-lo-")
     port = 2083
@@ -297,8 +556,27 @@ def build_inputs(doc, data, money_fmt, pct_fmt):
     add("capital_limit", "Modelo", "Capital máximo disponible", {"valor": base["meta"]["restriccion_capital_clp"], "unidad": "CLP", "confianza": "VERIFICADO", "fuente": "datos/supuestos.json#meta.restriccion_capital_clp", "nota": "Restricción declarada en el enunciado."}, kind="money")
     add("horizon", "Modelo", "Horizonte de evaluación", entry(financial, "modelo.horizonte_anios"))
     add("price", "Ventas", "Precio B2B neto base", resolved(entry(prices, "precios.precio_venta_b2b_familiar_clp"), entry(financial, "modelo.precio_b2b_familiar_base_clp")), kind="money")
+    # La rampa comercial es FORMA, no nivel (espeja modelo.js). La etapa 03 fija
+    # el nivel del año 1 vía SOM; la etapa 11 fija la forma de los años 2-5. Los
+    # cinco volúmenes de la etapa 10 quedan como referencia: de ellos sale la
+    # forma implícita cuando la etapa 11 aún no publicó factores.
+    som_item = dict(maybe(base, "mercado.som_ano1_pizzas_mes"))
+    if som_item.get("valor") is None:
+        som_item = {"valor": 0, "unidad": "pizzas/mes", "confianza": "PENDIENTE",
+                    "fuente": "datos/supuestos.json#mercado.som_ano1_pizzas_mes",
+                    "nota": "0 = usar el volumen año 1 de referencia. La etapa 03 lo cierra en terreno."}
+    add("som_month", "Ventas", "SOM año 1 (0 = usar referencia)", som_item, kind="number")
     for year in range(1, 6):
-        add(f"volume{year}", "Ventas", f"Volumen año {year}", entry(financial, f"modelo.volumen_ano{year}_unidades"))
+        add(f"volume{year}", "Ventas", f"Volumen año {year} (referencia)",
+            entry(financial, f"modelo.volumen_ano{year}_unidades"))
+    for year in range(2, 6):
+        ramp_item = dict(maybe(base, f"comercial.rampa_ano{year}_factor"))
+        if ramp_item.get("valor") is None:
+            ramp_item = {"valor": 0, "unidad": "multiplicador sobre año 1", "confianza": "PENDIENTE",
+                         "fuente": f"datos/supuestos.json#comercial.rampa_ano{year}_factor",
+                         "nota": "0 = derivar la forma de los volúmenes de referencia. "
+                                 "La etapa 11 no publicó factor y no se inventa uno."}
+        add(f"ramp{year}", "Ventas", f"Rampa año {year} (0 = derivar)", ramp_item, kind="number")
     for year in range(1, 6):
         add(f"tax{year}", "Tributación", f"Impuesto año {year}", entry(financial, f"modelo.impuesto_ano{year}_pct"), value=entry(financial, f"modelo.impuesto_ano{year}_pct")["valor"] / 100, kind="pct")
 
@@ -399,18 +677,48 @@ def build_inputs(doc, data, money_fmt, pct_fmt):
     ]:
         add(key, "Inversión", label, item, value=item["valor"] if val is None else val, kind=kind)
 
-    scenario_rows = [
-        ("pess_price", "Pesimista: precio", 0.90), ("pess_volume", "Pesimista: volumen", 0.80),
-        ("pess_variable", "Pesimista: costo variable", 1.10), ("pess_fixed", "Pesimista: costo fijo", 1.10), ("pess_capex", "Pesimista: CAPEX", 1.15),
-        ("base_price", "Base: precio", 1), ("base_volume", "Base: volumen", 1), ("base_variable", "Base: costo variable", 1),
-        ("base_fixed", "Base: costo fijo", 1), ("base_capex", "Base: CAPEX", 1),
-        ("opt_price", "Optimista: precio", 1.10), ("opt_volume", "Optimista: volumen", 1.20),
-        ("opt_variable", "Optimista: costo variable", 0.95), ("opt_fixed", "Optimista: costo fijo", 1), ("opt_capex", "Optimista: CAPEX", 0.95),
-        ("sens_price_low", "Sensibilidad: precio bajo", 0.90), ("sens_price_high", "Sensibilidad: precio alto", 1.10),
-        ("sens_volume_low", "Sensibilidad: volumen bajo", 0.80), ("sens_volume_high", "Sensibilidad: volumen alto", 1.20),
-    ]
-    for key, label, value in scenario_rows:
-        add(key, "Escenarios", label, {"valor": value, "unidad": "multiplicador", "confianza": "SUPUESTO", "fuente": "Etapa 10", "nota": "Editable para análisis de riesgo."}, value=value)
+    # Los multiplicadores de escenario los posee la etapa 12 en supuestos.json.
+    # Antes vivían hardcodeados aquí (0,90 / 1,10 / 1,15 / 0,95) mientras la
+    # etapa 12 publicaba 0,72 / 1,20 / 1,30 / 0,80 y afirmaba en su página que
+    # el reemplazo ya había ocurrido. Ahora se leen de verdad.
+    # Los que la etapa 12 dejó en PENDIENTE entran como 1,00 marcados SIN ANCLA:
+    # no se inventa un 0,80 para rellenar el hueco.
+    scen_metric = {"price": "precio", "volume": "volumen", "variable": "costo_variable",
+                   "fixed": "costo_fijo", "capex": "capex"}
+    scen_case = {"pess": "pesimista", "base": "base", "opt": "optimista"}
+    scen_label = {"pess": "Pesimista", "base": "Base", "opt": "Optimista"}
+    metric_label = {"price": "precio", "volume": "volumen", "variable": "costo variable",
+                    "fixed": "costo fijo", "capex": "CAPEX"}
+    for case in ("pess", "base", "opt"):
+        for metric in ("price", "volume", "variable", "fixed", "capex"):
+            path = f"escenarios.{scen_metric[metric]}_{scen_case[case]}_factor"
+            item = dict(maybe(base, path))
+            if item.get("valor") is None:
+                item = {
+                    "valor": 1.0, "unidad": "multiplicador", "confianza": "PENDIENTE",
+                    "fuente": item.get("fuente") or f"datos/supuestos.json#{path}",
+                    "nota": "SIN ANCLA — la etapa 12 no publicó banda para esta variable. "
+                            "Entra neutro (1,00) para no fabricar un escenario. "
+                            + (item.get("nota") or ""),
+                }
+            add(f"{case}_{metric}", "Escenarios",
+                f"{scen_label[case]}: {metric_label[metric]}", item,
+                value=item["valor"], kind="number")
+
+    # Los extremos de la matriz de sensibilidad reutilizan las mismas anclas de
+    # precio; el eje de volumen queda neutro mientras no exista banda publicada.
+    for key, label, path, default in [
+        ("sens_price_low", "Sensibilidad: precio bajo", "escenarios.precio_pesimista_factor", 1.0),
+        ("sens_price_high", "Sensibilidad: precio alto", "escenarios.precio_optimista_factor", 1.0),
+        ("sens_volume_low", "Sensibilidad: volumen bajo", "escenarios.volumen_pesimista_factor", 1.0),
+        ("sens_volume_high", "Sensibilidad: volumen alto", "escenarios.volumen_optimista_factor", 1.0),
+    ]:
+        item = dict(maybe(base, path))
+        if item.get("valor") is None:
+            item = {"valor": default, "unidad": "multiplicador", "confianza": "PENDIENTE",
+                    "fuente": f"datos/supuestos.json#{path}",
+                    "nota": "SIN ANCLA — eje neutro mientras la etapa 12 no publique banda."}
+        add(key, "Escenarios", label, item, value=item["valor"], kind="number")
 
     integer_fmt = number_format(doc, '#.##0')
     decimal_fmt = number_format(doc, '#.##0,00')
@@ -516,12 +824,21 @@ def build_calc_block(sheet, start, name, refs, multipliers, money_fmt, pct_fmt):
     var_mult = addr(1, mult_rows["variable"], "Calculos")
     fixed_mult = addr(1, mult_rows["fixed"], "Calculos")
     for idx, col in enumerate(year_cols, 1):
-        # No se puede vender lo que no se puede producir: la etapa 04 topa el
-        # volumen con la capacidad instalada. Con capacidad 0 el tope no opera.
+        # Nivel del año 1 (SOM si existe) × forma de la rampa; después el tope de
+        # capacidad. Ambos centinelas se comprueban: capacidad>0 Y días>0, porque
+        # días=0 con capacidad>0 topaba el volumen a cero en silencio.
         cap_year = f"{refs['capacity_day']}*{refs['operating_days']}*12"
-        demanda = f"{refs[f'volume{idx}']}*{v_mult}"
+        y1 = f"IF({refs['som_month']}>0;{refs['som_month']}*12;{refs['volume1']})"
+        if idx == 1:
+            nivel = y1
+        else:
+            ramp = (f"IF({refs[f'ramp{idx}']}>0;{refs[f'ramp{idx}']};"
+                    f"{refs[f'volume{idx}']}/{refs['volume1']})")
+            nivel = f"{y1}*{ramp}"
+        demanda = f"({nivel})*{v_mult}"
         set_formula(sheet, col, rows["Volumen"],
-                    f"=IF({refs['capacity_day']}>0;MIN({demanda};{cap_year});{demanda})")
+                    f"=IF(AND({refs['capacity_day']}>0;{refs['operating_days']}>0);"
+                    f"MIN({demanda};{cap_year});{demanda})")
         set_formula(sheet, col, rows["Escalador"], f"=(1+{refs['inflation']})^{idx}")
         set_formula(sheet, col, rows["Precio"], f"={refs['price']}*{p_mult}*{addr(col,rows['Escalador'],'Calculos')}")
         set_formula(sheet, col, rows["Costo variable unitario"], f"={scalar_cell(scalar,'variable_base')}*{var_mult}*{addr(col,rows['Escalador'],'Calculos')}")
@@ -539,7 +856,19 @@ def build_calc_block(sheet, start, name, refs, multipliers, money_fmt, pct_fmt):
         set_formula(sheet, col, rows["Capital de trabajo"], f"={addr(col,rows['Ingresos'],'Calculos')}*{refs['ar_days']}/365+{addr(col,rows['Costos variables'],'Calculos')}*{refs['inventory_days']}/365-{addr(col,rows['Costos variables'],'Calculos')}*{refs['ap_days']}/365")
         prev_nwc = addr(2, rows["Capital de trabajo"], "Calculos") if idx == 1 else addr(col - 1, rows["Capital de trabajo"], "Calculos")
         set_formula(sheet, col, rows["Variación capital de trabajo"], f"={addr(col,rows['Capital de trabajo'],'Calculos')}-{prev_nwc}")
-        terminal = "0" if idx < 5 else f"{scalar_cell(scalar,'residual')}*(1-{refs['tax5']})+{addr(col,rows['Capital de trabajo'],'Calculos')}+{scalar_cell(scalar,'guarantee')}"
+        # El impuesto de enajenación grava el RESULTADO (residual menos valor
+        # libro), no el precio de venta. Con vida depreciable > horizonte el
+        # valor libro supera al residual: la venta da pérdida y no se paga
+        # impuesto. Tampoco se acredita escudo: al cerrar el horizonte no queda
+        # renta futura contra la cual imputar esa pérdida.
+        if idx < 5:
+            terminal = "0"
+        else:
+            book = f"MAX(0;{scalar_cell(scalar,'depreciable')}-{scalar_cell(scalar,'depreciation')}*5)"
+            disposal = f"({scalar_cell(scalar,'residual')}-{book})"
+            terminal = (f"{scalar_cell(scalar,'residual')}-MAX(0;{disposal})*{refs['tax5']}"
+                        f"+{addr(col,rows['Capital de trabajo'],'Calculos')}"
+                        f"+{scalar_cell(scalar,'guarantee')}")
         set_formula(sheet, col, rows["Recuperaciones terminales"], f"={terminal}")
         set_formula(sheet, col, rows["Flujo libre"], f"={addr(col,rows['EBITDA'],'Calculos')}-{addr(col,rows['Impuesto'],'Calculos')}-{addr(col,rows['Variación capital de trabajo'],'Calculos')}+{addr(col,rows['Recuperaciones terminales'],'Calculos')}")
         set_formula(sheet, col, rows["Factor descuento"], f"=1/(1+{refs['discount']})^{idx}")
@@ -558,7 +887,10 @@ def build_calc_block(sheet, start, name, refs, multipliers, money_fmt, pct_fmt):
 
     r += 1
     results = {}
-    result_specs = ["Inversión inicial", "VAN", "TIR", "Payback descontado", "Índice de rentabilidad", "Fondeo máximo", "Punto de equilibrio mensual"]
+    result_specs = ["Inversión inicial", "VAN", "TIR", "Payback descontado",
+                    "Índice de rentabilidad", "Fondeo máximo", "Punto de equilibrio mensual",
+                    "Capacidad instalada anual", "Uso de capacidad año 5",
+                    "Equilibrio sobre capacidad", "VAN por peso de fondeo"]
     for label in result_specs:
         results[label] = r
         set_text(sheet, 0, r, label)
@@ -568,18 +900,38 @@ def build_calc_block(sheet, start, name, refs, multipliers, money_fmt, pct_fmt):
     pv_inflows = "+".join(addr(c, rows["Flujo descontado"], "Calculos") for c in year_cols)
     set_formula(sheet, 1, results["Inversión inicial"], f"=-{flow0}")
     set_formula(sheet, 1, results["VAN"], f"=SUM({addr(1,rows['Flujo descontado'],'Calculos')}:{addr(6,rows['Flujo descontado'],'Calculos')})")
-    set_formula(sheet, 1, results["TIR"], f"=IFERROR(IRR({flows});-1)")
+    # Sin cambio de signo no existe TIR. Devolver -1 la presentaba como
+    # "-100%", un número fabricado que el dictamen y los escenarios leían como
+    # si fuera una tasa. NA() se propaga y obliga a decir "No calculable".
+    set_formula(sheet, 1, results["TIR"], f"=IFERROR(IRR({flows});NA())")
     cumulative = [addr(c, rows["Flujo descontado acumulado"], "Calculos") for c in range(1, 7)]
     pvflows = [addr(c, rows["Flujo descontado"], "Calculos") for c in range(2, 7)]
     payback = 'NA()'
     for year in range(5, 0, -1):
         payback = f"IF({cumulative[year]}>=0;{year-1}+(-{cumulative[year-1]}/{pvflows[year-1]});{payback})"
-    set_formula(sheet, 1, results["Payback descontado"], f"=IFERROR({payback};99)")
+    # Mismo criterio que la TIR: "99 años" era un centinela que se leía como si
+    # fuera un plazo real. Si el flujo descontado no recupera la inversión
+    # dentro del horizonte, no hay payback y hay que decirlo.
+    set_formula(sheet, 1, results["Payback descontado"], f"=IFERROR({payback};NA())")
     set_formula(sheet, 1, results["Índice de rentabilidad"], f"=({pv_inflows})/(-{flow0})")
     cash_range = f"{addr(1,rows['Flujo acumulado'],'Calculos')}:{addr(6,rows['Flujo acumulado'],'Calculos')}"
     set_formula(sheet, 1, results["Fondeo máximo"], f"=-MIN({cash_range})")
     contribution = f"({addr(2,rows['Precio'],'Calculos')}-{addr(2,rows['Costo variable unitario'],'Calculos')})"
     set_formula(sheet, 1, results["Punto de equilibrio mensual"], f"=IF({contribution}>0;{addr(2,rows['Costos fijos'],'Calculos')}/{contribution}/12;NA())")
+    # La pregunta 5 del statement pide el equilibrio en unidades/mes Y qué
+    # porcentaje de la capacidad representa. Sin estas filas el libro sólo podía
+    # responder la mitad.
+    cap_annual = f"IF(AND({refs['capacity_day']}>0;{refs['operating_days']}>0);{refs['capacity_day']}*{refs['operating_days']}*12;NA())"
+    cap_cell = addr(1, results["Capacidad instalada anual"], "Calculos")
+    set_formula(sheet, 1, results["Capacidad instalada anual"], f"={cap_annual}")
+    set_formula(sheet, 1, results["Uso de capacidad año 5"],
+                f"=IFERROR({addr(6,rows['Volumen'],'Calculos')}/{cap_cell};NA())")
+    set_formula(sheet, 1, results["Equilibrio sobre capacidad"],
+                f"=IFERROR({addr(1,results['Punto de equilibrio mensual'],'Calculos')}*12/{cap_cell};NA())")
+    # Bajo racionamiento de capital el denominador correcto es el fondeo máximo
+    # —la caja que realmente hay que poner— y no la inversión inicial.
+    set_formula(sheet, 1, results["VAN por peso de fondeo"],
+                f"=IFERROR({addr(1,results['VAN'],'Calculos')}/{addr(1,results['Fondeo máximo'],'Calculos')};NA())")
     sheet.getCellRangeByPosition(1, results["Inversión inicial"], 1, results["VAN"]).NumberFormat = money_fmt
     sheet.getCellByPosition(1, results["TIR"]).NumberFormat = pct_fmt
     sheet.getCellByPosition(1, results["Fondeo máximo"]).NumberFormat = money_fmt
@@ -666,7 +1018,12 @@ def main():
         npv = addr(1, 7, "Resumen")
         irr = addr(1, 8, "Resumen")
         funding = addr(1, 6, "Resumen")
-        set_formula(summary, 4, 9, f'=IF(AND({npv}>0;{irr}>{refs["discount"]};{funding}<={refs["capital_limit"]});"VIABLE · SUPUESTOS";"RECHAZAR / REDISEÑAR")')
+        # Una TIR no calculable NO satisface el criterio: se evalúa como falso en
+        # vez de propagar #N/A o de colarse como si fuera una tasa.
+        irr_ok = f'IF(ISNA({irr});FALSE();{irr}>{refs["discount"]})'
+        set_formula(summary, 4, 9,
+                    f'=IF(AND({npv}>0;{irr_ok};{funding}<={refs["capital_limit"]});'
+                    f'"VIABLE · SUPUESTOS";"RECHAZAR / REDISEÑAR")')
         summary.getCellByPosition(4, 9).CharWeight = 150
         summary.getCellRangeByPosition(3, 5, 4, 12).CellBackColor = 0xE8F3EC
         summary.getCellRangeByPosition(3, 5, 4, 12).CharColor = TEXT
@@ -848,5 +1205,33 @@ def main():
         shutil.rmtree(profile, ignore_errors=True)
 
 
+def check():
+    """Imprime los indicadores del motor Python en JSON, para diferenciar contra
+    el harness de Node. No abre LibreOffice."""
+    m = build_model(load_all())
+    out = {
+        "capexTotal": m["totalCapex"], "initialNwc": m["initialNwc"],
+        "initialInvestment": m["initialInvestment"], "peakFunding": m["peakFunding"],
+        "breakEvenMonth": m["breakEven"], "npv": m["npv"], "irr": m["irr"],
+        "payback": m["payback"], "profitabilityIndex": m["profitabilityIndex"],
+        "variableBase": m["variableBase"], "fixedMonthlyBase": m["fixedMonthlyBase"],
+        "rentBase": m["rentBase"], "payrollBase": m["payrollBase"],
+        "equipment": m["equipment"], "capacityYear": m["capacityYear"],
+        "capacityUse": m["capacityUse"], "breakEvenUse": m["breakEvenUse"],
+        "flour": m["flour"], "sauce": m["sauce"], "cheese": m["cheese"],
+        "packaging": m["packaging"],
+        "volumes": [y["volume"] for y in m["years"]],
+        "prices": [y["price"] for y in m["years"]],
+        "fcf": [y["fcf"] for y in m["years"]],
+    }
+    rounded = {k: (round(v, 4) if isinstance(v, (int, float)) else
+                   ([round(x, 4) for x in v] if isinstance(v, list) else v))
+               for k, v in out.items()}
+    print(json.dumps({"indicadores": rounded}, indent=2, ensure_ascii=False))
+
+
 if __name__ == "__main__":
-    main()
+    if "--check" in sys.argv:
+        check()
+    else:
+        main()
