@@ -1,0 +1,64 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Validación en terreno — Microfábrica de pizzas</title><link rel="stylesheet" href="../assets/estilo.css"></head>
+<body><div class="envoltorio">
+<nav class="migas"><a href="../index.html">Dossier</a> › Validación en terreno</nav>
+<header class="cabecera"><span class="etapa">Etapa 03 · Validación</span><h1>Validación en terreno</h1><p class="bajada">Marco muestral, guion, prueba de precio y umbral ir/no-ir: el instrumento, con los resultados vacíos hasta ir a terreno.</p><div class="meta"><span><strong>Ámbito:</strong> Temuco + Padre Las Casas</span><span><strong>Entrega:</strong> instrumento, no hallazgo</span><span><strong>Consulta:</strong> 04-08-2026</span></div></header>
+
+<div class="aviso aviso-clave"><div class="aviso-titulo">Qué entrega esta etapa</div><p>Nadie fue entrevistado: publicar disposición a pagar sin terreno sería el número plausible que prohíbe la regla 7. El criterio de decisión sí queda fijado: <strong>30 entrevistas sobre 120 cuentas, ≥6 pedidos pagados, a ≥1,00× la referencia nacional, plazo ≤30 días, en ≤45 días</strong>.</p></div>
+
+<h2>1. Marco muestral</h2>
+<p>El techo de 1.187 empresas de 01 (<code>mercado.establecimientos_horeca_temuco</code>) se cita, no se recalcula, y no trae nombres. <strong>La lista nominal no se pudo armar en gabinete:</strong> SERNATUR no permite descarga masiva y la nómina de patentes de Temuco no está publicada.</p>
+<div class="tabla-envoltorio"><table><caption>Cuotas de diseño, no muestra probabilística; cubren el mínimo de 5 casos por segmento.</caption><thead><tr><th>Segmento</th><th class="num">Lista</th><th class="num">Entrev.</th><th>Límite</th></tr></thead><tbody>
+<tr><td>Pubs, bares, cafeterías</td><td class="num">60</td><td class="num">15</td><td>La patente no dice si vende pizza</td></tr>
+<tr><td>Hoteles y hostales</td><td class="num">25</td><td class="num">6</td><td>Solo prestadores inscritos</td></tr>
+<tr><td>Casinos y concesionarias</td><td class="num">15</td><td class="num">4</td><td>El domicilio no es el casino</td></tr>
+<tr><td>Food trucks</td><td class="num">10</td><td class="num">3</td><td>El padrón envejece rápido</td></tr>
+<tr><td>Minimarkets de servicentro</td><td class="num">10</td><td class="num">2</td><td>01 no los aisló del 472101</td></tr>
+</tbody><tfoot><tr><td>Total</td><td class="num">120</td><td class="num">30</td><td>Tasa 25%: si baja, se amplía</td></tr></tfoot></table></div>
+
+<h2>2. Guion de entrevista</h2>
+<div class="tabla-envoltorio"><table><caption>Orden fijo: el precio se pregunta tras mostrar el producto.</caption><thead><tr><th class="num">#</th><th>Pregunta</th><th>Qué mide</th><th>Límite</th></tr></thead><tbody>
+<tr><td class="num">1</td><td>¿Vende pizza? ¿Cuántas por semana, qué formato?</td><td>Califica y da consumo</td><td>Sin respaldo</td></tr>
+<tr><td class="num">2</td><td>¿La produce o la compra? ¿A quién?</td><td>Proveedor actual</td><td>Ignora al fabricante</td></tr>
+<tr><td class="num">3</td><td>¿Precio neto por unidad puesto acá?</td><td>Costo del canal</td><td>Se cita con IVA</td></tr>
+<tr><td class="num">4</td><td>Muestra y <strong>una</strong> oferta cerrada</td><td>Disposición a pagar</td><td>Intención, no compra</td></tr>
+<tr><td class="num">5</td><td>¿Paga contado, 7, 30 o 60 días?</td><td><code>precios.plazo_cobro_dias</code></td><td>Pactado ≠ efectivo</td></tr>
+<tr><td class="num">6</td><td>¿Decide usted o una central?</td><td>Cadena vs. independiente</td><td>Negativa jerárquica</td></tr>
+<tr><td class="num">7</td><td>¿Congelador con espacio a −18 °C?</td><td>Entrega y comodato</td><td>Declarado</td></tr>
+<tr><td class="num">8</td><td>¿Firma un pedido pagado de 12 unidades?</td><td>Conversión</td><td>No prueba recompra</td></tr>
+</tbody></table></div>
+
+<h2>3. Prueba monádica de precio</h2>
+<p>Nunca se pregunta un precio abstracto. Cada entrevistado ve <strong>una sola</strong> oferta cerrada —producto, caja de 12, entrega 24–48 h, comodato, plazo—, asignada por rotación y expresada en factores sobre <code>precios.precio_competencia_nacional_clp</code>.</p>
+<div class="rejilla">
+<div class="tarjeta"><h4>A · factor 0,85</h4><p>Piso: sin pedido aquí, no hay negocio.</p></div>
+<div class="tarjeta"><h4>B · factor 1,00</h4><p>Paridad con el ancla nacional: el umbral.</p></div>
+<div class="tarjeta"><h4>C · factor 1,15</h4><p>El supuesto crítico del statement §7: sobreprecio por local.</p></div>
+</div>
+<div class="aviso aviso-riesgo"><div class="aviso-titulo">Intención declarada no es compra</div><p>El sesgo de cortesía infla cualquier "me interesa": la conversión se cuenta solo con pedido pagado. El ancla, además, es un precio <em>promocional</em>; re-anclarla cuando 02 obtenga el B2B puesto en Temuco.</p></div>
+
+<h2>4. Umbral ir/no-ir</h2>
+<div class="tabla-envoltorio"><table><caption>Fijados antes de medir, para que nadie los reinterprete. La columna de resultado va vacía a propósito.</caption><thead><tr><th>Criterio</th><th>Umbral</th><th>Resultado</th><th>Lectura</th></tr></thead><tbody>
+<tr><td>Entrevistas válidas</td><td class="num">≥30, ≥5 por segmento</td><td><span class="b b-pendiente">Pendiente</span></td><td>Bajo 5 no se extrapola</td></tr>
+<tr><td>Conversión a pedido pagado</td><td class="num">≥20% · 6 de 30</td><td><span class="b b-pendiente">Pendiente</span></td><td>Dinero, no volumen sostenido</td></tr>
+<tr><td>Precio familiar neto</td><td class="num">≥1,00× ref. nacional</td><td><span class="b b-pendiente">Pendiente</span></td><td>El ancla es promoción retail</td></tr>
+<tr><td>Plazo de pago ponderado</td><td class="num">≤30 días</td><td><span class="b b-pendiente">Pendiente</span></td><td>Regla legal, no práctica</td></tr>
+<tr><td>Ventana de terreno</td><td class="num">≤45 días corridos</td><td><span class="b b-pendiente">Pendiente</span></td><td>Después cambia todo</td></tr>
+<tr><td>SOM año 1</td><td class="num">Σ consumo convertido</td><td><span class="b b-pendiente">Pendiente</span></td><td>Reemplaza el volumen de E10</td></tr>
+</tbody></table></div>
+
+<h2>5. Vacíos y gestión</h2>
+<p><code>precios.plazo_cobro_dias</code> es el vacío más caro: E10 corre con un stub de 30 días que arrastra $10,7 de los $14,0 millones de capital de trabajo, porque la cobranza es ingresos × plazo ÷ 365. A 60 días se duplica. Ninguna fuente pública fija la práctica local: la Ley 21.131 manda 30 días corridos, pero Economía registra a quienes pactan más.</p>
+<div class="aviso aviso-vacio"><div class="aviso-titulo">Tres gestiones, con destinatario</div><p><strong>1.</strong> Solicitud de acceso a la información al <strong>Departamento de Rentas y Patentes, Municipalidad de Temuco</strong> (Av. Prat 650, 800 100 650) por la nómina de patentes vigentes con rubro y dirección; sin respuesta en 20 días hábiles, reclamo al Consejo para la Transparencia. <strong>2.</strong> Transcribir SERNATUR por comuna y verificar cada RUT. <strong>3.</strong> Cotizar el B2B puesto en Temuco a un distribuidor regional: dato de 02.</p></div>
+
+<h2>6. Fuentes</h2>
+<ul>
+<li><a href="https://www.sii.cl/sobre_el_sii/estadisticas_de_empresas.html">SII · Estadísticas de empresas</a>, 04-08-2026.</li>
+<li><a href="https://serviciosturisticos.sernatur.cl/">SERNATUR · Servicios turísticos</a>, 04-08-2026.</li>
+<li><a href="https://www.temuco.cl/tramites/patentes-y-sii/">Temuco · Rentas y Patentes</a>, <a href="https://transparencia.temuco.cl/">transparencia activa</a>, 04-08-2026.</li>
+<li><a href="https://registrodeacuerdos.economia.gob.cl/Normativa.aspx">Economía · Ley 21.131</a>, <a href="https://registrodeacuerdos.economia.gob.cl/Busquedas/ListaCompradores.aspx">plazos excepcionales</a>, 04-08-2026.</li>
+<li><a href="https://www.consejotransparencia.cl/">Consejo para la Transparencia</a>, 04-08-2026.</li>
+<li><a href="https://www.registrodeempresasysociedades.cl/">Registro de Empresas y Sociedades</a>, 04-08-2026.</li>
+</ul>
+
+<footer class="pie"><span>Etapa 03 · Validación</span><span>Consulta: 4 de agosto de 2026</span><span><a href="../index.html">Volver al dossier</a></span></footer>
+</div></body></html>

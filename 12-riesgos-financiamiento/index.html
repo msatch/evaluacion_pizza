@@ -1,0 +1,75 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Riesgos y financiamiento — Microfábrica de pizzas</title><link rel="stylesheet" href="../assets/estilo.css"></head>
+<body><div class="envoltorio">
+<nav class="migas"><a href="../index.html">Dossier</a> › Riesgos y financiamiento</nav>
+<header class="cabecera"><span class="etapa">Etapa 12 · Riesgos y financiamiento</span><h1>Riesgos, financiamiento y puntos de decisión</h1><p class="bajada">Qué variable rompe primero el techo de $50 millones, a qué tasa se descuenta y por qué, y en qué orden comprometer el capital.</p><div class="meta"><span><strong>Restricción:</strong> $50.000.000 propios</span><span><strong>TMAR escrita:</strong> 20,46% nominal</span><span><strong>Consulta:</strong> 04-08-2026</span></div></header>
+
+<div class="aviso aviso-clave"><div class="aviso-titulo">Hallazgo</div><p>La holgura contra el límite de capital es <strong>$3.317.555</strong> y la contingencia del CAPEX es <strong>$3.321.070</strong>: son la misma plata. La pregunta 6 del statement hoy se responde “cabe, mientras no ocurra nada de lo que la contingencia existe para cubrir”. Y en todas las variables estresadas <strong>el techo de caja se rompe antes de que el VAN se anule</strong>.</p></div>
+
+<h2>1. Matriz de riesgos y valores de quiebre</h2>
+<p>Escalas declaradas. <strong>Probabilidad:</strong> Alta = ya evidenciado por una etapa cerrada; Media = plausible y sin evidencia en contra. <strong>Impacto:</strong> Crítico = rompe el techo o anula el VAN; Alto = consume más de media holgura. No se asignan probabilidades con decimales: no hay base.</p>
+<div class="tabla-envoltorio"><table><caption>El quiebre es donde el fondeo máximo alcanza $50.000.000, variando una sola entrada del modelo de la etapa 10. Aritmética exacta sobre entradas <span class="b b-supuesto">Supuesto</span>: mide fragilidad, no probabilidad.</caption><thead><tr><th>Riesgo</th><th>P</th><th>I</th><th>Clave golpeada</th><th class="num">Quiebre</th><th>Mitigación</th><th>Lectura</th></tr></thead><tbody>
+<tr><td>Habilitación sanitaria subestimada</td><td>Alta</td><td>Crítico</td><td><code>local.habilitacion_sanitaria_clp</code></td><td class="num">$14.884.831<br>+24,0%</td><td>Maquilar hasta tener presupuesto de arquitecto.</td><td>Etapa 07 no halló local con resolución acreditada.</td></tr>
+<tr><td>HORECA paga tarde</td><td>Alta</td><td>Crítico</td><td><code>precios.plazo_cobro_dias</code></td><td class="num">39,3 días</td><td>Pactar 15 días con descuento por pronto pago.</td><td>9,3 días de más agotan la holgura; a 60, fondeo $57.349.294.</td></tr>
+<tr><td>Volumen año 1 bajo el equilibrio</td><td>Alta</td><td>Crítico</td><td><code>mercado.som_ano1_pizzas_mes</code></td><td class="num">2.254/mes</td><td>No arrendar sin cartas de intención por 2.666/mes.</td><td>El base (2.500) ya está bajo el equilibrio: año 1 da −$3.165.722.</td></tr>
+<tr><td>Precio B2B no validado</td><td>Alta</td><td>Crítico</td><td><code>precios.precio_venta_b2b_familiar_clp</code></td><td class="num">$4.083</td><td>Prueba monádica de etapa 03 antes de fijar lista.</td><td>Al piso retail la contribución cae a $364 contra $50.969.179 fijos.</td></tr>
+<tr><td>Mozzarella sin cotización industrial</td><td>Media</td><td>Alto</td><td><code>insumos.mozzarella_clp_kg</code></td><td class="num">+3,9%</td><td>Dos proveedores aprobados por escalón.</td><td>Etapa 06 solo halló referencia minorista.</td></tr>
+<tr><td>Años 3 a 5 son stubs</td><td>Alta</td><td>Crítico</td><td><code>comercial.rampa_ano3_factor</code></td><td class="num">no acotable</td><td>Fijar la rampa en etapa 11; recalcular en G4.</td><td>El VAN vive casi entero en años sin validar.</td></tr>
+</tbody></table></div>
+
+<div class="aviso aviso-riesgo"><div class="aviso-titulo">El rango propio del estimado excede su valor de quiebre</div><p>Sin layout, sin cotizaciones y sin presupuesto de habilitación, el CAPEX es una estimación <strong>Clase 5</strong> de AACE 18R-97, a la que esa práctica asigna un rango alto de <strong>+30% a +100% <em>después</em> de contingencia</strong>. El quiebre del proyecto está en +13,0%: <strong>la madurez del estimado no permite sostener que la operación cabe en $50 millones.</strong></p></div>
+
+<h2>2. Tasa de descuento: el spread sobre la TPM</h2>
+<p>La TPM está en 4,5% y la meta de inflación en 3% <span class="b b-verificado">Verificado</span>, pero eso no es el costo de oportunidad de este capital. La CMF publica lo que los bancos <em>efectivamente cobraron</em> en junio de 2026 por dinero del mismo tamaño y plazo —$43.516.722 son 1.065 UF—: <strong>20,46% anual</strong> en el tramo 200–5.000 UF sobre 90 días <span class="b b-verificado">Verificado</span>. El capital propio es subordinado a esa deuda, luego 20,46% es un <em>piso observado</em>, no la TMAR correcta; el 15% heredado quedaba bajo el costo de la deuda equivalente. <strong>Los 15,96 puntos de spread no se descomponen riesgo por riesgo:</strong> no hay fuente pública que lo permita y repartirlos con decimales sería inventar. La decisión tampoco depende de la tasa: el VAN se anula recién en 35,69% —la TIR—.</p>
+
+<h2>3. Escenarios: con ancla o sin ella</h2>
+<div class="tabla-envoltorio"><table><caption>Reemplazan los multiplicadores que vivían dentro de <code>generar_modelo_excel.py</code>, fuera de todo JSON. Sin ancla en evidencia quedan <span class="b b-pendiente">Pendiente</span> con su fórmula publicada, no con un número redondo.</caption><thead><tr><th>Variable</th><th class="num">Pes.</th><th class="num">Base</th><th class="num">Opt.</th><th>Ancla</th><th>Lectura</th></tr></thead><tbody>
+<tr><td>Precio</td><td class="num">0,72</td><td class="num">1,00</td><td class="num">1,20</td><td>PF neto $3.017 y foodservice $5.034 (etapa 02)</td><td>A 0,72 el VAN es −$147.746.510.</td></tr>
+<tr><td>Volumen</td><td class="num">—</td><td class="num">1,00</td><td class="num">—</td><td><code>mercado.som_ano1_pizzas_mes</code></td><td>Factor = SOM ÷ 2.500; VAN nulo en 1.972/mes.</td></tr>
+<tr><td>Costo variable</td><td class="num">—</td><td class="num">1,00</td><td class="num">—</td><td><code>insumos.mozzarella_clp_kg</code></td><td>+3,9% rompe el techo; +11,7% anula el VAN.</td></tr>
+<tr><td>Costo fijo</td><td class="num">—</td><td class="num">1,00</td><td class="num">—</td><td><code>rrhh.nomina_bruta_mensual_clp</code></td><td>+6,5% rompe el techo; +31,4% anula el VAN.</td></tr>
+<tr><td>CAPEX</td><td class="num">1,30</td><td class="num">1,00</td><td class="num">0,80</td><td>AACE 18R-97, banda estrecha de Clase 5</td><td>Es el extremo menos alarmante de la clase y aun así no cabe.</td></tr>
+</tbody></table></div>
+
+<h2>4. Financiamiento y apoyo público al 04-08-2026</h2>
+<div class="tabla-envoltorio"><table><caption>Verificado contra bases oficiales, no contra prensa.</caption><thead><tr><th>Instrumento</th><th>Tipo</th><th class="num">Tope</th><th>Elegibilidad</th><th>Convocatoria</th><th>Lectura</th></tr></thead><tbody>
+<tr><td>Sercotec · Capital Semilla Cautín 2026</td><td>No reembolsable</td><td class="num">$3.500.000</td><td>Sin inicio de actividades</td><td>29-04 a 13-05-2026 · <span class="b b-verificado">Cerrada</span></td><td>Excluye a quien ya formalizó; cubre 8% de la inversión.</td></tr>
+<tr><td>Sercotec · Crece Sostenible Araucanía</td><td>No reembolsable</td><td class="num">$7.000.000<br>a $9.000.000</td><td>Ventas anuales 200–25.000 UF</td><td>22-06 a 15-07-2026 · <span class="b b-verificado">Cerrada</span></td><td>Exige ventas ≥ 200 UF: llega después del riesgo.</td></tr>
+<tr><td>Corfo · Semilla Inicia</td><td>No reembolsable, 75%</td><td class="num">$15.000.000</td><td>Solo emprendimiento innovador</td><td><span class="b b-verificado">Cerrada</span></td><td>Una microfábrica de pizza no califica.</td></tr>
+<tr><td>Corfo · Crédito MIPYME</td><td>Crédito vía IFNB</td><td class="num">10.000 UF</td><td>Ventas hasta 100.000 UF</td><td>Ventanilla abierta todo el año</td><td>Es deuda; el statement la excluye del caso base.</td></tr>
+<tr><td>FOGAPE</td><td>Garantía estatal</td><td class="num">—</td><td>Mipyme sin garantías</td><td>Vigente · DL 3.472</td><td>No entrega dinero: garantiza un crédito ya aprobado.</td></tr>
+</tbody></table></div>
+<div class="aviso aviso-dato"><div class="aviso-titulo">Alcance diferido: nada de esto está modelado</div><p>Ninguna línea de subsidio, crédito ni garantía entra al flujo; no hay tabla de amortización ni escudo tributario. Se registra <strong>un solo monto no reembolsable concreto y aplicable —Crece Sostenible, $7 a $9 millones—</strong>, con convocatoria 2026 cerrada y exigencia de ventas previas: <em>no puede aliviar la inversión inicial</em>. Incorporarlo o no es decisión del coordinador.</p></div>
+
+<h2>5. Carta Gantt y stage gates</h2>
+<div class="tabla-envoltorio"><table><caption>Doce meses ordenados por compromiso de capital creciente. Cada gate es un no-ir: si no pasa, el tramo siguiente no se compromete.</caption><thead><tr><th>Actividad</th><th class="num">M1</th><th class="num">M2</th><th class="num">M3</th><th class="num">M4</th><th class="num">M5</th><th class="num">M6</th><th class="num">M7</th><th class="num">M8</th><th class="num">M9</th><th class="num">M10</th><th class="num">M11</th><th class="num">M12</th><th>Gate</th></tr></thead><tbody>
+<tr><td>Validación comercial en terreno</td><td class="num">■</td><td class="num">■</td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td>G1</td></tr>
+<tr><td>Cotizar equipos y habilitación</td><td class="num"></td><td class="num">■</td><td class="num">■</td><td class="num">■</td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td>G2</td></tr>
+<tr><td>Piloto productivo en maquila</td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num">■</td><td class="num">■</td><td class="num">■</td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td>G3</td></tr>
+<tr><td>Constitución, patente y resolución sanitaria</td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num">■</td><td class="num">■</td><td class="num">■</td><td class="num">■</td><td class="num"></td><td class="num"></td><td class="num"></td><td>—</td></tr>
+<tr><td>Arriendo y habilitación de planta</td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num">■</td><td class="num">■</td><td class="num">■</td><td class="num"></td><td class="num"></td><td class="num"></td><td>G4</td></tr>
+<tr><td>Puesta en marcha y rampa comercial</td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num">■</td><td class="num">■</td><td class="num">■</td><td>G5</td></tr>
+</tbody></table></div>
+<ol>
+<li><strong>G1 · Demanda (M2).</strong> Cartas de intención por ≥ 2.666 pizzas/mes al precio de lista.</li>
+<li><strong>G2 · CAPEX (M4).</strong> Presupuesto de habilitación y dos cotizaciones por equipo; si el fondeo sube de $46.682.445, alto.</li>
+<li><strong>G3 · Caja (M6).</strong> Piloto vendido y <em>cobrado</em>: mide el plazo real contra los 39,3 días.</li>
+<li><strong>G4 · Planta propia (M9).</strong> Único punto que compromete el grueso del CAPEX.</li>
+<li><strong>G5 · Escalamiento (M12).</strong> Recién aquí se postula a Crece Sostenible.</li>
+</ol>
+<p><strong>La maquila no es un plan B: es la mitigación estructural del riesgo n°1.</strong> Sin habilitación el CAPEX cae a $14.161.534, el fondeo a $32.882.445 y la holgura sube a $17.117.555. El margen del maquilador <em>no está modelado</em>; el modelo solo lo acota: hasta <strong>+$354 por pizza</strong> el proyecto cabe en $50 millones y hasta +$389 mantiene VAN positivo.</p>
+
+<div class="aviso aviso-vacio"><div class="aviso-titulo">Lo que no se pudo verificar</div><p><strong>Seguros:</strong> <code>operacion.seguros_mensual_clp</code> queda <span class="b b-pendiente">Pendiente</span>; no hay tarifa pública para planta de alimentos con frío. Gestión: cotizar incendio, daño a existencias por falla de frío y RC de producto con <strong>BancoEstado Seguros</strong>.<br><strong>Contingencia:</strong> se mantiene en 15% porque no hay estándar chileno citable y AACE es explícita en que nunca se predetermina; su valor crítico es 29,98%. Gestión: presupuesto de constructor sobre un local candidato.<br><strong>Convocatorias 2027 y cobertura FOGAPE:</strong> no verificables al 04-08-2026. Gestión: calendario a la <strong>Dirección Regional de Sercotec La Araucanía</strong>; garantías a <strong>BancoEstado Temuco</strong>; pronunciamiento HACCP a la <strong>SEREMI de Salud Araucanía</strong>, que condiciona el presupuesto de habilitación.</p></div>
+
+<h2>6. Fuentes</h2>
+<ul>
+<li><a href="https://www.bcentral.cl/areas/politica-monetaria">Banco Central · política monetaria</a>: TPM 4,5%, meta 3%.</li>
+<li><a href="https://www.cmfchile.cl/portal/estadisticas/626/w4-article-111825.html">CMF · Certificado 07/2026</a>: interés corriente 20,46%, tramo 200–5.000 UF sobre 90 días.</li>
+<li><a href="https://www.sercotec.cl/wp-content/uploads/2026/04/Bases-Semilla-EMPRENDE-2026-Araucania-Prov.Cautin-VB%C2%B0.pdf">Sercotec · bases Capital Semilla Cautín 2026</a> y <a href="https://www.sercotec.cl/wp-content/uploads/2026/07/Modificacion-Bases-de-Convocatoria-Crece-Sostenible-2026.pdf">modificación Crece Sostenible</a>: montos y plazos.</li>
+<li><a href="https://www.corfo.gob.cl/sites/cpp/inf/semilla-inicia">Corfo · Semilla Inicia</a>: cerrada; excluye lo tradicional.</li>
+<li><a href="https://www.chileatiende.gob.cl/fichas/868-credito-corfo-mipyme">ChileAtiende · Crédito Corfo MIPYME</a>: tope y plazo.</li>
+<li><a href="https://www.fogape.cl/que-es-fogape-2/">FOGAPE</a>: garantía parcial del capital, DL 3.472.</li>
+<li><a href="https://services.austintexas.gov/edims/document.cfm?id=280770">AACE 18R-97, Tabla 1</a>: Clase 5, +30% a +100%.</li>
+</ul>
+
+<footer class="pie"><span>Etapa 12 · Riesgos y financiamiento</span><span>Consulta: 4 de agosto de 2026</span><span><a href="../index.html">Volver al dossier</a></span></footer>
+</div></body></html>

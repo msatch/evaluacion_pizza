@@ -1,0 +1,229 @@
+{
+  "_dependencias": [
+    {
+      "clave": "insumos.envase_clp_unidad",
+      "duena": "06-insumos",
+      "para_que": "Cerrar el costo variable unitario. Etapa 04 no escribe precios de envase.",
+      "que_hice": "Entregué la especificación completa en producto.envase_diametro_mm (330), producto.envase_bandeja (sí, disco de cartón rígido), producto.envase_tipo_barrera (vacío) y producto.envase_unidades_caja_master (12). Con eso el envase ya es cotizable.",
+      "estado": "ABIERTA"
+    },
+    {
+      "clave": "insumos.costo_mp_unidad_familiar_clp",
+      "duena": "06-insumos",
+      "para_que": "Costo de materia prima por pizza familiar.",
+      "que_hice": "Entregué gramajes netos en crudo: harina 0,151 kg, salsa 0,080 kg, mozzarella 0,100 kg, más aceite 5 g, sal 4,4 g y levadura 0,25 g. Fórmula publicada en 06-insumos/index.html §4.",
+      "estado": "ABIERTA"
+    },
+    {
+      "clave": "insumos.costo_mp_unidad_individual_clp",
+      "duena": "06-insumos",
+      "para_que": "Costo de materia prima por pizzeta individual de 200 mm.",
+      "que_hice": "Entregué gramajes por extrapolación de superficie (factor 0,444): harina 0,069 kg, salsa 0,036 kg, mozzarella 0,045 kg. No los escribo como claves porque ningún consumidor las lee (ver _avisos_al_coordinador).",
+      "estado": "ABIERTA"
+    },
+    {
+      "clave": "insumos.aceite_clp_kg / insumos.sal_clp_kg / insumos.levadura_clp_kg",
+      "duena": "06-insumos",
+      "para_que": "Valorizar producto.otros_ingredientes_clp_unidad, que dejo en null.",
+      "que_hice": "Busqué precio público chileno neto para los tres y no lo encontré (metafood.cl no publica esas categorías; centralmayorista.cl no resuelve certificado). Entregué las cantidades exactas; falta solo el CLP/kg. Estas claves aún no existen en supuestos.json.",
+      "estado": "ABIERTA"
+    },
+    {
+      "clave": "capex.equipamiento_base_clp",
+      "duena": "05-maquinaria",
+      "para_que": "La capacidad instalada que publico está calculada sobre el abatidor Calvac de 10 bandejas ya citado en parametros-10-financiero.json#inversion.abatidor_clp. Si etapa 05 elige otro equipo, produccion.capacidad_instalada_pizzas_dia cambia.",
+      "que_hice": "Publiqué la fórmula con la geometría libre: capacidad_dia = floor(610/D) x floor(410/D) x n_bandejas x ciclos_dia, con D = diámetro del disco en mm. No escribo ninguna clave capex.*.",
+      "estado": "ABIERTA"
+    },
+    {
+      "clave": "local.superficie_requerida_m2",
+      "duena": "07-local-habilitacion",
+      "para_que": "Dimensionar arriendo y habilitación.",
+      "que_hice": "Entregué el layout de nueve etapas y la lista de zonas en prosa (04-producto-proceso/index.html §3), más la huella publicada del abatidor (750x830 mm = 0,62 m²). No escribo la clave: sin croquis sobre un local real cualquier m² sería inventado.",
+      "estado": "ABIERTA"
+    },
+    {
+      "clave": "mercado.som_ano1_pizzas_mes",
+      "duena": "01-mercado",
+      "para_que": "Contrastar demanda contra produccion.capacidad_instalada_pizzas_dia x produccion.dias_operacion_mes.",
+      "que_hice": "Publiqué la restricción de capacidad que hoy no existe en el modelo: unidades_mes <= capacidad_instalada_pizzas_dia x dias_operacion_mes.",
+      "estado": "ABIERTA"
+    }
+  ],
+
+  "_avisos_al_coordinador": [
+    "producto.otros_ingredientes_clp_unidad va en null. ATENCIÓN: modelo.js línea 63 lo lee SIN cadena de fallback (const others = get(financial, 'producto.otros_ingredientes_clp_unidad')). Si consolidas null, others queda null y el costo variable se propaga como NaN. Mantén el stub de $550 de etapa 10 hasta que 06 cotice aceite, sal y levadura. Dicho eso, $550 corresponde a 'otros ingredientes Y TOPPING': el SKU ancla que define esta etapa es queso, sin topping cárnico, y sus ingredientes menores pesan 9,7 g en total. El $550 vigente es casi seguro una sobrestimación grande.",
+    "produccion.merma_pct va en puntos porcentuales (5 = 5%). modelo.js línea 64 lo divide por 100. Verificado contra el código.",
+    "produccion.dias_operacion_mes es clave NUEVA: hoy no existe en supuestos.json y ningún consumidor la lee todavía. Es la mitad de la restricción de capacidad que el index.html raíz necesita para responder la pregunta 5 del statement.",
+    "RESTRICCIÓN DE CAPACIDAD QUE FALTA IMPLEMENTAR: unidades_mes <= capacidad_instalada_pizzas_dia x dias_operacion_mes = 60 x 22 = 1.320. El modelo hoy vende 30.000 unidades el año 1 (2.500/mes = 189% de la capacidad) y 72.000 el año 5 (6.000/mes = 455%). El punto de equilibrio publicado, 2.665/mes, supera incluso el techo teórico de 24 h del abatidor cotizado (6 ciclos x 20 = 120/día x 22 = 2.640/mes).",
+    "producto.envase_* es ESPECIFICACIÓN, no precio. No confundir con producto.envase_clp_unidad, que es el stub de etapa 10 y no lo toco.",
+    "CIFRAS AJENAS QUE CREO EQUIVOCADAS, señaladas y no corregidas: (1) inversion.selladora_vacio_clp es una DZ-300, barra de sellado 300 mm, incompatible con un envase de 330 mm para un disco de 300 mm; (2) inversion.abatidor_clp cita 30 kg/ciclo de congelación, pero la ficha del equipo homólogo de 5 bandejas declara 8 kg/ciclo, que escalado da 16 kg — de todos modos irrelevante, porque el límite es geométrico (8,5 kg de carga real); (3) operacion.superficie_m2 = 120 parece generosa para una línea de 60 pizzas/día."
+  ],
+
+  "produccion": {
+    "capacidad_instalada_pizzas_dia": {
+      "valor": 60,
+      "unidad": "unidades/día (SKU familiar 30 cm)",
+      "confianza": "ESTIMADO",
+      "fuente": "https://calvac.cl/venta/abatidor-10-bandejas-2/ + https://www.supermaq.cl/abatidor/abatidor_congelador_5_bandejas.pdf",
+      "consultado": "2026-08-04",
+      "etapa": "04-producto-proceso",
+      "nota": "Cuello de botella GEOMÉTRICO, no térmico. Bandeja de 610x410 mm: floor(610/300) x floor(410/300) = 2 discos de 300 mm por bandeja; 10 bandejas = 20 pizzas/ciclo = 8,5 kg, el 28% de los 30 kg declarados. Con ciclo de 240 min: 2 ciclos en jornada de 8,4 h más 1 ciclo desatendido que el equipo almacena solo al terminar = 3 ciclos/día x 20 = 60. Techo absoluto con operación 24 h: 6 ciclos = 120/día. El horno pizzero de 2 cámaras 40x40 (~24 pizzas/h) y la amasadora de 20 kg (83 bollos de 240 g) NO son limitantes. En SKU individual de 200 mm: 3x2 = 6 por bandeja = 60/ciclo = 180/día.",
+      "formula": "capacidad_dia = floor(610/D_mm) * floor(410/D_mm) * 10 bandejas * ciclos_dia",
+      "depende_de": ["capex.equipamiento_base_clp"]
+    },
+    "dias_operacion_mes": {
+      "valor": 22,
+      "unidad": "días/mes",
+      "confianza": "ESTIMADO",
+      "fuente": "https://www.dt.gob.cl/legislacion/1624/w3-article-129189.html",
+      "consultado": "2026-08-04",
+      "etapa": "04-producto-proceso",
+      "nota": "CLAVE NUEVA. Jornada de 42 horas semanales desde el 26-04-2026 (Ley 21.561, confirmado por ORD. 253/21 de la Dirección del Trabajo). Turno único de 5 días x 8,4 h; 52/12 = 4,333 semanas/mes x 5 = 21,7, redondeado a 22. Es decisión de diseño operacional, no un dato: un segundo turno o sábados la cambian. Capacidad mensual = 60 x 22 = 1.320 pizzas familiares."
+    },
+    "ciclo_abatimiento_min": {
+      "valor": 240,
+      "unidad": "minutos",
+      "confianza": "ESTIMADO",
+      "fuente": "https://www.supermaq.cl/abatidor/abatidor_congelador_5_bandejas.pdf",
+      "consultado": "2026-08-04",
+      "etapa": "04-producto-proceso",
+      "nota": "TECHO CONSERVADOR, NO MEDICIÓN. La ficha del abatidor Calvac de 10 bandejas NO declara tiempo de ciclo; se toma el nominal declarado por la ficha del equipo homólogo de 5 bandejas GN 1/1: 'Congelación: 8 kg por ciclo (+90 °C a -18 °C en 240 minutos)'. Ese nominal supone carga másica completa en gastronorm profunda; nuestro producto es un disco de ~15 mm a 8,5 kg sobre un equipo de 30 kg, así que el ciclo real debería ser bastante menor — pero NADIE LO HA MEDIDO y no hay fuente pública que lo haga. Toda la factibilidad del proyecto cuelga de este número: a 60 min de ciclo la capacidad sube a 160/día y el equilibrio deja de ser problema. Cerrar con piloto y sonda corazón."
+    },
+    "temperatura_centro_termico_c": {
+      "valor": -18,
+      "unidad": "°C en el centro térmico del producto",
+      "confianza": "VERIFICADO",
+      "fuente": "08-legal-normativo/index.html (DS 977 art. 186 y 187, vía https://www.bcn.cl/leychile/navegar?idNorma=71271)",
+      "consultado": "2026-08-04",
+      "etapa": "04-producto-proceso",
+      "nota": "Exigencia normativa, no objetivo de calidad. Validar con sonda en el punto más caliente del lote y registrar cada ciclo."
+    },
+    "tolerancia_conservacion_c": {
+      "valor": -12,
+      "unidad": "°C máximo admisible en excursión breve",
+      "confianza": "VERIFICADO",
+      "fuente": "08-legal-normativo/index.html (DS 977 art. 192)",
+      "consultado": "2026-08-04",
+      "etapa": "04-producto-proceso",
+      "nota": "Conservación a -18 °C; tolerancia breve sin superar -12 °C. Exige termómetro, registro, alarma y criterio documentado de rechazo en recepción del cliente."
+    },
+    "merma_pct": {
+      "valor": 5,
+      "unidad": "%",
+      "confianza": "SUPUESTO",
+      "fuente": "datos/parametros-10-financiero.json#producto.merma_pct",
+      "consultado": "2026-08-04",
+      "etapa": "04-producto-proceso",
+      "nota": "PUNTOS PORCENTUALES: 5 = 5%. modelo.js lo divide por 100. NO EXISTE fuente pública chilena de merma de proceso para esta línea; se mantiene el marcador heredado de etapa 10 en vez de inventar precisión. Componentes esperados: recorte de masa al formar, residuo de dosificado de salsa y queso, y producto no conforme de arranque (el dominante). Solo lo cierra un piloto de 3 lotes con pesaje de entrada y salida."
+    },
+    "vida_util_meses": {
+      "valor": 12,
+      "unidad": "meses a -18 °C",
+      "confianza": "ESTIMADO",
+      "fuente": "https://pedidos.tudisgastronomia.es/ecommerce/pdf/23010.pdf",
+      "consultado": "2026-08-04",
+      "etapa": "04-producto-proceso",
+      "nota": "Ficha técnica de minipizza congelada de otro fabricante: 'Vida útil: 12 meses a partir de la fecha de fabricación en condiciones normales de conservación (-18 ºC)'. Es un valor de PLANIFICACIÓN de stock. Para ROTULARLO en Chile el DS 977 exige respaldo propio: estudio de vida útil y desafío microbiológico sobre nuestra formulación y nuestro envase. No usar como fecha de vencimiento hasta tener ese informe."
+    }
+  },
+
+  "producto": {
+    "harina_kg_unidad": {
+      "valor": 0.151,
+      "unidad": "kg/pizza familiar 30 cm",
+      "confianza": "ESTIMADO",
+      "fuente": "https://eur-lex.europa.eu/legal-content/ES/TXT/HTML/?uri=CELEX:32010R0097",
+      "consultado": "2026-08-04",
+      "etapa": "04-producto-proceso",
+      "nota": "Reglamento (UE) 97/2010, pliego Pizza Napoletana ETG: harina 1.800 g : agua 1 L : sal 50-55 g : levadura 3 g, total 2.855 g, de donde la harina es el 63,0% de la masa. Bollo de 240 g (techo del rango ETG 180-250 g) x 0,630 = 151 g. Se toma el techo porque un disco precocido congelado debe resistir manipulación, apilado en caja de 12 y transporte: densidad 0,34 g/cm² sobre 300 mm, más gruesa que una napoletana. Sustituye el supuesto de 0,2 kg de etapa 10, que era 32% mayor."
+    },
+    "salsa_kg_unidad": {
+      "valor": 0.08,
+      "unidad": "kg/pizza familiar 30 cm",
+      "confianza": "ESTIMADO",
+      "fuente": "https://eur-lex.europa.eu/legal-content/ES/TXT/HTML/?uri=CELEX:32010R0097",
+      "consultado": "2026-08-04",
+      "etapa": "04-producto-proceso",
+      "nota": "Pliego ETG para la Margherita: 'entre 60 y 80 g de tomates pelados triturados'. Se toma el techo. CUADRA CON EL PRECIO DE 06: la salsa es tomate pelado triturado en crudo con sal y aceite, sin reducción, así que 1 kg de insumo ≈ 1 kg de salsa y el gramaje se valoriza directamente con datos/parametros-06-insumos.json#insumos.salsa_tomate_clp_kg. Si se decide cocer y reducir la salsa, este número sube por pérdida de agua."
+    },
+    "mozzarella_kg_unidad": {
+      "valor": 0.1,
+      "unidad": "kg/pizza familiar 30 cm",
+      "confianza": "ESTIMADO",
+      "fuente": "https://eur-lex.europa.eu/legal-content/ES/TXT/HTML/?uri=CELEX:32010R0097",
+      "consultado": "2026-08-04",
+      "etapa": "04-producto-proceso",
+      "nota": "LÍNEA MÁS SENSIBLE DEL MODELO. Dos anclas independientes convergen: (a) pliego ETG Margherita, 'entre 80 y 100 g' de mozzarella; (b) ficha técnica comercial de minipizza congelada que declara mozzarella 20,5% en masa, que sobre 426 g da 89 g. Se toma 100 g, techo del rango ETG, porque sobre 300 mm da mayor densidad superficial que 100 g sobre los 350 mm que el ETG permite, y porque la carga de queso visible es el atributo que el canal compra. Sustituye el supuesto de 0,12 kg de etapa 10: a $8.403,36/kg el costo de queso baja de $1.008 a $840 por unidad. NINGUNA de las dos anclas es chilena ni foodservice, y el rendimiento al fundir no está probado: cerrar con panel de degustación en etapa 03 y con el piloto.",
+      "depende_de": ["insumos.mozzarella_clp_kg"]
+    },
+    "otros_ingredientes_clp_unidad": {
+      "valor": null,
+      "unidad": "CLP neto/pizza familiar 30 cm",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": "2026-08-04",
+      "etapa": "04-producto-proceso",
+      "nota": "CANTIDADES CERRADAS, PRECIO ABIERTO. Por unidad: aceite de oliva 5 g, sal 4,4 g, levadura 0,25 g (pliego ETG, escalado al bollo de 240 g) y condimentos secos <1 g. Total 9,7 g. No se encontró precio público chileno neto para aceite, sal ni levadura, así que no escribo un número. El SKU ancla es de QUESO: no lleva topping cárnico, luego esta bolsa NO debe contener topping. Si el titular quiere pepperoni o jamón, es un SKU distinto con su propio costo. NO CONSOLIDAR ESTE NULL SOBRE EL MODELO: modelo.js lee esta clave sin fallback y produciría NaN; mantener el stub de $550 de etapa 10 hasta que 06 cotice, sabiendo que $550 para 9,7 g de aceite, sal y levadura es casi con certeza una sobrestimación grande.",
+      "depende_de": ["insumos.aceite_clp_kg", "insumos.sal_clp_kg", "insumos.levadura_clp_kg"]
+    },
+    "envase_diametro_mm": {
+      "valor": 330,
+      "unidad": "mm de diámetro interior del envase primario",
+      "confianza": "ESTIMADO",
+      "fuente": "06-insumos/index.html §3 (formato de caja 33x33 cm referenciado) + https://metafood.cl/PIZZ12400_Pizza_Mechada_30cm_-_Congelada_12",
+      "consultado": "2026-08-04",
+      "etapa": "04-producto-proceso",
+      "nota": "Disco de 300 mm más 15 mm de holgura por lado. Coincide con el formato de mercado 33x33 cm. ADVERTENCIA A ETAPA 05: la selladora al vacío cotizada en parametros-10-financiero.json#inversion.selladora_vacio_clp es una DZ-300, con barra de sellado de 300 mm; NO puede sellar un envase de 330 mm. Lo señalo, no lo corrijo."
+    },
+    "envase_bandeja": {
+      "valor": 1,
+      "unidad": "1 = sí lleva bandeja/disco de cartón rígido; 0 = producto desnudo",
+      "confianza": "ESTIMADO",
+      "fuente": "https://metafood.cl/PIZZ12400_Pizza_Mechada_30cm_-_Congelada_12",
+      "consultado": "2026-08-04",
+      "etapa": "04-producto-proceso",
+      "nota": "SÍ lleva. Dos razones encadenadas: el sellado al vacío sobre un disco de 300 mm sin soporte rígido deforma la cobertura, y la caja máster de 12 unidades carga las de abajo. El producto se congela DESNUDO sobre la bandeja del abatidor y se monta sobre el disco de cartón recién después, en envasado: envasar en caliente antes de congelar atrapa humedad y alarga el ciclo."
+    },
+    "envase_tipo_barrera": {
+      "valor": "vacio",
+      "unidad": "texto: 'vacio' | 'flow-pack' | 'film retractil'",
+      "confianza": "ESTIMADO",
+      "fuente": "https://metafood.cl/PIZZ12400_Pizza_Mechada_30cm_-_Congelada_12",
+      "consultado": "2026-08-04",
+      "etapa": "04-producto-proceso",
+      "nota": "Especificación: VACÍO, con film de barrera apto para contacto con alimentos y uso a -18 °C, sellado térmico. Base: el único proveedor foodservice chileno con pizza de 30 cm congelada y precio publicado la describe expresamente 'envasada al vacío', lo que demuestra que la técnica es viable sobre este formato en este mercado. El vacío protege de quemadura por frío durante 12 meses de vida útil. Etiqueta resistente a condensación, con 'PRODUCTO CONGELADO' según DS 977 art. 186 y SIN la sigla 'IQF' (etapa 08).",
+      "_consumo": "Parámetro de texto, no numérico; modelo.js no lo lee. Precedente de esquema: 10-financiero/generar_modelo_excel.py línea 276, {'valor': 'Base', 'unidad': 'texto', ...}."
+    },
+    "envase_unidades_caja_master": {
+      "valor": 12,
+      "unidad": "unidades por caja máster",
+      "confianza": "ESTIMADO",
+      "fuente": "https://metafood.cl/PIZZ12400_Pizza_Mechada_30cm_-_Congelada_12",
+      "consultado": "2026-08-04",
+      "etapa": "04-producto-proceso",
+      "nota": "Convención de mercado verificada: pizza familiar de 30 cm congelada publicada por caja de 12 a $60.408 + IVA ($5.034 unitario). Alinear nuestra caja con la del comparable evita discutir formatos con el comprador. 12 unidades es además la carga de 3 días de un pub chico. Peso bruto estimado de la caja: 12 x 0,426 kg = 5,1 kg más envase."
+    }
+  },
+
+  "_formulacion_sku_individual_referencia": {
+    "nota": "NO son claves consumibles: el modelo es mono-SKU familiar y ningún consumidor lee gramajes de individual. Se publican para que 06 pueda cotizar costo_mp_unidad_individual_clp. SKU individual/pizzeta 200 mm, extrapolado por superficie (314/707 = 0,444) desde el familiar; queda BAJO el mínimo del rango ETG de bollo (180 g), así que es extrapolación y no aplicación del pliego.",
+    "bollo_g": 110,
+    "harina_kg_unidad": 0.069,
+    "salsa_kg_unidad": 0.036,
+    "mozzarella_kg_unidad": 0.045,
+    "peso_crudo_g": 193,
+    "limite": "193 g queda bajo los 230-250 g observados en individuales de retail (02-competencia). Si el canal espera ese peso, todos los gramajes suben ~20%.",
+    "capacidad_pizzas_dia": 180,
+    "capacidad_nota": "floor(610/200) x floor(410/200) = 3 x 2 = 6 por bandeja; 60 por ciclo; 3 ciclos = 180/día. Carga másica 11,6 kg, aún bajo los 30 kg declarados."
+  },
+
+  "_formulacion_sku_base_precocida_referencia": {
+    "nota": "SKU base precocida 300 mm sin queso, formato que el statement §2 pide evaluar. Misma masa y salsa del familiar, sin mozzarella.",
+    "harina_kg_unidad": 0.151,
+    "salsa_kg_unidad": 0.08,
+    "mozzarella_kg_unidad": 0,
+    "peso_crudo_g": 325,
+    "limite": "Sin mozzarella desaparece el 73% del costo de materia prima, pero también el atributo que sostiene el precio. Margen no evaluado: requiere precio propio de etapa 02 y disposición a pagar de etapa 03."
+  }
+}

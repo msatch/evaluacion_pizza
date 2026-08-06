@@ -1,0 +1,176 @@
+{
+  "_dependencias": [
+    {
+      "clave": "produccion.capacidad_instalada_pizzas_dia",
+      "duena": "04-producto-proceso",
+      "para_que": "Convertir el envolvente de equipos en capacidad. La etapa 05 entrega la especificación de placa (kg/ciclo y minutos/ciclo del abatidor); la conversión a unidades/día exige el gramaje y el formato, que son de la etapa 04.",
+      "que_hice": "Publiqué equipos.abatidor_kg_ciclo_congelacion (25 kg) y equipos.abatidor_ciclo_congelacion_min (270 min) como dato de placa verificado, para que 04 derive la capacidad. No escribí produccion.*.",
+      "estado": "ABIERTA"
+    },
+    {
+      "clave": "produccion.ciclo_abatimiento_min",
+      "duena": "04-producto-proceso",
+      "para_que": "El ciclo real sobre pizza con topping no es el ciclo de catálogo del fabricante, medido sobre carga genérica. La etapa 04 debe validarlo con sonda al centro térmico.",
+      "que_hice": "Entrego el dato de placa como cota inferior del ciclo real y la potencia asociada. No escribo la clave.",
+      "estado": "ABIERTA"
+    },
+    {
+      "clave": "insumos.envase_clp_unidad",
+      "duena": "06-insumos",
+      "para_que": "La elección de equipo de envasado depende del formato de envase (bolsa termosellada, film retráctil o bandeja + film). No se puede especificar la máquina antes que el envase.",
+      "que_hice": "Dejé la línea de envasado sin equipo y sin precio, con el proveedor a quien cotizar nombrado en el entregable.",
+      "estado": "ABIERTA"
+    },
+    {
+      "clave": "local.habilitacion_sanitaria_clp",
+      "duena": "07-local-habilitacion",
+      "para_que": "El ducto de campana, el empalme trifásico y el desagüe del abatidor son frontera entre equipo (E5) y obra (E7). No deben contarse dos veces.",
+      "que_hice": "Excluí ductos, empalme y obra civil del envolvente de equipos y lo declaré explícitamente en el entregable.",
+      "estado": "ABIERTA"
+    }
+  ],
+
+  "capex": {
+    "equipamiento_austero_clp": {
+      "valor": 5982306,
+      "unidad": "CLP neto",
+      "confianza": "ESTIMADO",
+      "fuente": "https://calvac.cl/venta-de/abatidores/ ; https://www.supermaq.cl/amasadoras/amasadora_20_kilos/ ; https://www.supermaq.cl/hornos_pizza/horno_electrico_pizzero_2_camara_40x40/ ; https://lacasita.cl/producto/congelador-industrial-2-puertas-500-litros-maigas/ ; https://lacasita.cl/producto/campana-mural-acero-inoxidable-200x100-maigas/ ; https://lacasita.cl/categoria-producto/acero-inoxidable/mesones-de-trabajo/ ; https://gastromaq.cl/producto/carro-bandejero-15-niveles-acero-inoxidable-bandejas-60x40-cm-mod-1-gastromaq/ ; https://fullmaquinas.cl/acero-inoxidable/lavaplatos-industriales",
+      "consultado": "2026-08-04",
+      "etapa": "05-maquinaria",
+      "nota": "Suma de precios de publicación netos, NO de cotizaciones. Canasta: abatidor 5 bandejas 90 L $2.296.980 + amasadora espiral 20 kg $747.815 + horno pizzero 2 cámaras 40x40 $400.000 + un congelador 500 L AISI 304 $1.298.350 + campana mural 200x100 con extractor $546.250 + mesón central 240x60 $167.250 + un carro bandejero 15 niveles $201.681 + lavafondo doble 120x70x80 $219.990 + lavamanos mural $103.990. SACRIFICA: formado de masa manual (sin laminadora), sin mesón refrigerado, sin redundancia de frío, un solo carro. EXCLUYE, por no tener precio público: envasado, bandejas GN 60x40, balanza, termómetro sonda y registrador continuo de temperatura del art. 189 DS 977. Es un piso verificable, no un total. El mercado de equipo usado no arrojó publicación citable al 04-08-2026 (chileremates.cl devolvió 0 productos en la categoría de acero inoxidable usado); por eso este escenario es 'mínimo viable nuevo', no 'usado'."
+    },
+    "equipamiento_base_clp": {
+      "valor": 10120237,
+      "unidad": "CLP neto",
+      "confianza": "ESTIMADO",
+      "fuente": "https://calvac.cl/venta/abatidor-de-temperatura-10-bandejas-290-litros/ ; https://www.supermaq.cl/amasadoras/amasadora_20_kilos/ ; https://www.supermaq.cl/sobadoras/laminadora_de_masa_40_cm_ventus./ ; https://www.industriaminera.cl/producto/biggi-chile-sa-mesones-refrigerados/ ; https://lacasita.cl/producto/congelador-industrial-2-puertas-500-litros-maigas/ ; https://lacasita.cl/producto/campana-mural-acero-inoxidable-200x100-maigas/ ; https://gastromaq.cl/producto/carro-bandejero-15-niveles-acero-inoxidable-bandejas-60x40-cm-mod-1-gastromaq/",
+      "consultado": "2026-08-04",
+      "etapa": "05-maquinaria",
+      "nota": "Suma de precios de publicación netos, NO de cotizaciones. Canasta: abatidor 10 bandejas 290 L EN STOCK $3.898.990 + amasadora 20 kg $747.815 + horno pizzero 2 cámaras 40x40 $400.000 + laminadora 40 cm $231.000 + mesón refrigerado 120 cm $620.000 + dos congeladores 500 L $2.596.700 + campana 200x100 $546.250 + mesones 240x60 y 140x60 $352.140 + dos carros bandejeros $403.362 + lavafondo doble $219.990 + lavamanos $103.990. EXCLUYE lo mismo que el escenario austero (envasado, bandejas, balanza, sonda, registrador) más ductos de campana, empalme y obra civil, que son de E7. Reemplaza a las ocho líneas hardcodeadas de datos/parametros-10-financiero.json#inversion, que suman $8.817.795 y contienen un abatidor sin stock, un horno de cámara 40x40 cm y una selladora de vacío incompatible con el producto."
+    },
+    "equipamiento_holgado_clp": {
+      "valor": 16753919,
+      "unidad": "CLP neto",
+      "confianza": "ESTIMADO",
+      "fuente": "https://calvac.cl/venta/abatidor-de-temperatura-10-bandejas-290-litros/ ; https://www.supermaq.cl/hornos_pizza/horno_electrico_pizzero_camara_690x500_mm/ ; https://lacasita.cl/producto/congelador-industrial-2-puertas-500-litros-maigas/ ; https://www.industriaminera.cl/producto/biggi-chile-sa-mesones-refrigerados/ ; https://fullmaquinas.cl/acero-inoxidable/lavaplatos-industriales",
+      "consultado": "2026-08-04",
+      "etapa": "05-maquinaria",
+      "nota": "Suma de precios de publicación netos, NO de cotizaciones. Canasta: dos abatidores 290 L $7.797.980 (duplica capacidad y elimina el punto único de falla de frío señalado en el statement) + amasadora $747.815 + horno de cámara 690x500 mm $1.000.000 (SIN STOCK al 04-08-2026) + laminadora $231.000 + mesón refrigerado 150 cm $650.000 + tres congeladores 500 L $3.895.050 + campana $546.250 + mesones $352.140 + cuatro carros $806.724 + lavafondos $518.980 + dos lavamanos $207.980. Sigue excluyendo envasado, bandejas, balanza, sonda y registrador."
+    }
+  },
+
+  "inversion": {
+    "flete_instalacion_pct": {
+      "valor": null,
+      "unidad": "% sobre equipos",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": "2026-08-04",
+      "etapa": "05-maquinaria",
+      "nota": "No hay tarifa publicada auditable para Santiago-Temuco de una carga de ~700 kg con equipos de refrigeración. La única referencia encontrada es una guía comercial de un transportista (transportesmarlop.cl, $900-$1.500/km), que sobre 670 km da $603.000-$1.005.000 por camión completo, es decir 6,0%-9,9% del envolvente base: NO valida el 15% que hoy usa la etapa 10. Además el 15% mezcla tres cosas distintas que deben separarse: flete, conexión eléctrica/SEC y ductos de campana (estos últimos son de E7). Fórmula a usar cuando exista dato: flete_instalacion_pct = (flete_cotizado_clp + conexion_electrica_clp) / capex.equipamiento_base_clp * 100. Gestión que lo cierra: cotizador de Pullman Cargo y despacho a regiones de Calvac (+56 2 2695 6000 es Supermaq; Calvac despacha desde Santiago) sobre la lista exacta de equipos y pesos de placa (abatidor 184 kg, amasadora 130 kg, congelador 75 kg c/u, horno 33 kg)."
+    },
+    "vida_depreciable_anios": {
+      "valor": 10,
+      "unidad": "años lineales",
+      "confianza": "ESTIMADO",
+      "fuente": "https://www.sii.cl/valores_y_fechas/tabla_vida_util_activo_inmovilizado.html",
+      "consultado": "2026-08-04",
+      "etapa": "05-maquinaria",
+      "nota": "Promedio ponderado por monto de las vidas útiles NORMALES que publica el SII (Resolución Exenta 43 de 2002), aplicadas al envolvente base: equipos de aire y cámaras de refrigeración 10 años (abatidor $3.898.990); refrigeradores y conservadoras 9 años (congeladores $2.596.700, mesón refrigerado $620.000); cocinas 9 años (horno $400.000); maquinaria y equipos en general 15 años (amasadora $747.815, laminadora $231.000); instalaciones en general 10 años (campana $546.250, lavado $323.980); muebles y enseres 7 años (mesones $352.140, carros $403.362). Resultado 9,90 años, redondeado a 10. ADVERTENCIA PARA E10: esta es vida útil ECONÓMICA, no el calendario tributario. La etapa 10 ya supone régimen Pro Pyme 14 D N°3 al aplicar 12,5% el año 1; bajo ese régimen la depreciación del activo inmovilizado es INSTANTÁNEA E ÍNTEGRA en el ejercicio de adquisición (Circular SII 62/2020, https://www.sii.cl/normativa_legislacion/circulares/2020/circu62.pdf). El valor 5 que hoy usa E10 no es ninguna de las dos cosas: es la vida ACELERADA de maquinaria general, que no aplica al mix ni al régimen supuesto."
+    },
+    "valor_residual_pct": {
+      "valor": null,
+      "unidad": "% del CAPEX de equipos",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": "2026-08-04",
+      "etapa": "05-maquinaria",
+      "nota": "No se fija por regla contable sino por precio observado de reventa, y ese mercado no arrojó publicación citable: chileremates.cl declara la categoría 'Mesones y muebles de acero inox / Usado' con 0 productos al 04-08-2026, y Yapo y MercadoLibre no permiten citar un aviso estable (avisos efímeros, unidad única, sin ficha técnica). El valor contable lineal al año 5 con vida 10 años sería 50%, pero eso NO es valor de realización y no debe usarse como tal. El 10% que hoy usa E10 tampoco tiene fuente. Fórmula: valor_residual_pct = precio_reventa_observado_clp / capex.equipamiento_base_clp * 100. Gestión que lo cierra: pedir tasación de recompra a Calvac (contacto@calvac.cl) y a Chileremates (contacto@chileremates.cl, +56 9 6226 2317) sobre la lista de equipos con 5 años de uso."
+    }
+  },
+
+  "producto": {
+    "energia_variable_clp_unidad": {
+      "valor": null,
+      "unidad": "CLP/pizza",
+      "confianza": "PENDIENTE",
+      "fuente": "https://calvac.cl/venta/abatidor-de-temperatura-10-bandejas-290-litros/ ; https://www.supermaq.cl/hornos_pizza/horno_electrico_pizzero_2_camara_40x40/",
+      "consultado": "2026-08-04",
+      "etapa": "05-maquinaria",
+      "nota": "Faltan las dos mitades del cálculo y ninguna es inventable. (1) El consumo por unidad exige el gramaje y el ciclo real de 04: kWh_pizza = equipos.abatimiento_kwh_por_kg x gramaje_kg + (potencia_horno_kw x tiempo_horno_h / pizzas_por_hornada) + consumo de almacenamiento congelado prorrateado por rotación. (2) La tarifa: no se obtuvo la hoja de tarifas vigente de Frontel (distribuidora de La Araucanía) para una opción tarifaria comercial BT2/BT3/AT4; la página de tarifas vigentes de Grupo Saesa solo entrega enlaces a PDF que no se pudieron abrir. El stub 120 que hoy usa E10 cita como fuente la ficha de un abatidor, que no contiene ninguna tarifa eléctrica: es una cifra sin respaldo. Gestión que lo cierra: solicitar a Frontel (Grupo Saesa) la hoja tarifaria vigente para el empalme del local candidato y contrastarla con las opciones tarifarias publicadas por la CNE."
+    }
+  },
+
+  "local": {
+    "potencia_electrica_kw": {
+      "valor": 10.15,
+      "unidad": "kW de carga conectada",
+      "confianza": "ESTIMADO",
+      "fuente": "https://calvac.cl/venta/abatidor-de-temperatura-10-bandejas-290-litros/ ; https://www.supermaq.cl/amasadoras/amasadora_20_kilos/ ; https://www.supermaq.cl/hornos_pizza/horno_electrico_pizzero_2_camara_40x40/ ; https://lacasita.cl/producto/congelador-industrial-2-puertas-500-litros-maigas/ ; https://www.supermaq.cl/selladoras_al_vacio/selladora_al_vacio_300_mm_dz300/ ; https://www.supermaq.cl/sobadoras/laminadora_de_masa_40_cm_ventus./",
+      "consultado": "2026-08-04",
+      "etapa": "05-maquinaria",
+      "nota": "Suma de potencias de PLACA verificadas del envolvente base: horno 3,00 + amasadora 2,75 (3 HP) + abatidor 2,40 nominal + dos congeladores 0,65 c/u = 1,30 + selladora 0,45 + laminadora 0,25 (1/3 HP) = 10,15 kW. ES UN PISO, NO EL REQUERIMIENTO: no incluye el desescarche del abatidor (1,00 kW adicional, no simultáneo con el nominal), ni el extractor de la campana (modelo HCB/4-450, potencia no publicada), ni el mesón refrigerado (potencia no publicada en la ficha), ni iluminación (el art. 34 del DS 977 exige 220 lux en salas de trabajo y 540 lux en puntos de inspección), ni agua caliente sanitaria, ni climatización. A 220 V monofásicos, 10,15 kW son ~46 A, por sobre un empalme monofásico comercial corriente: el local candidato debe tener empalme TRIFÁSICO o presupuestar uno nuevo. El dimensionamiento definitivo con factor de simultaneidad lo debe firmar un instalador eléctrico autorizado SEC. Escrito aquí y no en datos/parametros-07-local-habilitacion.json, que conserva el stub null por acuerdo de etapas."
+    }
+  },
+
+  "equipos": {
+    "abatidor_kg_ciclo_congelacion": {
+      "valor": 25,
+      "unidad": "kg por ciclo de +70 °C a -18 °C",
+      "confianza": "VERIFICADO",
+      "fuente": "https://calvac.cl/venta/abatidor-de-temperatura-10-bandejas-290-litros/",
+      "consultado": "2026-08-04",
+      "etapa": "05-maquinaria",
+      "nota": "Dato de placa del abatidor 10 bandejas 290 L de Calvac, el modelo EN STOCK. El mismo equipo declara 40 kg/ciclo en abatimiento positivo (+70 a +3 °C en ~90 min), que NO es congelación y no cumple el art. 186 del DS 977. Insumo para produccion.capacidad_instalada_pizzas_dia (E4); no escribo esa clave."
+    },
+    "abatidor_ciclo_congelacion_min": {
+      "valor": 270,
+      "unidad": "minutos",
+      "confianza": "VERIFICADO",
+      "fuente": "https://calvac.cl/venta/abatidor-de-temperatura-10-bandejas-290-litros/",
+      "consultado": "2026-08-04",
+      "etapa": "05-maquinaria",
+      "nota": "Ciclo de catálogo del fabricante para 25 kg de +70 °C a -18 °C: 4,5 horas. Es una cota inferior del ciclo real sobre pizza con topping, que la etapa 04 debe medir con sonda al centro térmico y escribir en produccion.ciclo_abatimiento_min. Con este dato, el abatidor y no el horno es el cuello de botella de la planta."
+    },
+    "abatimiento_kwh_por_kg": {
+      "valor": 0.432,
+      "unidad": "kWh por kg de producto congelado",
+      "confianza": "ESTIMADO",
+      "fuente": "https://calvac.cl/venta/abatidor-de-temperatura-10-bandejas-290-litros/",
+      "consultado": "2026-08-04",
+      "etapa": "05-maquinaria",
+      "nota": "Derivado de datos de placa: 2,40 kW x 4,5 h / 25 kg = 0,432 kWh/kg. Es independiente del gramaje, por lo que sirve a E4 y E10 sin esperar la formulación. Supone el equipo operando a potencia nominal durante todo el ciclo, lo que sobreestima (el compresor cicla) y no incluye desescarche ni carga parcial. Solo cubre la etapa de abatimiento: no incluye horno ni almacenamiento a -18 °C."
+    },
+    "amasadora_kg_harina_batch": {
+      "valor": 12,
+      "unidad": "kg de harina por batch",
+      "confianza": "VERIFICADO",
+      "fuente": "https://www.supermaq.cl/amasadoras/amasadora_20_kilos/",
+      "consultado": "2026-08-04",
+      "etapa": "05-maquinaria",
+      "nota": "La ficha del equipo comercializado como 'amasadora 20 kilos' declara capacidad máxima de HARINA de 12 kg y bol de 50 litros. Los 20 kg son de masa, no de harina. E4 y E10 deben usar 12 kg de harina por batch, no 20. Con harina_kg_unidad de E10 en 0,2 kg/pizza, un batch rinde ~60 pizzas antes de merma."
+    },
+    "horno_camara_util_mm": {
+      "valor": 400,
+      "unidad": "mm de lado útil de cámara",
+      "confianza": "VERIFICADO",
+      "fuente": "https://www.supermaq.cl/hornos_pizza/horno_electrico_pizzero_2_camara_40x40/",
+      "consultado": "2026-08-04",
+      "etapa": "05-maquinaria",
+      "nota": "Cámara interior 400 x 400 x 140 mm, dos cámaras, 3 kW. Admite UNA pizza familiar de 30 cm por cámara. El horno que la etapa 10 valorizó en $400.000 no es un horno de microfábrica: es un horno de dos pizzas por hornada. La alternativa de cámara 690 x 500 mm (dos pizzas de 12 pulgadas por cámara) cuesta $1.000.000 neto y figura sin stock."
+    }
+  },
+
+  "_auditoria_inversion_e10": {
+    "alcance": "Las ocho líneas de equipo hardcodeadas en datos/parametros-10-financiero.json#inversion, que suman $8.817.795.",
+    "abatidor_clp": "NO RESISTE. El precio $2.779.980 es real y publicado, pero corresponde al abatidor 10 bandejas 178 L de Calvac, que figura SIN STOCK al 04-08-2026. El equivalente disponible (10 bandejas 290 L) cuesta $3.898.990 neto: brecha de $1.119.010 (+40,3%) en la línea individual más grande del CAPEX.",
+    "amasadora_clp": "RESISTE. $747.815 es el precio internet vigente de Supermaq. Salvedad de especificación, no de precio: la máquina admite 12 kg de harina, no 20.",
+    "horno_clp": "PRECIO SÍ, EQUIPO NO. $400.000 es el precio internet vigente, pero la cámara útil es de 400x400 mm: una pizza familiar por cámara, dos por hornada. Dimensionar la planta sobre este equipo subestima el cuello de botella de cocción.",
+    "selladora_vacio_clp": "NO RESISTE, POR PRECIO Y POR EQUIPO. El precio internet vigente del DZ300 es $465.900 neto, 18,3% menos que los $570.000 supuestos. Y la cámara de vacío mide 370x130x320 mm: no admite una pizza de 30 cm, y el vacío deformaría un producto con topping. La línea compra la máquina equivocada.",
+    "meson_refrigerado_clp": "RESISTE CON SALVEDAD. $620.000 + IVA corresponde al modelo MRS-120F de Biggi Chile, pero la fuente es un directorio de proveedores (industriaminera.cl), no el sitio del fabricante, y no declara fecha de vigencia ni potencia eléctrica.",
+    "congeladores_clp": "NO RESISTE. Un solo congelador industrial de 500 L en acero AISI 304 cuesta $1.298.350 neto: la línea de $700.000 no alcanza para una unidad, y el envolvente base necesita dos. Falta además el registrador continuo de temperatura que exige el art. 189 del DS 977, que ningún equipo de esta gama trae de fábrica.",
+    "acero_lavado_extraccion_clp": "RESISTE COMO ORDEN DE MAGNITUD, NO COMO CIFRA. Canasta verificada equivalente: campana mural 200x100 con extractor $546.250 + dos mesones de trabajo $352.140 + lavafondo doble $219.990 + lavamanos mural $103.990 = $1.222.370. Los $577.630 de diferencia tendrían que cubrir ductos (la ficha de la campana dice expresamente 'no incluye ductos'), instalación y terminaciones, que no tienen precio público. Cifra plausible, trazabilidad cero.",
+    "racks_bandejas_instrumentos_clp": "SUPUESTO PURO. El carro bandejero de 15 niveles cuesta $201.681 neto y NO incluye bandejas. Bandejas GN 60x40, balanza, termómetro sonda y registrador de temperatura no arrojaron precio público citable. La línea de $1.200.000 no está desagregada ni verificada en ninguno de sus componentes."
+  }
+}

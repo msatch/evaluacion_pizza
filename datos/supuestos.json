@@ -16,7 +16,6 @@
       "nota": "método de estimación, supuestos, salvedades"
     }
   },
-
   "meta": {
     "proyecto": "Microfábrica de pizzas congeladas B2B — Temuco, La Araucanía",
     "moneda_base": "CLP",
@@ -25,7 +24,6 @@
     "restriccion_capital_clp": 50000000,
     "canal_objetivo": "HORECA"
   },
-
   "macro": {
     "uf_clp": {
       "valor": 40844.79,
@@ -64,22 +62,23 @@
       "nota": "Todos los precios del estudio se expresan NETOS salvo indicación expresa."
     },
     "factor_costo_empresa": {
-      "valor": null,
-      "unidad": "multiplicador sobre sueldo bruto",
-      "confianza": "PENDIENTE",
-      "fuente": null,
-      "consultado": null,
+      "valor": 1.0853,
+      "unidad": "multiplicador sobre sueldo bruto imponible de trabajador dependiente",
+      "confianza": "VERIFICADO",
+      "fuente": "https://www.spensiones.cl/portal/institucional/594/w3-propertyvalue-10906.html ; https://www.chileatiende.gob.cl/fichas/130987-aportes-del-empleador-al-sistema-de-pensiones ; https://www.isl.gob.cl/cotizaciones/ ; https://www.isl.gob.cl/wp-content/uploads/2024/08/Clasificador-Actividades-Economicas-2021.pdf ; https://www.previred.com/indicadores-previsionales/",
+      "consultado": "2026-08-04",
       "etapa": "09-rrhh",
-      "nota": "Leyes sociales + mutual + seguro cesantía. Referencia habitual 1,20–1,25; verificar tasa de mutualidad para CIIU de elaboración de alimentos."
+      "nota": "MULTIPLICADOR DESNUDO, se usa tal cual (1,0853 = 8,53% sobre el bruto). Suma: 3,50% cotización de cargo del empleador Ley 21.735 vigente 08-2026 a 07-2027 (incluye el SIS, que desde agosto 2026 se financia dentro del Seguro Social Previsional y ya no se cotiza aparte) + 2,40% seguro de cesantía AFC contrato indefinido + 0,93% tasa base Ley 16.744 (0,90% básica + 0,03% SANNA) + 1,70% cotización adicional DS 110 para CIIU 107500 'elaboración de comidas y platos preparados envasados, rotulados y con información nutricional'. CONDICIONES: contrato indefinido (a plazo fijo el AFC sube a 3,00% y el factor a 1,0913); empresa nueva sin evaluación de siniestralidad (DS 67 puede subir o bajar la adicional desde el tercer año); rentas muy por debajo del tope imponible de 90 UF, por lo que todas las tasas aplican íntegras. NO APLICA al retiro de la titular por sueldo empresarial (ver rrhh.retiro_titular_mensual_clp). NO incluye provisiones de feriado ni de indemnización: para eso ver rrhh.factor_costo_empresa_con_provisiones. ADVERTENCIA: el stub 1,22 de la etapa 10 sobrestima el desembolso mensual exigible en ~14 puntos porcentuales.",
+      "vigencia": "Sube a 4,25% (factor 1,0928) desde 08-2027, 5,00% desde 08-2028, 5,70% desde 08-2029, 6,40% desde 08-2030 y 7,10% desde 08-2031 por gradualidad de la Ley 21.735. El factor NO es constante en un horizonte de 5 años."
     },
     "tasa_descuento_pct": {
-      "valor": null,
-      "unidad": "% anual",
-      "confianza": "PENDIENTE",
-      "fuente": null,
-      "consultado": null,
-      "etapa": "10-financiero",
-      "nota": "Costo de oportunidad del capital propio. Justificar; no usar un número por costumbre."
+      "valor": 20.46,
+      "unidad": "% anual nominal",
+      "confianza": "ESTIMADO",
+      "fuente": "https://www.cmfchile.cl/portal/estadisticas/626/w4-article-111825.html",
+      "consultado": "2026-08-04",
+      "etapa": "12-riesgos-financiamiento",
+      "nota": "PISO OBSERVADO, no el costo de oportunidad del titular. CMF, Certificado 07/2026 (promedios de junio 2026, vigente desde el 14-07-2026): interés corriente de 20,46% anual para operaciones no reajustables en moneda nacional de 90 días o más entre 200 y 5.000 UF. La inversión inicial de $43.516.722 equivale a 1.065 UF, dentro de ese tramo. El capital propio es subordinado a esa deuda, luego la TMAR correcta es MAYOR. Reemplaza el stub de 15% de la etapa 10, que quedaba por DEBAJO del costo observado de deuda del mismo tamaño. Spread sobre la TPM (4,5%, Banco Central, https://www.bcentral.cl/areas/politica-monetaria): 15,96 puntos. NO se descompone riesgo por riesgo: no existe fuente pública que lo permita para una microempresa de alimentos en Temuco y repartir los puntos con decimales sería inventar. Límite: el interés corriente es un promedio de operaciones heterogéneas, expresado en forma lineal anual base 360 días, no una cotización para esta empresa. La decisión no es sensible a la tasa: el VAN se anula recién en 35,69% (la TIR); VAN@15% $44.017.948, VAN@20,46% $28.308.713. Gestión que lo cerraría: que el titular declare por escrito el retorno de su alternativa real de inversión."
     },
     "ipc_proyectado_pct": {
       "valor": null,
@@ -91,171 +90,1496 @@
       "nota": "Meta Banco Central o encuesta de expectativas, para proyección a 5 años."
     }
   },
-
   "mercado": {
     "establecimientos_horeca_temuco": {
-      "valor": null, "unidad": "n° establecimientos", "confianza": "PENDIENTE",
-      "fuente": null, "consultado": null, "etapa": "01-mercado",
+      "valor": null,
+      "unidad": "n° establecimientos",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "01-mercado",
       "nota": "Temuco + Padre Las Casas. Desglosar por rubro."
     },
     "establecimientos_horeca_anillo1": {
-      "valor": null, "unidad": "n° establecimientos", "confianza": "PENDIENTE",
-      "fuente": null, "consultado": null, "etapa": "01-mercado",
+      "valor": null,
+      "unidad": "n° establecimientos",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "01-mercado",
       "nota": "Villarrica, Pucón, Angol, Victoria, Nueva Imperial."
     },
     "sam_pizzas_mes": {
-      "valor": null, "unidad": "unidades/mes", "confianza": "PENDIENTE",
-      "fuente": null, "consultado": null, "etapa": "01-mercado",
+      "valor": null,
+      "unidad": "unidades/mes",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "01-mercado",
       "nota": "Mercado servible: establecimientos alcanzables × consumo mensual estimado. Explicitar el método."
     },
     "som_ano1_pizzas_mes": {
-      "valor": null, "unidad": "unidades/mes", "confianza": "PENDIENTE",
-      "fuente": null, "consultado": null, "etapa": "01-mercado",
-      "nota": "Meta realista año 1. Es el driver de dimensionamiento de E4 y E5 y del ingreso de E10."
+      "valor": null,
+      "unidad": "unidades/mes",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "01-mercado",
+      "depende_de": [
+        "validacion.resultados_terreno"
+      ],
+      "nota": "DISEÑO DE MEDICIÓN: som_ano1_pizzas_mes = Σ (consumo mensual declarado en la pregunta 1 del guion) sobre las cuentas que firmaron pedido de prueba pagado, × factor de captura efectiva medido a los 60 días por recompra real. No se extrapola desde segmentos con menos de 5 observaciones válidas. Sustituye el supuesto de 2.500 u/mes que hoy corre en datos/parametros-10-financiero.json#operacion.volumen_ano1_unidades. Eco escrito por 03; la clave la cierra 01-mercado con el dato de terreno."
     },
     "indice_estacionalidad": {
-      "valor": null, "unidad": "índice mensual, base 100 = promedio", "confianza": "PENDIENTE",
-      "fuente": null, "consultado": null, "etapa": "01-mercado",
-      "nota": "12 valores. Invierno largo, temporada universitaria mar-dic, turismo lacustre en verano."
+      "valor": null,
+      "unidad": "índice mensual, base 100 = promedio",
+      "confianza": "PENDIENTE",
+      "fuente": "https://regiones.ine.gob.cl/documentos/default-source/region-ix/estadisticas/actividad-del-turismo/boletines/2026/bolet%C3%ADn-encuesta-mensual-de-alojamiento-tur%C3%ADstico-(emat)-enero-2026.pdf",
+      "consultado": "2026-08-05",
+      "etapa": "11-comercial-logistica",
+      "nota": "Se verificaron tres meses reales de pernoctaciones regionales (enero 2026 = 143.871; diciembre 2025 = 83.965, derivado de la variación mensual declarada en el mismo boletín; junio 2025 = 68.612, citado y fuenteado en 01-mercado), no doce. Completar los nueve meses faltantes por interpolación sería inventar tres cuartos del índice. Además el proxy mide alojamiento turístico regional, dominado por Pucón y Villarrica, mientras el año 1 opera en Temuco y Padre Las Casas. Método para cerrarlo: descargar la serie EMAT completa de 24 meses de la región y contrastarla con las ventas mensuales declaradas por las cuentas entrevistadas en etapa 03, segmentando núcleo y Anillo 1. Ver comercial.estacionalidad_ratio_peak_valle_pernoctaciones para la amplitud verificada.",
+      "meses_verificados": 3,
+      "meses_requeridos": 12
     }
   },
-
   "precios": {
     "precio_venta_b2b_individual_clp": {
-      "valor": null, "unidad": "CLP neto/unidad", "confianza": "PENDIENTE",
-      "fuente": null, "consultado": null, "etapa": "02-competencia",
-      "nota": "Precio mayorista objetivo, pizzeta/individual."
+      "valor": null,
+      "unidad": "CLP neto/unidad",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "02-competencia",
+      "depende_de": [
+        "validacion.resultados_terreno",
+        "precios.precio_venta_b2b_familiar_clp"
+      ],
+      "nota": "DISEÑO DE MEDICIÓN: mismo protocolo monádico, con oferta separada para el formato individual/pizzeta, dirigida a la cuota de pubs y bares, que es donde 01 ubica el consumo de formato chico. La relación individual/familiar NO se deriva por regla de tres desde el precio familiar: se mide con su propia oferta cerrada, porque el uso (unidad de servicio vs. compartir) es distinto. Eco escrito por 03; la clave la cierra 02-competencia."
     },
     "precio_venta_b2b_familiar_clp": {
-      "valor": null, "unidad": "CLP neto/unidad", "confianza": "PENDIENTE",
-      "fuente": null, "consultado": null, "etapa": "02-competencia",
-      "nota": "Precio mayorista objetivo, formato familiar."
+      "valor": null,
+      "unidad": "CLP neto/unidad",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "02-competencia",
+      "depende_de": [
+        "validacion.resultados_terreno",
+        "precios.precio_competencia_nacional_clp"
+      ],
+      "nota": "DISEÑO DE MEDICIÓN: prueba monádica de la pregunta 4 del guion. Cada entrevistado ve UNA oferta cerrada (producto, caja de 12, entrega 24–48 h, comodato y plazo) a uno de tres puntos: 0,85× / 1,00× / 1,15× precios.precio_competencia_nacional_clp, asignados por rotación. El precio se fija en el punto más alto que alcance el umbral de conversión de 20%, medido con pedido pagado y no con intención declarada. Nunca se pregunta '¿cuánto pagaría usted?'. Eco escrito por 03; la clave la cierra 02-competencia."
     },
     "precio_competencia_nacional_clp": {
-      "valor": null, "unidad": "CLP neto/unidad", "confianza": "PENDIENTE",
-      "fuente": null, "consultado": null, "etapa": "02-competencia",
+      "valor": null,
+      "unidad": "CLP neto/unidad",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "02-competencia",
       "nota": "Referencia de marca nacional puesta en Temuco. Define el techo de precio."
     },
     "plazo_cobro_dias": {
-      "valor": null, "unidad": "días", "confianza": "PENDIENTE",
-      "fuente": null, "consultado": null, "etapa": "02-competencia",
-      "nota": "CRÍTICO para capital de trabajo en E10. Verificar la práctica real del canal HORECA local, no el ideal."
+      "valor": null,
+      "unidad": "días",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "02-competencia",
+      "depende_de": [
+        "validacion.resultados_terreno"
+      ],
+      "nota": "DISEÑO DE MEDICIÓN: pregunta 5 del guion, cerrada y con alternativas explícitas (contado / 7 / 30 / 60 días), aplicada a TODAS las entrevistas, sobre el proveedor de congelados actual y no sobre el ideal declarado. Se tabula por separado cadenas y centrales de compra vs. independientes (pregunta 6), porque 02 pidió esa separación y porque el promedio simple la oculta. El valor a publicar es el promedio ponderado por volumen declarado, no el promedio simple. VACÍO DECLARADO: ninguna fuente pública establece la práctica de pago del canal HORECA de Temuco; la Ley 21.131 fija 30 días corridos como regla supletoria y el Ministerio de Economía mantiene un registro público de acuerdos con plazo excepcional, prueba de que se pacta por sobre ese plazo. CRÍTICO: en E10 arrastra ~$10,7 de los $14,0 millones de capital de trabajo inicial, sobre una restricción de capital de $50 millones. Eco escrito por 03; la clave la cierra 02-competencia."
     }
   },
-
   "insumos": {
     "mozzarella_clp_kg": {
-      "valor": null, "unidad": "CLP neto/kg", "confianza": "PENDIENTE",
-      "fuente": null, "consultado": null, "etapa": "06-insumos",
+      "valor": null,
+      "unidad": "CLP neto/kg",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "06-insumos",
       "nota": "DRIVER DE COSTO N°1. Cotizar por escalón de volumen. Surlat tiene planta en Temuco; Colun en Los Ríos."
     },
     "harina_clp_kg": {
-      "valor": null, "unidad": "CLP neto/kg", "confianza": "PENDIENTE",
-      "fuente": null, "consultado": null, "etapa": "06-insumos", "nota": "Harina panadera/pizzera, saco 25 kg."
+      "valor": null,
+      "unidad": "CLP neto/kg",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "06-insumos",
+      "nota": "Harina panadera/pizzera, saco 25 kg."
     },
     "salsa_tomate_clp_kg": {
-      "valor": null, "unidad": "CLP neto/kg", "confianza": "PENDIENTE",
-      "fuente": null, "consultado": null, "etapa": "06-insumos", "nota": null
+      "valor": null,
+      "unidad": "CLP neto/kg",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "06-insumos",
+      "nota": null
     },
     "envase_clp_unidad": {
-      "valor": null, "unidad": "CLP neto/unidad", "confianza": "PENDIENTE",
-      "fuente": null, "consultado": null, "etapa": "06-insumos",
+      "valor": null,
+      "unidad": "CLP neto/unidad",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "06-insumos",
       "nota": "Film + bandeja + etiqueta + caja prorrateada."
     },
     "costo_mp_unidad_individual_clp": {
-      "valor": null, "unidad": "CLP/unidad", "confianza": "PENDIENTE",
-      "fuente": null, "consultado": null, "etapa": "06-insumos",
+      "valor": null,
+      "unidad": "CLP/unidad",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "06-insumos",
       "nota": "Materia prima + envase por pizza individual. Debe cuadrar con la formulación de E4."
     },
     "costo_mp_unidad_familiar_clp": {
-      "valor": null, "unidad": "CLP/unidad", "confianza": "PENDIENTE",
-      "fuente": null, "consultado": null, "etapa": "06-insumos", "nota": null
+      "valor": null,
+      "unidad": "CLP/unidad",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "06-insumos",
+      "nota": null
     }
   },
-
   "local": {
     "superficie_requerida_m2": {
-      "valor": null, "unidad": "m²", "confianza": "PENDIENTE",
-      "fuente": null, "consultado": null, "etapa": "07-local-habilitacion",
+      "valor": null,
+      "unidad": "m²",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "07-local-habilitacion",
       "nota": "Suma de zonas del layout: recepción, bodega seca, producción, congelado, despacho, vestidores, oficina."
     },
     "arriendo_clp_m2_mes": {
-      "valor": null, "unidad": "CLP/m²/mes", "confianza": "PENDIENTE",
-      "fuente": null, "consultado": null, "etapa": "07-local-habilitacion",
+      "valor": null,
+      "unidad": "CLP/m²/mes",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "07-local-habilitacion",
       "nota": "Zona industrial/mixta de Temuco. Muchos se publican en UF: convertir con macro.uf_clp."
     },
     "arriendo_mensual_clp": {
-      "valor": null, "unidad": "CLP/mes", "confianza": "PENDIENTE",
-      "fuente": null, "consultado": null, "etapa": "07-local-habilitacion", "nota": null
+      "valor": null,
+      "unidad": "CLP/mes",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "07-local-habilitacion",
+      "nota": null
     },
     "habilitacion_sanitaria_clp": {
-      "valor": null, "unidad": "CLP", "confianza": "PENDIENTE",
-      "fuente": null, "consultado": null, "etapa": "07-local-habilitacion",
+      "valor": null,
+      "unidad": "CLP",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "07-local-habilitacion",
       "nota": "RIESGO PRINCIPAL DEL PRESUPUESTO. Pisos y muros sanitarios, lavamanos no manuales, campana, potencia trifásica, agua, residuos. Cotizar local vacío vs. local con RSA vigente."
     },
     "potencia_electrica_kw": {
-      "valor": null, "unidad": "kW", "confianza": "PENDIENTE",
-      "fuente": null, "consultado": null, "etapa": "05-maquinaria",
-      "nota": "Verificar si el local tiene trifásico. Empalme nuevo es caro y lento."
+      "valor": 10.15,
+      "unidad": "kW de carga conectada",
+      "confianza": "ESTIMADO",
+      "fuente": "https://calvac.cl/venta/abatidor-de-temperatura-10-bandejas-290-litros/ ; https://www.supermaq.cl/amasadoras/amasadora_20_kilos/ ; https://www.supermaq.cl/hornos_pizza/horno_electrico_pizzero_2_camara_40x40/ ; https://lacasita.cl/producto/congelador-industrial-2-puertas-500-litros-maigas/ ; https://www.supermaq.cl/selladoras_al_vacio/selladora_al_vacio_300_mm_dz300/ ; https://www.supermaq.cl/sobadoras/laminadora_de_masa_40_cm_ventus./",
+      "consultado": "2026-08-04",
+      "etapa": "05-maquinaria",
+      "nota": "Suma de potencias de PLACA verificadas del envolvente base: horno 3,00 + amasadora 2,75 (3 HP) + abatidor 2,40 nominal + dos congeladores 0,65 c/u = 1,30 + selladora 0,45 + laminadora 0,25 (1/3 HP) = 10,15 kW. ES UN PISO, NO EL REQUERIMIENTO: no incluye el desescarche del abatidor (1,00 kW adicional, no simultáneo con el nominal), ni el extractor de la campana (modelo HCB/4-450, potencia no publicada), ni el mesón refrigerado (potencia no publicada en la ficha), ni iluminación (el art. 34 del DS 977 exige 220 lux en salas de trabajo y 540 lux en puntos de inspección), ni agua caliente sanitaria, ni climatización. A 220 V monofásicos, 10,15 kW son ~46 A, por sobre un empalme monofásico comercial corriente: el local candidato debe tener empalme TRIFÁSICO o presupuestar uno nuevo. El dimensionamiento definitivo con factor de simultaneidad lo debe firmar un instalador eléctrico autorizado SEC. Escrito aquí y no en datos/parametros-07-local-habilitacion.json, que conserva el stub null por acuerdo de etapas."
     }
   },
-
   "produccion": {
     "capacidad_instalada_pizzas_dia": {
-      "valor": null, "unidad": "unidades/día", "confianza": "PENDIENTE",
-      "fuente": null, "consultado": null, "etapa": "04-producto-proceso",
-      "nota": "Limitada por el cuello de botella real, normalmente el abatidor (ciclo de congelado), no el horno."
+      "valor": 60,
+      "unidad": "unidades/día (SKU familiar 30 cm)",
+      "confianza": "ESTIMADO",
+      "fuente": "https://calvac.cl/venta/abatidor-10-bandejas-2/ + https://www.supermaq.cl/abatidor/abatidor_congelador_5_bandejas.pdf",
+      "consultado": "2026-08-04",
+      "etapa": "04-producto-proceso",
+      "nota": "Cuello de botella GEOMÉTRICO, no térmico. Bandeja de 610x410 mm: floor(610/300) x floor(410/300) = 2 discos de 300 mm por bandeja; 10 bandejas = 20 pizzas/ciclo = 8,5 kg, el 28% de los 30 kg declarados. Con ciclo de 240 min: 2 ciclos en jornada de 8,4 h más 1 ciclo desatendido que el equipo almacena solo al terminar = 3 ciclos/día x 20 = 60. Techo absoluto con operación 24 h: 6 ciclos = 120/día. El horno pizzero de 2 cámaras 40x40 (~24 pizzas/h) y la amasadora de 20 kg (83 bollos de 240 g) NO son limitantes. En SKU individual de 200 mm: 3x2 = 6 por bandeja = 60/ciclo = 180/día.",
+      "formula": "capacidad_dia = floor(610/D_mm) * floor(410/D_mm) * 10 bandejas * ciclos_dia",
+      "depende_de": [
+        "capex.equipamiento_base_clp"
+      ]
     },
     "ciclo_abatimiento_min": {
-      "valor": null, "unidad": "minutos", "confianza": "PENDIENTE",
-      "fuente": null, "consultado": null, "etapa": "04-producto-proceso",
-      "nota": "Tiempo hasta −18 °C en el centro del producto. Determina la capacidad de toda la planta."
+      "valor": 240,
+      "unidad": "minutos",
+      "confianza": "ESTIMADO",
+      "fuente": "https://www.supermaq.cl/abatidor/abatidor_congelador_5_bandejas.pdf",
+      "consultado": "2026-08-04",
+      "etapa": "04-producto-proceso",
+      "nota": "TECHO CONSERVADOR, NO MEDICIÓN. La ficha del abatidor Calvac de 10 bandejas NO declara tiempo de ciclo; se toma el nominal declarado por la ficha del equipo homólogo de 5 bandejas GN 1/1: 'Congelación: 8 kg por ciclo (+90 °C a -18 °C en 240 minutos)'. Ese nominal supone carga másica completa en gastronorm profunda; nuestro producto es un disco de ~15 mm a 8,5 kg sobre un equipo de 30 kg, así que el ciclo real debería ser bastante menor — pero NADIE LO HA MEDIDO y no hay fuente pública que lo haga. Toda la factibilidad del proyecto cuelga de este número: a 60 min de ciclo la capacidad sube a 160/día y el equilibrio deja de ser problema. Cerrar con piloto y sonda corazón."
     },
     "merma_pct": {
-      "valor": null, "unidad": "%", "confianza": "PENDIENTE",
-      "fuente": null, "consultado": null, "etapa": "04-producto-proceso", "nota": null
+      "valor": 5,
+      "unidad": "%",
+      "confianza": "SUPUESTO",
+      "fuente": "datos/parametros-10-financiero.json#producto.merma_pct",
+      "consultado": "2026-08-04",
+      "etapa": "04-producto-proceso",
+      "nota": "PUNTOS PORCENTUALES: 5 = 5%. modelo.js lo divide por 100. NO EXISTE fuente pública chilena de merma de proceso para esta línea; se mantiene el marcador heredado de etapa 10 en vez de inventar precisión. Componentes esperados: recorte de masa al formar, residuo de dosificado de salsa y queso, y producto no conforme de arranque (el dominante). Solo lo cierra un piloto de 3 lotes con pesaje de entrada y salida."
     },
     "vida_util_meses": {
-      "valor": null, "unidad": "meses", "confianza": "PENDIENTE",
-      "fuente": null, "consultado": null, "etapa": "04-producto-proceso",
-      "nota": "A −18 °C. Requiere respaldo de ensayo o bibliografía; afecta rotación y política de stock."
+      "valor": 12,
+      "unidad": "meses a -18 °C",
+      "confianza": "ESTIMADO",
+      "fuente": "https://pedidos.tudisgastronomia.es/ecommerce/pdf/23010.pdf",
+      "consultado": "2026-08-04",
+      "etapa": "04-producto-proceso",
+      "nota": "Ficha técnica de minipizza congelada de otro fabricante: 'Vida útil: 12 meses a partir de la fecha de fabricación en condiciones normales de conservación (-18 ºC)'. Es un valor de PLANIFICACIÓN de stock. Para ROTULARLO en Chile el DS 977 exige respaldo propio: estudio de vida útil y desafío microbiológico sobre nuestra formulación y nuestro envase. No usar como fecha de vencimiento hasta tener ese informe."
+    },
+    "dias_operacion_mes": {
+      "valor": 22,
+      "unidad": "días/mes",
+      "confianza": "ESTIMADO",
+      "fuente": "https://www.dt.gob.cl/legislacion/1624/w3-article-129189.html",
+      "consultado": "2026-08-04",
+      "etapa": "04-producto-proceso",
+      "nota": "CLAVE NUEVA. Jornada de 42 horas semanales desde el 26-04-2026 (Ley 21.561, confirmado por ORD. 253/21 de la Dirección del Trabajo). Turno único de 5 días x 8,4 h; 52/12 = 4,333 semanas/mes x 5 = 21,7, redondeado a 22. Es decisión de diseño operacional, no un dato: un segundo turno o sábados la cambian. Capacidad mensual = 60 x 22 = 1.320 pizzas familiares."
+    },
+    "temperatura_centro_termico_c": {
+      "valor": -18,
+      "unidad": "°C en el centro térmico del producto",
+      "confianza": "VERIFICADO",
+      "fuente": "08-legal-normativo/index.html (DS 977 art. 186 y 187, vía https://www.bcn.cl/leychile/navegar?idNorma=71271)",
+      "consultado": "2026-08-04",
+      "etapa": "04-producto-proceso",
+      "nota": "Exigencia normativa, no objetivo de calidad. Validar con sonda en el punto más caliente del lote y registrar cada ciclo."
+    },
+    "tolerancia_conservacion_c": {
+      "valor": -12,
+      "unidad": "°C máximo admisible en excursión breve",
+      "confianza": "VERIFICADO",
+      "fuente": "08-legal-normativo/index.html (DS 977 art. 192)",
+      "consultado": "2026-08-04",
+      "etapa": "04-producto-proceso",
+      "nota": "Conservación a -18 °C; tolerancia breve sin superar -12 °C. Exige termómetro, registro, alarma y criterio documentado de rechazo en recepción del cliente."
     }
   },
-
   "capex": {
     "equipamiento_austero_clp": {
-      "valor": null, "unidad": "CLP", "confianza": "PENDIENTE",
-      "fuente": null, "consultado": null, "etapa": "05-maquinaria", "nota": "Escenario usado/mínimo."
+      "valor": 5982306,
+      "unidad": "CLP neto",
+      "confianza": "ESTIMADO",
+      "fuente": "https://calvac.cl/venta-de/abatidores/ ; https://www.supermaq.cl/amasadoras/amasadora_20_kilos/ ; https://www.supermaq.cl/hornos_pizza/horno_electrico_pizzero_2_camara_40x40/ ; https://lacasita.cl/producto/congelador-industrial-2-puertas-500-litros-maigas/ ; https://lacasita.cl/producto/campana-mural-acero-inoxidable-200x100-maigas/ ; https://lacasita.cl/categoria-producto/acero-inoxidable/mesones-de-trabajo/ ; https://gastromaq.cl/producto/carro-bandejero-15-niveles-acero-inoxidable-bandejas-60x40-cm-mod-1-gastromaq/ ; https://fullmaquinas.cl/acero-inoxidable/lavaplatos-industriales",
+      "consultado": "2026-08-04",
+      "etapa": "05-maquinaria",
+      "nota": "Suma de precios de publicación netos, NO de cotizaciones. Canasta: abatidor 5 bandejas 90 L $2.296.980 + amasadora espiral 20 kg $747.815 + horno pizzero 2 cámaras 40x40 $400.000 + un congelador 500 L AISI 304 $1.298.350 + campana mural 200x100 con extractor $546.250 + mesón central 240x60 $167.250 + un carro bandejero 15 niveles $201.681 + lavafondo doble 120x70x80 $219.990 + lavamanos mural $103.990. SACRIFICA: formado de masa manual (sin laminadora), sin mesón refrigerado, sin redundancia de frío, un solo carro. EXCLUYE, por no tener precio público: envasado, bandejas GN 60x40, balanza, termómetro sonda y registrador continuo de temperatura del art. 189 DS 977. Es un piso verificable, no un total. El mercado de equipo usado no arrojó publicación citable al 04-08-2026 (chileremates.cl devolvió 0 productos en la categoría de acero inoxidable usado); por eso este escenario es 'mínimo viable nuevo', no 'usado'."
     },
     "equipamiento_base_clp": {
-      "valor": null, "unidad": "CLP", "confianza": "PENDIENTE",
-      "fuente": null, "consultado": null, "etapa": "05-maquinaria", "nota": "Mix nuevo/usado recomendado."
+      "valor": 10120237,
+      "unidad": "CLP neto",
+      "confianza": "ESTIMADO",
+      "fuente": "https://calvac.cl/venta/abatidor-de-temperatura-10-bandejas-290-litros/ ; https://www.supermaq.cl/amasadoras/amasadora_20_kilos/ ; https://www.supermaq.cl/sobadoras/laminadora_de_masa_40_cm_ventus./ ; https://www.industriaminera.cl/producto/biggi-chile-sa-mesones-refrigerados/ ; https://lacasita.cl/producto/congelador-industrial-2-puertas-500-litros-maigas/ ; https://lacasita.cl/producto/campana-mural-acero-inoxidable-200x100-maigas/ ; https://gastromaq.cl/producto/carro-bandejero-15-niveles-acero-inoxidable-bandejas-60x40-cm-mod-1-gastromaq/",
+      "consultado": "2026-08-04",
+      "etapa": "05-maquinaria",
+      "nota": "Suma de precios de publicación netos, NO de cotizaciones. Canasta: abatidor 10 bandejas 290 L EN STOCK $3.898.990 + amasadora 20 kg $747.815 + horno pizzero 2 cámaras 40x40 $400.000 + laminadora 40 cm $231.000 + mesón refrigerado 120 cm $620.000 + dos congeladores 500 L $2.596.700 + campana 200x100 $546.250 + mesones 240x60 y 140x60 $352.140 + dos carros bandejeros $403.362 + lavafondo doble $219.990 + lavamanos $103.990. EXCLUYE lo mismo que el escenario austero (envasado, bandejas, balanza, sonda, registrador) más ductos de campana, empalme y obra civil, que son de E7. Reemplaza a las ocho líneas hardcodeadas de datos/parametros-10-financiero.json#inversion, que suman $8.817.795 y contienen un abatidor sin stock, un horno de cámara 40x40 cm y una selladora de vacío incompatible con el producto."
     },
     "equipamiento_holgado_clp": {
-      "valor": null, "unidad": "CLP", "confianza": "PENDIENTE",
-      "fuente": null, "consultado": null, "etapa": "05-maquinaria", "nota": "Todo nuevo." },
+      "valor": 16753919,
+      "unidad": "CLP neto",
+      "confianza": "ESTIMADO",
+      "fuente": "https://calvac.cl/venta/abatidor-de-temperatura-10-bandejas-290-litros/ ; https://www.supermaq.cl/hornos_pizza/horno_electrico_pizzero_camara_690x500_mm/ ; https://lacasita.cl/producto/congelador-industrial-2-puertas-500-litros-maigas/ ; https://www.industriaminera.cl/producto/biggi-chile-sa-mesones-refrigerados/ ; https://fullmaquinas.cl/acero-inoxidable/lavaplatos-industriales",
+      "consultado": "2026-08-04",
+      "etapa": "05-maquinaria",
+      "nota": "Suma de precios de publicación netos, NO de cotizaciones. Canasta: dos abatidores 290 L $7.797.980 (duplica capacidad y elimina el punto único de falla de frío señalado en el statement) + amasadora $747.815 + horno de cámara 690x500 mm $1.000.000 (SIN STOCK al 04-08-2026) + laminadora $231.000 + mesón refrigerado 150 cm $650.000 + tres congeladores 500 L $3.895.050 + campana $546.250 + mesones $352.140 + cuatro carros $806.724 + lavafondos $518.980 + dos lavamanos $207.980. Sigue excluyendo envasado, bandejas, balanza, sonda y registrador."
+    },
     "tramites_y_constitucion_clp": {
-      "valor": null, "unidad": "CLP", "confianza": "PENDIENTE",
-      "fuente": null, "consultado": null, "etapa": "08-legal-normativo",
+      "valor": null,
+      "unidad": "CLP",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "08-legal-normativo",
       "nota": "Constitución, resolución sanitaria, patente, GS1, análisis de laboratorio, rotulado."
     },
     "capex_total_clp": {
-      "valor": null, "unidad": "CLP", "confianza": "PENDIENTE",
-      "fuente": null, "consultado": null, "etapa": "10-financiero",
+      "valor": null,
+      "unidad": "CLP",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "10-financiero",
       "nota": "Equipamiento + habilitación + garantías de arriendo + trámites."
     },
     "capital_trabajo_clp": {
-      "valor": null, "unidad": "CLP", "confianza": "PENDIENTE",
-      "fuente": null, "consultado": null, "etapa": "10-financiero",
+      "valor": null,
+      "unidad": "CLP",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "10-financiero",
       "nota": "CRÍTICO. Debe cubrir el ciclo de conversión de caja: stock de insumos + producto terminado + cuentas por cobrar a precios.plazo_cobro_dias − crédito de proveedores."
     }
   },
-
   "historial": [
     {
       "fecha": "2026-08-04",
       "etapa": "base",
       "cambio": "Creación del archivo. Sembrados los parámetros macro verificados contra fuentes primarias (SII para UF y dólar observado, Ley 21.751 para ingreso mínimo). Todo lo demás queda PENDIENTE."
+    },
+    {
+      "fecha": "2026-08-05",
+      "etapa": "coordinación",
+      "cambio": "Consolidación de la ola 2/3/5: etapas 03-validacion, 04-producto-proceso, 05-maquinaria, 09-rrhh, 11-comercial-logistica, 12-riesgos-financiamiento. 107 claves nuevas, 15 pendientes cerradas. Los valores que siguen en null continúan PENDIENTE y el modelo usa el fallback declarado de la etapa 10."
     }
-  ]
+  ],
+  "validacion": {
+    "n_prospectos_lista": {
+      "valor": 120,
+      "unidad": "n° cuentas nominales",
+      "confianza": "SUPUESTO",
+      "fuente": "Diseño propio de esta etapa, consistente con 01-mercado §5",
+      "consultado": "2026-08-05",
+      "etapa": "03-validacion",
+      "nota": "Cuotas: 60 pubs/bares/cafeterías, 25 hoteles y hostales, 15 casinos y concesionarias, 10 food trucks, 10 minimarkets de servicentro. Los nombres NO se pudieron obtener en gabinete: SERNATUR (https://serviciosturisticos.sernatur.cl/) filtra por comuna pero no permite descarga masiva, y la nómina de patentes comerciales de Temuco no está publicada como archivo abierto. Se entrega el marco muestral, no la lista nominal."
+    },
+    "n_entrevistas_objetivo": {
+      "valor": 30,
+      "unidad": "n° entrevistas válidas",
+      "confianza": "SUPUESTO",
+      "fuente": "01-mercado §5 'Qué debe medir la etapa 03'",
+      "consultado": "2026-08-05",
+      "etapa": "03-validacion",
+      "nota": "Entrevista válida = local visitado, interlocutor con decisión o acceso al decisor, y registro completo de las 8 preguntas del guion. No es una muestra probabilística: 30 casos con cuotas no permiten inferencia poblacional, solo descartar o sostener la hipótesis."
+    },
+    "n_min_observaciones_por_segmento": {
+      "valor": 5,
+      "unidad": "n° observaciones",
+      "confianza": "SUPUESTO",
+      "fuente": "01-mercado §5",
+      "consultado": "2026-08-05",
+      "etapa": "03-validacion",
+      "nota": "Bajo 5 observaciones válidas el segmento no se extrapola ni entra al cálculo de SAM/SOM. Regla heredada de 01, no verificada estadísticamente."
+    },
+    "tasa_entrevista_sobre_lista_pct": {
+      "valor": 25,
+      "unidad": "%",
+      "confianza": "SUPUESTO",
+      "fuente": "Razón de diseño 30/120",
+      "consultado": "2026-08-05",
+      "etapa": "03-validacion",
+      "nota": "NO es una tasa de respuesta observada: es el cociente aritmético entre la lista y la cuota de entrevistas. Si en terreno la tasa efectiva resulta menor, se amplía la lista, nunca se baja la cuota de 30."
+    },
+    "plazo_terreno_dias": {
+      "valor": 45,
+      "unidad": "días corridos",
+      "confianza": "SUPUESTO",
+      "fuente": "Diseño propio de esta etapa",
+      "consultado": "2026-08-05",
+      "etapa": "03-validacion",
+      "nota": "Ventana máxima del levantamiento. Más allá caducan las promociones retail que anclan el precio de la prueba monádica y rota el interlocutor en el canal. Es un límite de gestión, no una medición."
+    },
+    "n_ofertas_monadicas": {
+      "valor": 3,
+      "unidad": "n° puntos de precio",
+      "confianza": "SUPUESTO",
+      "fuente": "02-competencia §3, que prescribió prueba monádica",
+      "consultado": "2026-08-05",
+      "etapa": "03-validacion",
+      "nota": "Diseño monádico puro: cada entrevistado ve UNA sola oferta cerrada, asignada por rotación. Nunca se muestran los tres precios al mismo entrevistado ni se pregunta un precio abstracto."
+    },
+    "oferta_monadica_factor_bajo": {
+      "valor": 0.85,
+      "unidad": "multiplicador sobre precios.precio_competencia_nacional_clp",
+      "confianza": "SUPUESTO",
+      "fuente": "Diseño propio de esta etapa",
+      "consultado": "2026-08-05",
+      "etapa": "03-validacion",
+      "depende_de": [
+        "precios.precio_competencia_nacional_clp"
+      ],
+      "nota": "Oferta A, piso de descarte. Si no hay pedido pagado ni a este precio, no existe negocio a ningún precio y la evaluación se detiene."
+    },
+    "oferta_monadica_factor_central": {
+      "valor": 1.0,
+      "unidad": "multiplicador sobre precios.precio_competencia_nacional_clp",
+      "confianza": "SUPUESTO",
+      "fuente": "Diseño propio de esta etapa",
+      "consultado": "2026-08-05",
+      "etapa": "03-validacion",
+      "depende_de": [
+        "precios.precio_competencia_nacional_clp"
+      ],
+      "nota": "Oferta B, paridad con el ancla nacional. Es el punto que define el umbral ir/no-ir de precio."
+    },
+    "oferta_monadica_factor_alto": {
+      "valor": 1.15,
+      "unidad": "multiplicador sobre precios.precio_competencia_nacional_clp",
+      "confianza": "SUPUESTO",
+      "fuente": "Diseño propio de esta etapa",
+      "consultado": "2026-08-05",
+      "etapa": "03-validacion",
+      "depende_de": [
+        "precios.precio_competencia_nacional_clp"
+      ],
+      "nota": "Oferta C. Mide directamente el supuesto crítico del statement §7: si el canal acepta sobreprecio por 'local y flexible'. Si C convierte, el precio objetivo de 02 debe fijarse ahí y no en B."
+    },
+    "pedido_prueba_min_unidades": {
+      "valor": 12,
+      "unidad": "unidades por pedido",
+      "confianza": "SUPUESTO",
+      "fuente": "Formato de caja observado por 02-competencia (caja de 12 en oferta foodservice)",
+      "consultado": "2026-08-05",
+      "etapa": "03-validacion",
+      "nota": "Unidad mínima de conversión. Un pedido pagado de una caja es el único dato duro de la entrevista; un 'sí, me interesa' no cuenta. No prueba recompra."
+    },
+    "umbral_conversion_pct": {
+      "valor": 20,
+      "unidad": "%",
+      "confianza": "SUPUESTO",
+      "fuente": "Criterio de decisión fijado por esta etapa",
+      "consultado": "2026-08-05",
+      "etapa": "03-validacion",
+      "nota": "Conversión mínima de entrevistas válidas a pedido de prueba pagado para justificar comprometer el grueso de la inversión. Fundamento: bajo 20% (6 de 30) la base de cuentas ancla no alcanza para sostener una rampa comercial ni para diversificar el riesgo de perder una cuenta. Es un criterio declarado, no una tasa observada en ningún mercado."
+    },
+    "umbral_conversion_min_cuentas": {
+      "valor": 6,
+      "unidad": "n° cuentas con pedido pagado",
+      "confianza": "SUPUESTO",
+      "fuente": "Criterio de decisión fijado por esta etapa",
+      "consultado": "2026-08-05",
+      "etapa": "03-validacion",
+      "nota": "Expresión absoluta de umbral_conversion_pct sobre n_entrevistas_objetivo (20% de 30). Se exige además que las 6 no provengan de un solo segmento."
+    },
+    "umbral_precio_piso_factor": {
+      "valor": 1.0,
+      "unidad": "multiplicador sobre precios.precio_competencia_nacional_clp",
+      "confianza": "SUPUESTO",
+      "fuente": "Criterio de decisión fijado por esta etapa",
+      "consultado": "2026-08-05",
+      "etapa": "03-validacion",
+      "depende_de": [
+        "precios.precio_competencia_nacional_clp"
+      ],
+      "nota": "Precio neto puesto en el local, formato familiar, bajo el cual NO se sigue adelante. Fundamento: el ancla de 02 es un precio PROMOCIONAL de retail, que ya incluye margen minorista; exigir paridad con él en venta mayorista equivale exactamente a testear el supuesto del statement §7 (sobreprecio por local y flexible). Salvedad: el ancla es promocional y por tanto inestable; debe re-anclarse en el precio B2B puesto en Temuco cuando 02 lo cotice."
+    },
+    "umbral_precio_piso_familiar_clp": {
+      "valor": null,
+      "unidad": "CLP neto/unidad familiar",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "03-validacion",
+      "depende_de": [
+        "precios.precio_competencia_nacional_clp"
+      ],
+      "nota": "Fórmula: umbral_precio_piso_familiar_clp = validacion.umbral_precio_piso_factor × precios.precio_competencia_nacional_clp. No se calcula aquí para no copiar ni congelar un valor de 02, que sigue siendo ESTIMADO y basado en promoción."
+    },
+    "umbral_plazo_cobro_max_dias": {
+      "valor": 30,
+      "unidad": "días corridos",
+      "confianza": "SUPUESTO",
+      "fuente": "https://registrodeacuerdos.economia.gob.cl/Normativa.aspx",
+      "consultado": "2026-08-05",
+      "etapa": "03-validacion",
+      "nota": "Plazo de cobro promedio ponderado máximo aceptable para seguir adelante. Fundamento legal: la Ley 21.131 fija 30 días corridos desde la recepción de la factura como regla supletoria, y todo plazo mayor debe inscribirse en el registro del Ministerio de Economía. Fundamento financiero: en E10 la cobranza se calcula como ingresos_año1 × plazo ÷ 365, de modo que cada 30 días de plazo pesan ~$10,7 millones de capital de trabajo sobre una restricción total de $50 millones. Es un umbral de decisión, no una medición de la práctica del canal."
+    },
+    "resultados_terreno": {
+      "valor": null,
+      "unidad": "registro de entrevistas",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "03-validacion",
+      "nota": "Vacío deliberado. Ninguna entrevista fue realizada: esta etapa entrega el instrumento (marco muestral, guion de 8 preguntas, protocolo monádico y umbral ir/no-ir) y no resultados. Cualquier cifra aquí sin trabajo de terreno violaría la regla 7 del statement."
+    }
+  },
+  "producto": {
+    "harina_kg_unidad": {
+      "valor": 0.151,
+      "unidad": "kg/pizza familiar 30 cm",
+      "confianza": "ESTIMADO",
+      "fuente": "https://eur-lex.europa.eu/legal-content/ES/TXT/HTML/?uri=CELEX:32010R0097",
+      "consultado": "2026-08-04",
+      "etapa": "04-producto-proceso",
+      "nota": "Reglamento (UE) 97/2010, pliego Pizza Napoletana ETG: harina 1.800 g : agua 1 L : sal 50-55 g : levadura 3 g, total 2.855 g, de donde la harina es el 63,0% de la masa. Bollo de 240 g (techo del rango ETG 180-250 g) x 0,630 = 151 g. Se toma el techo porque un disco precocido congelado debe resistir manipulación, apilado en caja de 12 y transporte: densidad 0,34 g/cm² sobre 300 mm, más gruesa que una napoletana. Sustituye el supuesto de 0,2 kg de etapa 10, que era 32% mayor."
+    },
+    "salsa_kg_unidad": {
+      "valor": 0.08,
+      "unidad": "kg/pizza familiar 30 cm",
+      "confianza": "ESTIMADO",
+      "fuente": "https://eur-lex.europa.eu/legal-content/ES/TXT/HTML/?uri=CELEX:32010R0097",
+      "consultado": "2026-08-04",
+      "etapa": "04-producto-proceso",
+      "nota": "Pliego ETG para la Margherita: 'entre 60 y 80 g de tomates pelados triturados'. Se toma el techo. CUADRA CON EL PRECIO DE 06: la salsa es tomate pelado triturado en crudo con sal y aceite, sin reducción, así que 1 kg de insumo ≈ 1 kg de salsa y el gramaje se valoriza directamente con datos/parametros-06-insumos.json#insumos.salsa_tomate_clp_kg. Si se decide cocer y reducir la salsa, este número sube por pérdida de agua."
+    },
+    "mozzarella_kg_unidad": {
+      "valor": 0.1,
+      "unidad": "kg/pizza familiar 30 cm",
+      "confianza": "ESTIMADO",
+      "fuente": "https://eur-lex.europa.eu/legal-content/ES/TXT/HTML/?uri=CELEX:32010R0097",
+      "consultado": "2026-08-04",
+      "etapa": "04-producto-proceso",
+      "nota": "LÍNEA MÁS SENSIBLE DEL MODELO. Dos anclas independientes convergen: (a) pliego ETG Margherita, 'entre 80 y 100 g' de mozzarella; (b) ficha técnica comercial de minipizza congelada que declara mozzarella 20,5% en masa, que sobre 426 g da 89 g. Se toma 100 g, techo del rango ETG, porque sobre 300 mm da mayor densidad superficial que 100 g sobre los 350 mm que el ETG permite, y porque la carga de queso visible es el atributo que el canal compra. Sustituye el supuesto de 0,12 kg de etapa 10: a $8.403,36/kg el costo de queso baja de $1.008 a $840 por unidad. NINGUNA de las dos anclas es chilena ni foodservice, y el rendimiento al fundir no está probado: cerrar con panel de degustación en etapa 03 y con el piloto.",
+      "depende_de": [
+        "insumos.mozzarella_clp_kg"
+      ]
+    },
+    "otros_ingredientes_clp_unidad": {
+      "valor": null,
+      "unidad": "CLP neto/pizza familiar 30 cm",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": "2026-08-04",
+      "etapa": "04-producto-proceso",
+      "nota": "CANTIDADES CERRADAS, PRECIO ABIERTO. Por unidad: aceite de oliva 5 g, sal 4,4 g, levadura 0,25 g (pliego ETG, escalado al bollo de 240 g) y condimentos secos <1 g. Total 9,7 g. No se encontró precio público chileno neto para aceite, sal ni levadura, así que no escribo un número. El SKU ancla es de QUESO: no lleva topping cárnico, luego esta bolsa NO debe contener topping. Si el titular quiere pepperoni o jamón, es un SKU distinto con su propio costo. NO CONSOLIDAR ESTE NULL SOBRE EL MODELO: modelo.js lee esta clave sin fallback y produciría NaN; mantener el stub de $550 de etapa 10 hasta que 06 cotice, sabiendo que $550 para 9,7 g de aceite, sal y levadura es casi con certeza una sobrestimación grande.",
+      "depende_de": [
+        "insumos.aceite_clp_kg",
+        "insumos.sal_clp_kg",
+        "insumos.levadura_clp_kg"
+      ]
+    },
+    "envase_diametro_mm": {
+      "valor": 330,
+      "unidad": "mm de diámetro interior del envase primario",
+      "confianza": "ESTIMADO",
+      "fuente": "06-insumos/index.html §3 (formato de caja 33x33 cm referenciado) + https://metafood.cl/PIZZ12400_Pizza_Mechada_30cm_-_Congelada_12",
+      "consultado": "2026-08-04",
+      "etapa": "04-producto-proceso",
+      "nota": "Disco de 300 mm más 15 mm de holgura por lado. Coincide con el formato de mercado 33x33 cm. ADVERTENCIA A ETAPA 05: la selladora al vacío cotizada en parametros-10-financiero.json#inversion.selladora_vacio_clp es una DZ-300, con barra de sellado de 300 mm; NO puede sellar un envase de 330 mm. Lo señalo, no lo corrijo."
+    },
+    "envase_bandeja": {
+      "valor": 1,
+      "unidad": "1 = sí lleva bandeja/disco de cartón rígido; 0 = producto desnudo",
+      "confianza": "ESTIMADO",
+      "fuente": "https://metafood.cl/PIZZ12400_Pizza_Mechada_30cm_-_Congelada_12",
+      "consultado": "2026-08-04",
+      "etapa": "04-producto-proceso",
+      "nota": "SÍ lleva. Dos razones encadenadas: el sellado al vacío sobre un disco de 300 mm sin soporte rígido deforma la cobertura, y la caja máster de 12 unidades carga las de abajo. El producto se congela DESNUDO sobre la bandeja del abatidor y se monta sobre el disco de cartón recién después, en envasado: envasar en caliente antes de congelar atrapa humedad y alarga el ciclo."
+    },
+    "envase_tipo_barrera": {
+      "valor": "vacio",
+      "unidad": "texto: 'vacio' | 'flow-pack' | 'film retractil'",
+      "confianza": "ESTIMADO",
+      "fuente": "https://metafood.cl/PIZZ12400_Pizza_Mechada_30cm_-_Congelada_12",
+      "consultado": "2026-08-04",
+      "etapa": "04-producto-proceso",
+      "nota": "Especificación: VACÍO, con film de barrera apto para contacto con alimentos y uso a -18 °C, sellado térmico. Base: el único proveedor foodservice chileno con pizza de 30 cm congelada y precio publicado la describe expresamente 'envasada al vacío', lo que demuestra que la técnica es viable sobre este formato en este mercado. El vacío protege de quemadura por frío durante 12 meses de vida útil. Etiqueta resistente a condensación, con 'PRODUCTO CONGELADO' según DS 977 art. 186 y SIN la sigla 'IQF' (etapa 08).",
+      "_consumo": "Parámetro de texto, no numérico; modelo.js no lo lee. Precedente de esquema: 10-financiero/generar_modelo_excel.py línea 276, {'valor': 'Base', 'unidad': 'texto', ...}."
+    },
+    "envase_unidades_caja_master": {
+      "valor": 12,
+      "unidad": "unidades por caja máster",
+      "confianza": "ESTIMADO",
+      "fuente": "https://metafood.cl/PIZZ12400_Pizza_Mechada_30cm_-_Congelada_12",
+      "consultado": "2026-08-04",
+      "etapa": "04-producto-proceso",
+      "nota": "Convención de mercado verificada: pizza familiar de 30 cm congelada publicada por caja de 12 a $60.408 + IVA ($5.034 unitario). Alinear nuestra caja con la del comparable evita discutir formatos con el comprador. 12 unidades es además la carga de 3 días de un pub chico. Peso bruto estimado de la caja: 12 x 0,426 kg = 5,1 kg más envase."
+    },
+    "energia_variable_clp_unidad": {
+      "valor": null,
+      "unidad": "CLP/pizza",
+      "confianza": "PENDIENTE",
+      "fuente": "https://calvac.cl/venta/abatidor-de-temperatura-10-bandejas-290-litros/ ; https://www.supermaq.cl/hornos_pizza/horno_electrico_pizzero_2_camara_40x40/",
+      "consultado": "2026-08-04",
+      "etapa": "05-maquinaria",
+      "nota": "Faltan las dos mitades del cálculo y ninguna es inventable. (1) El consumo por unidad exige el gramaje y el ciclo real de 04: kWh_pizza = equipos.abatimiento_kwh_por_kg x gramaje_kg + (potencia_horno_kw x tiempo_horno_h / pizzas_por_hornada) + consumo de almacenamiento congelado prorrateado por rotación. (2) La tarifa: no se obtuvo la hoja de tarifas vigente de Frontel (distribuidora de La Araucanía) para una opción tarifaria comercial BT2/BT3/AT4; la página de tarifas vigentes de Grupo Saesa solo entrega enlaces a PDF que no se pudieron abrir. El stub 120 que hoy usa E10 cita como fuente la ficha de un abatidor, que no contiene ninguna tarifa eléctrica: es una cifra sin respaldo. Gestión que lo cierra: solicitar a Frontel (Grupo Saesa) la hoja tarifaria vigente para el empalme del local candidato y contrastarla con las opciones tarifarias publicadas por la CNE."
+    },
+    "distribucion_variable_clp_unidad": {
+      "valor": null,
+      "unidad": "CLP neto/unidad entregada",
+      "confianza": "PENDIENTE",
+      "fuente": "https://transportesmarlop.cl/cuanto-cuesta-el-transporte-de-carga-terrestre-en-chile-guia-2026/",
+      "consultado": "2026-08-05",
+      "etapa": "11-comercial-logistica",
+      "nota": "No se sustituye el stub de 220 porque no hay tarifa de frío publicada por ningún operador chileno. Fórmula: costo_ruta / unidades_por_ruta, con costo_ruta = km_ruta x comercial.costo_km_tercerizado_clp + recargo_frio (desconocido). Sensibilidad calculada con $900/km: 40-80 km de ruta urbana y 250-625 unidades por ruta semanal dan una banda de $58 a $288 por unidad. El stub de 220 cae dentro de la banda, en su tercio alto, pero es un promedio anual que oculta que en los meses de ramp-up (pocas cuentas, la misma ruta) el costo unitario es 3 a 5 veces el maduro.",
+      "banda_min_clp_unidad": 58,
+      "banda_max_clp_unidad": 288,
+      "depende_de": [
+        "mercado.som_ano1_pizzas_mes",
+        "comercial.cartera_objetivo_ano1_cuentas"
+      ]
+    }
+  },
+  "inversion": {
+    "flete_instalacion_pct": {
+      "valor": null,
+      "unidad": "% sobre equipos",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": "2026-08-04",
+      "etapa": "05-maquinaria",
+      "nota": "No hay tarifa publicada auditable para Santiago-Temuco de una carga de ~700 kg con equipos de refrigeración. La única referencia encontrada es una guía comercial de un transportista (transportesmarlop.cl, $900-$1.500/km), que sobre 670 km da $603.000-$1.005.000 por camión completo, es decir 6,0%-9,9% del envolvente base: NO valida el 15% que hoy usa la etapa 10. Además el 15% mezcla tres cosas distintas que deben separarse: flete, conexión eléctrica/SEC y ductos de campana (estos últimos son de E7). Fórmula a usar cuando exista dato: flete_instalacion_pct = (flete_cotizado_clp + conexion_electrica_clp) / capex.equipamiento_base_clp * 100. Gestión que lo cierra: cotizador de Pullman Cargo y despacho a regiones de Calvac (+56 2 2695 6000 es Supermaq; Calvac despacha desde Santiago) sobre la lista exacta de equipos y pesos de placa (abatidor 184 kg, amasadora 130 kg, congelador 75 kg c/u, horno 33 kg)."
+    },
+    "vida_depreciable_anios": {
+      "valor": 10,
+      "unidad": "años lineales",
+      "confianza": "ESTIMADO",
+      "fuente": "https://www.sii.cl/valores_y_fechas/tabla_vida_util_activo_inmovilizado.html",
+      "consultado": "2026-08-04",
+      "etapa": "05-maquinaria",
+      "nota": "Promedio ponderado por monto de las vidas útiles NORMALES que publica el SII (Resolución Exenta 43 de 2002), aplicadas al envolvente base: equipos de aire y cámaras de refrigeración 10 años (abatidor $3.898.990); refrigeradores y conservadoras 9 años (congeladores $2.596.700, mesón refrigerado $620.000); cocinas 9 años (horno $400.000); maquinaria y equipos en general 15 años (amasadora $747.815, laminadora $231.000); instalaciones en general 10 años (campana $546.250, lavado $323.980); muebles y enseres 7 años (mesones $352.140, carros $403.362). Resultado 9,90 años, redondeado a 10. ADVERTENCIA PARA E10: esta es vida útil ECONÓMICA, no el calendario tributario. La etapa 10 ya supone régimen Pro Pyme 14 D N°3 al aplicar 12,5% el año 1; bajo ese régimen la depreciación del activo inmovilizado es INSTANTÁNEA E ÍNTEGRA en el ejercicio de adquisición (Circular SII 62/2020, https://www.sii.cl/normativa_legislacion/circulares/2020/circu62.pdf). El valor 5 que hoy usa E10 no es ninguna de las dos cosas: es la vida ACELERADA de maquinaria general, que no aplica al mix ni al régimen supuesto."
+    },
+    "valor_residual_pct": {
+      "valor": null,
+      "unidad": "% del CAPEX de equipos",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": "2026-08-04",
+      "etapa": "05-maquinaria",
+      "nota": "No se fija por regla contable sino por precio observado de reventa, y ese mercado no arrojó publicación citable: chileremates.cl declara la categoría 'Mesones y muebles de acero inox / Usado' con 0 productos al 04-08-2026, y Yapo y MercadoLibre no permiten citar un aviso estable (avisos efímeros, unidad única, sin ficha técnica). El valor contable lineal al año 5 con vida 10 años sería 50%, pero eso NO es valor de realización y no debe usarse como tal. El 10% que hoy usa E10 tampoco tiene fuente. Fórmula: valor_residual_pct = precio_reventa_observado_clp / capex.equipamiento_base_clp * 100. Gestión que lo cierra: pedir tasación de recompra a Calvac (contacto@calvac.cl) y a Chileremates (contacto@chileremates.cl, +56 9 6226 2317) sobre la lista de equipos con 5 años de uso."
+    },
+    "contingencia_pct": {
+      "valor": 15,
+      "unidad": "% sobre equipos, instalación y habilitación",
+      "confianza": "SUPUESTO",
+      "fuente": "https://services.austintexas.gov/edims/document.cfm?id=280770",
+      "consultado": "2026-08-04",
+      "etapa": "12-riesgos-financiamiento",
+      "nota": "SE MANTIENE EN 15% Y SE DECLARA POR QUÉ. No se encontró estándar chileno citable de contingencia por clase de estimación, y AACE 18R-97 es explícita en que la contingencia se determina por análisis de riesgo del proyecto y nunca se predetermina; subirla a un número redondo sería relleno. Datos duros: con 15% la reserva es de $3.321.070, prácticamente idéntica a la holgura de $3.317.555 contra el límite de $50.000.000 — es decir, consumir la contingencia equivale a agotar la holgura. Valor crítico: 29,98%; por sobre ese punto el fondeo máximo supera $50.000.000. Gestión: presupuesto desglosado de arquitecto o constructor sobre un local candidato visitado (etapa 07)."
+    }
+  },
+  "equipos": {
+    "abatidor_kg_ciclo_congelacion": {
+      "valor": 25,
+      "unidad": "kg por ciclo de +70 °C a -18 °C",
+      "confianza": "VERIFICADO",
+      "fuente": "https://calvac.cl/venta/abatidor-de-temperatura-10-bandejas-290-litros/",
+      "consultado": "2026-08-04",
+      "etapa": "05-maquinaria",
+      "nota": "Dato de placa del abatidor 10 bandejas 290 L de Calvac, el modelo EN STOCK. El mismo equipo declara 40 kg/ciclo en abatimiento positivo (+70 a +3 °C en ~90 min), que NO es congelación y no cumple el art. 186 del DS 977. Insumo para produccion.capacidad_instalada_pizzas_dia (E4); no escribo esa clave."
+    },
+    "abatidor_ciclo_congelacion_min": {
+      "valor": 270,
+      "unidad": "minutos",
+      "confianza": "VERIFICADO",
+      "fuente": "https://calvac.cl/venta/abatidor-de-temperatura-10-bandejas-290-litros/",
+      "consultado": "2026-08-04",
+      "etapa": "05-maquinaria",
+      "nota": "Ciclo de catálogo del fabricante para 25 kg de +70 °C a -18 °C: 4,5 horas. Es una cota inferior del ciclo real sobre pizza con topping, que la etapa 04 debe medir con sonda al centro térmico y escribir en produccion.ciclo_abatimiento_min. Con este dato, el abatidor y no el horno es el cuello de botella de la planta."
+    },
+    "abatimiento_kwh_por_kg": {
+      "valor": 0.432,
+      "unidad": "kWh por kg de producto congelado",
+      "confianza": "ESTIMADO",
+      "fuente": "https://calvac.cl/venta/abatidor-de-temperatura-10-bandejas-290-litros/",
+      "consultado": "2026-08-04",
+      "etapa": "05-maquinaria",
+      "nota": "Derivado de datos de placa: 2,40 kW x 4,5 h / 25 kg = 0,432 kWh/kg. Es independiente del gramaje, por lo que sirve a E4 y E10 sin esperar la formulación. Supone el equipo operando a potencia nominal durante todo el ciclo, lo que sobreestima (el compresor cicla) y no incluye desescarche ni carga parcial. Solo cubre la etapa de abatimiento: no incluye horno ni almacenamiento a -18 °C."
+    },
+    "amasadora_kg_harina_batch": {
+      "valor": 12,
+      "unidad": "kg de harina por batch",
+      "confianza": "VERIFICADO",
+      "fuente": "https://www.supermaq.cl/amasadoras/amasadora_20_kilos/",
+      "consultado": "2026-08-04",
+      "etapa": "05-maquinaria",
+      "nota": "La ficha del equipo comercializado como 'amasadora 20 kilos' declara capacidad máxima de HARINA de 12 kg y bol de 50 litros. Los 20 kg son de masa, no de harina. E4 y E10 deben usar 12 kg de harina por batch, no 20. Con harina_kg_unidad de E10 en 0,2 kg/pizza, un batch rinde ~60 pizzas antes de merma."
+    },
+    "horno_camara_util_mm": {
+      "valor": 400,
+      "unidad": "mm de lado útil de cámara",
+      "confianza": "VERIFICADO",
+      "fuente": "https://www.supermaq.cl/hornos_pizza/horno_electrico_pizzero_2_camara_40x40/",
+      "consultado": "2026-08-04",
+      "etapa": "05-maquinaria",
+      "nota": "Cámara interior 400 x 400 x 140 mm, dos cámaras, 3 kW. Admite UNA pizza familiar de 30 cm por cámara. El horno que la etapa 10 valorizó en $400.000 no es un horno de microfábrica: es un horno de dos pizzas por hornada. La alternativa de cámara 690 x 500 mm (dos pizzas de 12 pulgadas por cámara) cuesta $1.000.000 neto y figura sin stock."
+    }
+  },
+  "rrhh": {
+    "nomina_bruta_mensual_clp": {
+      "valor": 1100000,
+      "unidad": "CLP/mes, suma de sueldos brutos imponibles de trabajadores dependientes",
+      "confianza": "ESTIMADO",
+      "fuente": "https://www.ine.gob.cl/estadisticas-por-tema/mercado-laboral/encuesta-suplementaria-de-ingresos ; https://fcje.ufro.cl/noticias/la-araucania-frente-a-la-esi-2025-desafios-para-un-desarrollo-con-mejores-ingresos/ ; datos/supuestos.json#macro.ingreso_minimo_mensual_clp",
+      "consultado": "2026-08-04",
+      "etapa": "09-rrhh",
+      "nota": "RÉGIMEN, desde el mes 4. Dotación dependiente: 1 operario de producción a jornada completa 42 h ($700.000 bruto) + 1 operario polivalente a jornada parcial 24 h ($400.000 bruto). Cada bruto incluye sueldo base + gratificación art. 50 del Código del Trabajo (25% con tope de 4,75 IMM anuales = $219.115/mes); no volver a sumarla. ESTE VALOR NO INCLUYE EL RETIRO DE LA TITULAR: el modelo debe sumar rrhh.retiro_titular_mensual_clp SIN aplicarle macro.factor_costo_empresa. Si se prefiere una sola línea ya calculada, usar rrhh.costo_personal_mensual_regimen_clp. Los sueldos son ESTIMADOS: no existe serie pública de remuneración por cargo y comuna; se anclaron en el ingreso mínimo legal y en la ESI 2025 convertida de líquido a bruto."
+    },
+    "nomina_bruta_marcha_blanca_mensual_clp": {
+      "valor": 700000,
+      "unidad": "CLP/mes",
+      "confianza": "ESTIMADO",
+      "fuente": "09-rrhh/index.html",
+      "consultado": "2026-08-04",
+      "etapa": "09-rrhh",
+      "nota": "Meses 1 a 3 (habilitación, pruebas de proceso, validación de receta y trámite sanitario): titular + 1 operario de producción a jornada completa. Tampoco incluye el retiro de la titular."
+    },
+    "retiro_titular_mensual_clp": {
+      "valor": 1200000,
+      "unidad": "CLP/mes brutos",
+      "confianza": "SUPUESTO",
+      "fuente": "https://www.ine.gob.cl/estadisticas-por-tema/mercado-laboral/encuesta-suplementaria-de-ingresos",
+      "consultado": "2026-08-04",
+      "etapa": "09-rrhh",
+      "nota": "Sueldo empresarial de la titular (art. 31 N°6 LIR). NO se le aplica macro.factor_costo_empresa: no es trabajadora dependiente, no está afecta al seguro de cesantía ni a la cotización de cargo del empleador; sus cotizaciones de AFP y salud se descuentan de este mismo bruto. Punto a confirmar con contador antes de cerrar el modelo. El monto es una DECISIÓN de la titular, no un precio de mercado observado: queda entre la mediana de ingreso de La Araucanía (ESI 2025, $550.232 líquidos) y la mediana nacional del grupo 'directores, gerentes y administradores'. Sensibilizar en la etapa 12."
+    },
+    "costo_personal_mensual_regimen_clp": {
+      "valor": 2393830,
+      "unidad": "CLP/mes",
+      "confianza": "ESTIMADO",
+      "fuente": "09-rrhh/index.html",
+      "consultado": "2026-08-04",
+      "etapa": "09-rrhh",
+      "nota": "DERIVADO, no es un dato independiente: 1.100.000 × 1,0853 + 1.200.000. Existe sólo para evitar que el retiro de la titular se pierda si el modelo cablea una sola línea de personal. Si se usa esta clave, NO multiplicar de nuevo por macro.factor_costo_empresa. Compara contra el stub de E10 (2.200.000 × 1,22 = 2.684.000): $290.170/mes menos, $3.482.040 al año."
+    },
+    "costo_personal_mensual_marcha_blanca_clp": {
+      "valor": 1959710,
+      "unidad": "CLP/mes",
+      "confianza": "ESTIMADO",
+      "fuente": "09-rrhh/index.html",
+      "consultado": "2026-08-04",
+      "etapa": "09-rrhh",
+      "nota": "DERIVADO: 700.000 × 1,0853 + 1.200.000. Aplica meses 1 a 3."
+    },
+    "dotacion_total": {
+      "valor": 3,
+      "unidad": "personas en régimen (2 dependientes + titular)",
+      "confianza": "ESTIMADO",
+      "fuente": "09-rrhh/index.html",
+      "consultado": "2026-08-04",
+      "etapa": "09-rrhh",
+      "nota": "Marcha blanca: 2 personas (titular + 1 operario). Régimen: 3. Dimensionada por presencia y por la supervisión que exige el art. 60 del DS 977, no por productividad medida; depende de produccion.capacidad_instalada_pizzas_dia."
+    },
+    "sueldo_bruto_operario_produccion_clp": {
+      "valor": 700000,
+      "unidad": "CLP/mes brutos, jornada completa 42 h",
+      "confianza": "ESTIMADO",
+      "fuente": "https://fcje.ufro.cl/noticias/la-araucania-frente-a-la-esi-2025-desafios-para-un-desarrollo-con-mejores-ingresos/ ; datos/supuestos.json#macro.ingreso_minimo_mensual_clp",
+      "consultado": "2026-08-04",
+      "etapa": "09-rrhh",
+      "nota": "Base $560.000 + gratificación art. 50 $140.000. Equivale a 1,26 ingresos mínimos y a ~$567.000 líquidos, apenas sobre la mediana de ingreso líquido de La Araucanía ($550.232, ESI 2025). Cargo con capacitación en manipulación higiénica documentada (DS 977 art. 52) y responsabilidad de registros de proceso."
+    },
+    "sueldo_bruto_operario_parcial_clp": {
+      "valor": 400000,
+      "unidad": "CLP/mes brutos, jornada parcial 24 h",
+      "confianza": "ESTIMADO",
+      "fuente": "datos/supuestos.json#macro.ingreso_minimo_mensual_clp",
+      "consultado": "2026-08-04",
+      "etapa": "09-rrhh",
+      "nota": "Base $320.000 + gratificación art. 50 $80.000. Jornada parcial del art. 40 bis (tope: dos tercios de la jornada ordinaria, hoy 28 h). El ingreso mínimo proporcional para 24/42 h es $316.316, de modo que la base cumple el piso legal."
+    },
+    "costo_empresa_operario_adicional_clp": {
+      "valor": 759710,
+      "unidad": "CLP/mes",
+      "confianza": "ESTIMADO",
+      "fuente": "09-rrhh/index.html",
+      "consultado": "2026-08-04",
+      "etapa": "09-rrhh",
+      "nota": "700.000 × 1,0853. Costo marginal de cada operario adicional a jornada completa si E04 determina que se requiere un segundo turno o si el volumen valida crecer. Ya incluye el factor: no multiplicar otra vez."
+    },
+    "jornada_semanal_horas": {
+      "valor": 42,
+      "unidad": "horas/semana",
+      "confianza": "VERIFICADO",
+      "fuente": "https://www.mintrab.gob.cl/40horas-implementacion/",
+      "consultado": "2026-08-04",
+      "etapa": "09-rrhh",
+      "nota": "Ley 21.561: 44 h desde 26-04-2024, 42 h desde 26-04-2026, 40 h desde 26-04-2028. El horizonte de 5 años del estudio cruza la baja a 40 h: a igual dotación, el costo por hora disponible sube ~5% desde 2028."
+    },
+    "gratificacion_tope_mensual_clp": {
+      "valor": 219115,
+      "unidad": "CLP/mes por trabajador",
+      "confianza": "VERIFICADO",
+      "fuente": "https://www.dt.gob.cl/portal/1626/w3-article-99034.html ; datos/supuestos.json#macro.ingreso_minimo_mensual_clp",
+      "consultado": "2026-08-04",
+      "etapa": "09-rrhh",
+      "nota": "Art. 50 del Código del Trabajo: 25% de lo devengado con tope de 4,75 ingresos mínimos mensuales al 31-12 del ejercicio; 4,75 × 553.553 ÷ 12. La gratificación legal sólo se devenga si hay utilidad líquida, pero la práctica de pactarla garantizada la vuelve costo fijo: se incluye dentro de cada bruto."
+    },
+    "provision_feriado_pct": {
+      "valor": 5.83,
+      "unidad": "% sobre el bruto",
+      "confianza": "ESTIMADO",
+      "fuente": "https://www.dt.gob.cl/portal/1626/w3-article-99034.html",
+      "consultado": "2026-08-04",
+      "etapa": "09-rrhh",
+      "nota": "15 días hábiles de feriado anual ≈ 21 días corridos ≈ 0,7 mes sobre 12. Para un sueldo mensual NO es caja adicional: es costo de reemplazo o de planta detenida. No está dentro de macro.factor_costo_empresa."
+    },
+    "provision_indemnizacion_pct": {
+      "valor": 8.33,
+      "unidad": "% sobre el bruto",
+      "confianza": "ESTIMADO",
+      "fuente": "https://www.dt.gob.cl/portal/1626/w3-article-99034.html",
+      "consultado": "2026-08-04",
+      "etapa": "09-rrhh",
+      "nota": "Un mes por año de servicio (art. 163), sólo exigible si el término es por necesidades de la empresa (art. 161). Provisión prudente = 1/12. No está dentro de macro.factor_costo_empresa."
+    },
+    "factor_costo_empresa_con_provisiones": {
+      "valor": 1.2269,
+      "unidad": "multiplicador sobre sueldo bruto",
+      "confianza": "ESTIMADO",
+      "fuente": "09-rrhh/index.html",
+      "consultado": "2026-08-04",
+      "etapa": "09-rrhh",
+      "nota": "NO es macro.factor_costo_empresa y no debe cablearse en su lugar. 8,53% exigible + 5,83% feriado + 8,33% indemnización. Sirve para el escenario prudente de la etapa 12 y explica de dónde puede venir el 1,22 del stub: el 1,22 es defendible como factor CON provisiones, no como desembolso previsional mensual."
+    },
+    "comision_ventas_pct": {
+      "valor": null,
+      "unidad": "% sobre venta neta",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "09-rrhh",
+      "depende_de": [
+        "operacion.ventas_mensual_clp"
+      ],
+      "nota": "El año 1 no contempla vendedor contratado: la venta la hace la titular dentro de su jornada. Cuando la etapa 11 fije el plan de cobertura (visitas/semana y cuentas activas), esta clave define la parte remuneracional del esquema; el gasto comercial no remuneracional sigue siendo de la etapa 11. Regla de gatillo: contratar cuando visitas_requeridas_semana × horas_por_visita supere las horas comerciales disponibles de la titular."
+    }
+  },
+  "comercial": {
+    "rampa_ano2_factor": {
+      "valor": null,
+      "unidad": "multiplicador sobre el volumen del año 1",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "11-comercial-logistica",
+      "nota": "No existe fuente pública que funde una rampa comercial B2B para una microfábrica de congelados en Temuco. Fórmula: factor_año_n = (cuentas_activas_n x consumo_mensual_promedio) / (cuentas_activas_1 x consumo_mensual_promedio). Ambas variables son de 01 y 03. Para referencia del coordinador: la forma hoy hardcodeada en modelo.volumen_ano2..5_unidades (42/54/66/72 mil sobre 30 mil) equivale a factores 1,40 / 1,80 / 2,20 / 2,40; se declara aquí para que el fallback quede explícito, NO se respalda.",
+      "depende_de": [
+        "mercado.som_ano1_pizzas_mes",
+        "comercial.tasa_conversion_prospecto_pct"
+      ],
+      "factor_implicito_en_stub_actual": 1.4
+    },
+    "rampa_ano3_factor": {
+      "valor": null,
+      "unidad": "multiplicador sobre el volumen del año 1",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "11-comercial-logistica",
+      "nota": "Año 3 incorpora Anillo 1 (Villarrica, Pucón, Angol, Victoria, Nueva Imperial). El salto no es proporcional a las cuentas: exige ruta interurbana refrigerada, cuyo costo tampoco está cotizado. Ver comercial.costo_km_tercerizado_clp.",
+      "depende_de": [
+        "mercado.som_ano1_pizzas_mes",
+        "comercial.tasa_conversion_prospecto_pct"
+      ],
+      "factor_implicito_en_stub_actual": 1.8
+    },
+    "rampa_ano4_factor": {
+      "valor": null,
+      "unidad": "multiplicador sobre el volumen del año 1",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "11-comercial-logistica",
+      "nota": "Techo duro no comercial: produccion.capacidad_instalada_pizzas_dia (etapa 04/05). Ningún factor de rampa es válido si excede la capacidad del abatidor.",
+      "depende_de": [
+        "mercado.som_ano1_pizzas_mes",
+        "produccion.capacidad_instalada_pizzas_dia"
+      ],
+      "factor_implicito_en_stub_actual": 2.2
+    },
+    "rampa_ano5_factor": {
+      "valor": null,
+      "unidad": "multiplicador sobre el volumen del año 1",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "11-comercial-logistica",
+      "nota": "Igual restricción de capacidad que el año 4.",
+      "depende_de": [
+        "mercado.som_ano1_pizzas_mes",
+        "produccion.capacidad_instalada_pizzas_dia"
+      ],
+      "factor_implicito_en_stub_actual": 2.4
+    },
+    "cartera_objetivo_ano1_cuentas": {
+      "valor": 20,
+      "unidad": "n° cuentas activas al cierre del año 1",
+      "confianza": "SUPUESTO",
+      "fuente": "index.html (raíz), descripción de la etapa 11: \"primeros 20 clientes\"",
+      "consultado": "2026-08-04",
+      "etapa": "11-comercial-logistica",
+      "nota": "Es una DECISIÓN de política del dossier, no una medición. Sobre el universo de prospección de 1.187 empresas del núcleo (01-mercado) equivale a 1,7% de penetración nominal. No se ha validado que 20 cuentas absorban el volumen del año 1."
+    },
+    "tasa_conversion_prospecto_pct": {
+      "valor": null,
+      "unidad": "% de prospectos calificados que firman",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "11-comercial-logistica",
+      "nota": "Debe salir del instrumento de etapa 03. Sin esta tasa no se sabe cuántas visitas exige llegar a 20 cuentas y, por lo tanto, ni el ciclo de venta ni el gasto comercial son calculables.",
+      "depende_de": [
+        "03-validacion"
+      ]
+    },
+    "ciclo_venta_dias": {
+      "valor": null,
+      "unidad": "días desde primer contacto hasta primera orden",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "11-comercial-logistica",
+      "nota": "Determina cuánto antes de la puesta en marcha debe empezar la prospección. Etapa 03 debe registrar fecha de primer contacto y fecha de compromiso en cada entrevista para producirlo."
+    },
+    "frecuencia_entrega_semanal": {
+      "valor": 1,
+      "unidad": "entregas por cuenta por semana",
+      "confianza": "SUPUESTO",
+      "fuente": "Política de etapa 11",
+      "consultado": "2026-08-04",
+      "etapa": "11-comercial-logistica",
+      "nota": "Una entrega semanal por cuenta permite consolidar una sola ruta y limita el stock que el cliente debe mantener a -18 °C. Queda supeditada a produccion.vida_util_meses (etapa 04) y a la capacidad del congelador del cliente."
+    },
+    "pedido_minimo_unidades": {
+      "valor": null,
+      "unidad": "unidades por entrega",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "11-comercial-logistica",
+      "nota": "Restricción: pedido_minimo x margen_bruto_unitario >= costo_de_una_entrega. El margen bruto unitario depende de precios (02/03) e insumos (06); el costo de entrega depende de la ruta. Ninguno está cerrado.",
+      "depende_de": [
+        "precios.precio_venta_b2b_familiar_clp",
+        "insumos.costo_mp_unidad_familiar_clp"
+      ]
+    },
+    "descuento_volumen_escalon2_pct": {
+      "valor": null,
+      "unidad": "% de descuento sobre precio de lista",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "11-comercial-logistica",
+      "nota": "Restricción publicada, valor no: descuento_max_pct <= margen_bruto_pct - margen_minimo_objetivo_pct. Fijar un descuento antes de conocer el costo unitario de etapa 06 es regalar margen a ciegas.",
+      "depende_de": [
+        "precios.precio_venta_b2b_familiar_clp",
+        "insumos.costo_mp_unidad_familiar_clp"
+      ]
+    },
+    "descuento_volumen_escalon3_pct": {
+      "valor": null,
+      "unidad": "% de descuento sobre precio de lista",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "11-comercial-logistica",
+      "nota": "Escalón reservado a marca blanca y cuentas ancla. Misma restricción de margen que el escalón 2.",
+      "depende_de": [
+        "precios.precio_venta_b2b_familiar_clp",
+        "insumos.costo_mp_unidad_familiar_clp"
+      ]
+    },
+    "comodato_congelador_costo_unitario_clp": {
+      "valor": 403361,
+      "unidad": "CLP neto por congelador horizontal 300 L",
+      "confianza": "VERIFICADO",
+      "fuente": "https://equipamientocrecer.cl/products/546652364",
+      "consultado": "2026-08-05",
+      "etapa": "11-comercial-logistica",
+      "nota": "Maigas horizontal tapa dura 300 L, $480.000 con impuesto incluido segun la ficha publicada; neto = 480.000 / 1,19 = 403.361. Garantía declarada 6 meses. Es un equipo de gama doméstica: un congelador de exhibición rotulado con la marca para punto de venta profesional cuesta más y no tiene precio público comparable."
+    },
+    "comodato_cuentas_ano1": {
+      "valor": null,
+      "unidad": "n° cuentas que reciben congelador en comodato",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "11-comercial-logistica",
+      "nota": "Etapa 03 debe preguntar en cada entrevista si el local tiene capacidad de -18 °C libre. Solo esa medición define cuántos comodatos hacen falta.",
+      "depende_de": [
+        "03-validacion"
+      ]
+    },
+    "comodato_capex_no_contabilizado_clp": {
+      "valor": null,
+      "unidad": "CLP neto",
+      "confianza": "PENDIENTE",
+      "fuente": "https://www.sii.cl/pagina/jurisprudencia/adminis/1998/renta/oct07.htm",
+      "consultado": "2026-08-05",
+      "etapa": "11-comercial-logistica",
+      "nota": "HALLAZGO. Fórmula: comodato_cuentas_ano1 x 403.361. El bien entregado en comodato NO sale del patrimonio de la empresa: el Oficio SII N°2.615 de 29-09-1998 confirma que los bienes entregados a terceros que siguen siendo de propiedad del contribuyente forman parte de su activo fijo y se deprecian. Por lo tanto es CAPEX y hoy no tiene línea en inversion.* de parametros-10-financiero.json ni en el generador de Excel. Con la holgura declarada de $3,32M contra el límite de $50M, el noveno congelador rompe la restricción de capital."
+    },
+    "costo_km_tercerizado_clp": {
+      "valor": 900,
+      "unidad": "CLP por km de ruta, carga general tercerizada",
+      "confianza": "ESTIMADO",
+      "fuente": "https://transportesmarlop.cl/cuanto-cuesta-el-transporte-de-carga-terrestre-en-chile-guia-2026/",
+      "consultado": "2026-08-05",
+      "etapa": "11-comercial-logistica",
+      "nota": "Banda publicada $800-$1.200/km para carga general hasta 1 tonelada; el propio operador propone $900/km como fórmula rápida. LÍMITE FUERTE: es carga general, NO refrigerada. Ningún transportista chileno consultado publica tarifa de frío; el recargo por -18 °C es desconocido y se suma sobre esta base."
+    },
+    "diesel_temuco_clp_litro_neto": {
+      "valor": 1022,
+      "unidad": "CLP neto por litro",
+      "confianza": "VERIFICADO",
+      "fuente": "https://preciocombustible.cl/region/araucania/temuco/ (releva CNE, bencinaenlinea.cl)",
+      "consultado": "2026-08-05",
+      "etapa": "11-comercial-logistica",
+      "nota": "Promedio de 36 estaciones de Temuco: $1.216/L con IVA al 05-08-2026; neto = 1.216 / 1,19 = 1.022. Rango observado $965-$1.235. Insumo para evaluar la alternativa de vehículo propio frente a tercerizar."
+    },
+    "estacionalidad_ratio_peak_valle_pernoctaciones": {
+      "valor": 2.1,
+      "unidad": "multiplicador, mes peak / mes valle",
+      "confianza": "VERIFICADO",
+      "fuente": "https://regiones.ine.gob.cl/documentos/default-source/region-ix/estadisticas/actividad-del-turismo/boletines/2026/bolet%C3%ADn-encuesta-mensual-de-alojamiento-tur%C3%ADstico-(emat)-enero-2026.pdf",
+      "consultado": "2026-08-05",
+      "etapa": "11-comercial-logistica",
+      "nota": "PROXY, NO ES DEMANDA DE PIZZA. EMAT Araucanía: enero 2026 = 143.871 pernoctaciones regionales; junio 2025 = 68.612 (citado en 01-mercado). 143.871 / 68.612 = 2,10. Diciembre 2025 = 83.965 (enero menos las 59.906 pernoctaciones de variación mensual declarada). Mide alojamiento turístico regional, concentrado en Araucanía Lacustre (Anillo 1), no consumo HORECA de Temuco en el año 1. Sirve para acotar la AMPLITUD plausible, no para repartir el volumen mes a mes."
+    }
+  },
+  "operacion": {
+    "ventas_mensual_clp": {
+      "valor": null,
+      "unidad": "CLP/mes",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "11-comercial-logistica",
+      "nota": "No se sustituye el stub de 180.000 porque su componente principal no es cotizable todavía. Fórmula: muestras_mes x insumos.costo_mp_unidad_familiar_clp + km_visitas_mes / rendimiento_km_litro x 1.022 + material_grafico. El costo de la muestra es de etapa 06 y el número de visitas depende de comercial.tasa_conversion_prospecto_pct. ADVERTENCIA: esta línea NO incluye la remuneración de la fuerza de venta; esa dotación es de etapa 09 y hoy está embebida sin desglose en operacion.nomina_bruta_mensual_clp.",
+      "depende_de": [
+        "insumos.costo_mp_unidad_familiar_clp",
+        "comercial.tasa_conversion_prospecto_pct",
+        "rrhh.dotacion_comercial"
+      ]
+    },
+    "seguros_mensual_clp": {
+      "valor": null,
+      "unidad": "CLP/mes",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "12-riesgos-financiamiento",
+      "nota": "No existe tarifa pública para una planta de alimentos con cámara de frío; cualquier cifra sería inventada. Mientras esté en null el modelo usa el fallback de $60.000 de la etapa 10, declarado SUPUESTO. Gestión: cotizar póliza de incendio, equipo estático, rotura de maquinaria con daño a existencias refrigeradas y responsabilidad civil de producto, con un corredor y con BancoEstado Seguros, sobre el inventario de equipos de la etapa 05. La cobertura de daño a existencias por falla de frío es la relevante: el riesgo de cadena de frío no está representado en ninguna otra parte del modelo.",
+      "depende_de": [
+        "capex.equipamiento_base_clp",
+        "local.superficie_requerida_m2"
+      ]
+    }
+  },
+  "escenarios": {
+    "precio_pesimista_factor": {
+      "valor": 0.72,
+      "unidad": "multiplicador sobre el precio base",
+      "confianza": "ESTIMADO",
+      "fuente": "02-competencia/index.html",
+      "consultado": "2026-08-04",
+      "etapa": "12-riesgos-financiamiento",
+      "nota": "Ancla: PF Listo familiar en promoción, $3.017 netos, precio retail regional observado en Temuco. 3.017 ÷ 4.200 = 0,718. Es un escenario definido, no un pronóstico. Consecuencia: la contribución unitaria cae de $1.547 a $364 contra un costo fijo anual de $50.969.179; VAN −$147.746.510. Recalcular si cambia precios.precio_venta_b2b_familiar_clp.",
+      "depende_de": [
+        "precios.precio_venta_b2b_familiar_clp"
+      ]
+    },
+    "precio_base_factor": {
+      "valor": 1,
+      "unidad": "multiplicador",
+      "confianza": "VERIFICADO",
+      "fuente": "datos/parametros-10-financiero.json#modelo.precio_b2b_familiar_base_clp",
+      "consultado": "2026-08-04",
+      "etapa": "12-riesgos-financiamiento",
+      "nota": "Identidad. El nivel base sigue siendo SUPUESTO; lo verificado es el multiplicador."
+    },
+    "precio_optimista_factor": {
+      "valor": 1.2,
+      "unidad": "multiplicador sobre el precio base",
+      "confianza": "ESTIMADO",
+      "fuente": "02-competencia/index.html",
+      "consultado": "2026-08-04",
+      "etapa": "12-riesgos-financiamiento",
+      "nota": "Ancla: pizza familiar foodservice publicada a $5.034 netos (Meta Food, Santiago). 5.034 ÷ 4.200 = 1,199. Límite: ese precio no incluye flete a Temuco ni prueba disposición a pagar del canal local.",
+      "depende_de": [
+        "precios.precio_venta_b2b_familiar_clp"
+      ]
+    },
+    "volumen_pesimista_factor": {
+      "valor": null,
+      "unidad": "multiplicador sobre el volumen del año 1",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "12-riesgos-financiamiento",
+      "nota": "Fórmula publicada: factor = mercado.som_ano1_pizzas_mes ÷ 2.500. No se inventa un 0,80. Referencias del modelo: a 2.254 pizzas/mes el fondeo máximo alcanza $50.000.000; a 1.972 pizzas/mes el VAN se anula; el equilibrio está en 2.666 pizzas/mes, por sobre el volumen base de 2.500.",
+      "depende_de": [
+        "mercado.som_ano1_pizzas_mes"
+      ]
+    },
+    "volumen_base_factor": {
+      "valor": 1,
+      "unidad": "multiplicador",
+      "confianza": "VERIFICADO",
+      "fuente": "datos/parametros-10-financiero.json#modelo.volumen_ano1_unidades",
+      "consultado": "2026-08-04",
+      "etapa": "12-riesgos-financiamiento",
+      "nota": "Identidad."
+    },
+    "volumen_optimista_factor": {
+      "valor": null,
+      "unidad": "multiplicador sobre el volumen del año 1",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "12-riesgos-financiamiento",
+      "nota": "Misma fórmula. Debe además quedar acotado por produccion.capacidad_instalada_pizzas_dia; hoy esa restricción no muerde porque la etapa 04 no la publicó.",
+      "depende_de": [
+        "mercado.som_ano1_pizzas_mes",
+        "produccion.capacidad_instalada_pizzas_dia"
+      ]
+    },
+    "costo_variable_pesimista_factor": {
+      "valor": null,
+      "unidad": "multiplicador sobre el costo variable unitario",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "12-riesgos-financiamiento",
+      "nota": "Sin cotización industrial de mozzarella no hay ancla. Referencias del modelo sobre un costo variable base de $2.653/pizza: +3,89% lleva el fondeo máximo a $50.000.000; +11,68% anula el VAN.",
+      "depende_de": [
+        "insumos.mozzarella_clp_kg",
+        "insumos.envase_clp_unidad",
+        "produccion.merma_pct"
+      ]
+    },
+    "costo_variable_base_factor": {
+      "valor": 1,
+      "unidad": "multiplicador",
+      "confianza": "VERIFICADO",
+      "fuente": "10-financiero/modelo.js",
+      "consultado": "2026-08-04",
+      "etapa": "12-riesgos-financiamiento",
+      "nota": "Identidad."
+    },
+    "costo_variable_optimista_factor": {
+      "valor": null,
+      "unidad": "multiplicador sobre el costo variable unitario",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "12-riesgos-financiamiento",
+      "nota": "Debe salir del descuento por escalón de volumen que entregue la etapa 06, no de un supuesto.",
+      "depende_de": [
+        "insumos.mozzarella_clp_kg"
+      ]
+    },
+    "costo_fijo_pesimista_factor": {
+      "valor": null,
+      "unidad": "multiplicador sobre el costo fijo mensual",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "12-riesgos-financiamiento",
+      "nota": "Sin dotación de la etapa 09 ni canon real de la etapa 07 no hay ancla. Referencias del modelo sobre un costo fijo base de $4.123.720/mes: +6,51% lleva el fondeo máximo a $50.000.000; +31,35% anula el VAN.",
+      "depende_de": [
+        "rrhh.nomina_bruta_mensual_clp",
+        "macro.factor_costo_empresa",
+        "local.arriendo_mensual_clp",
+        "operacion.seguros_mensual_clp"
+      ]
+    },
+    "costo_fijo_base_factor": {
+      "valor": 1,
+      "unidad": "multiplicador",
+      "confianza": "VERIFICADO",
+      "fuente": "10-financiero/modelo.js",
+      "consultado": "2026-08-04",
+      "etapa": "12-riesgos-financiamiento",
+      "nota": "Identidad."
+    },
+    "costo_fijo_optimista_factor": {
+      "valor": null,
+      "unidad": "multiplicador sobre el costo fijo mensual",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "12-riesgos-financiamiento",
+      "nota": "No se propone un factor menor a 1: el costo fijo del caso base ya asume una dotación mínima sin verificar.",
+      "depende_de": [
+        "rrhh.nomina_bruta_mensual_clp",
+        "local.arriendo_mensual_clp"
+      ]
+    },
+    "capex_pesimista_factor": {
+      "valor": 1.3,
+      "unidad": "multiplicador sobre equipos y habilitación",
+      "confianza": "ESTIMADO",
+      "fuente": "AACE International 18R-97 (rev. 01-03-2016), Tabla 1 — https://services.austintexas.gov/edims/document.cfm?id=280770",
+      "consultado": "2026-08-04",
+      "etapa": "12-riesgos-financiamiento",
+      "nota": "El CAPEX vigente es una estimación Clase 5 (definición 0–2%, método de juicio y analogía, precios de publicación web y ninguna cotización de habilitación). AACE asigna a la Clase 5 un rango alto de +30% a +100% DESPUÉS de aplicar contingencia. Se toma el extremo MENOS alarmante de esa banda, +30%. Consecuencia: fondeo máximo $54.320.905, es decir NO CABE en $50.000.000. El valor de quiebre es apenas +13,03%, muy por dentro del rango propio de la clase de estimación.",
+      "depende_de": [
+        "capex.equipamiento_base_clp",
+        "local.habilitacion_sanitaria_clp"
+      ]
+    },
+    "capex_base_factor": {
+      "valor": 1,
+      "unidad": "multiplicador",
+      "confianza": "VERIFICADO",
+      "fuente": "10-financiero/modelo.js",
+      "consultado": "2026-08-04",
+      "etapa": "12-riesgos-financiamiento",
+      "nota": "Identidad."
+    },
+    "capex_optimista_factor": {
+      "valor": 0.8,
+      "unidad": "multiplicador sobre equipos y habilitación",
+      "confianza": "ESTIMADO",
+      "fuente": "AACE International 18R-97 (rev. 01-03-2016), Tabla 1 — https://services.austintexas.gov/edims/document.cfm?id=280770",
+      "consultado": "2026-08-04",
+      "etapa": "12-riesgos-financiamiento",
+      "nota": "Extremo estrecho de la banda baja de Clase 5 (−20% a −50%). Consecuencia: CAPEX $22.869.227 y fondeo máximo $41.590.138. Simetría falsa: la banda de AACE es asimétrica hacia arriba y así debe leerse.",
+      "depende_de": [
+        "capex.equipamiento_base_clp",
+        "local.habilitacion_sanitaria_clp"
+      ]
+    },
+    "clase_estimacion_capex_aace": {
+      "valor": 5,
+      "unidad": "clase AACE 18R-97 (5 = menos madura)",
+      "confianza": "ESTIMADO",
+      "fuente": "https://services.austintexas.gov/edims/document.cfm?id=280770",
+      "consultado": "2026-08-04",
+      "etapa": "12-riesgos-financiamiento",
+      "nota": "Clasificación aplicada por esta etapa al estimado vigente. Sube a Clase 4 cuando existan dos cotizaciones formales por equipo y un presupuesto de habilitación sobre un local visitado (gate G2)."
+    }
+  },
+  "riesgo": {
+    "holgura_capital_clp": {
+      "valor": 3317555,
+      "unidad": "CLP",
+      "confianza": "ESTIMADO",
+      "fuente": "datos/supuestos.json#meta.restriccion_capital_clp menos el fondeo máximo de 10-financiero/modelo.js",
+      "consultado": "2026-08-04",
+      "etapa": "12-riesgos-financiamiento",
+      "nota": "$50.000.000 − $46.682.445. Aritmética exacta sobre entradas SUPUESTO, por eso ESTIMADO y no VERIFICADO. Coincide casi peso a peso con la contingencia de $3.321.070: la holgura ES la contingencia."
+    },
+    "quiebre_habilitacion_sanitaria_clp": {
+      "valor": 14884831,
+      "unidad": "CLP",
+      "confianza": "ESTIMADO",
+      "fuente": "10-financiero/modelo.js",
+      "consultado": "2026-08-04",
+      "etapa": "12-riesgos-financiamiento",
+      "probabilidad": "ALTA",
+      "impacto": "CRÍTICO",
+      "clave_afectada": "local.habilitacion_sanitaria_clp",
+      "mitigacion": "Producir en maquila hasta disponer de presupuesto de arquitecto sobre un local real visitado; condicionar el arriendo a factibilidad sanitaria y municipal (gate G2/G4).",
+      "nota": "+24,0% sobre los $12.000.000 de fallback lleva el fondeo máximo a $50.000.000. Etapa 07 no encontró ningún aviso que acreditara simultáneamente uso alimentario, resolución sanitaria vigente y tamaño adecuado."
+    },
+    "quiebre_capex_pct": {
+      "valor": 13.03,
+      "unidad": "% de sobrecosto sobre equipos y habilitación",
+      "confianza": "ESTIMADO",
+      "fuente": "10-financiero/modelo.js",
+      "consultado": "2026-08-04",
+      "etapa": "12-riesgos-financiamiento",
+      "probabilidad": "ALTA",
+      "impacto": "CRÍTICO",
+      "clave_afectada": "capex.equipamiento_base_clp",
+      "mitigacion": "Dos cotizaciones formales por equipo con flete a Temuco antes del gate G2; reclasificar el estimado a Clase 4.",
+      "nota": "Muy por dentro de la banda alta de una estimación Clase 5 (+30% a +100%). Es el hallazgo que responde la pregunta 6 del statement."
+    },
+    "quiebre_plazo_cobro_dias": {
+      "valor": 39.33,
+      "unidad": "días",
+      "confianza": "ESTIMADO",
+      "fuente": "10-financiero/modelo.js",
+      "consultado": "2026-08-04",
+      "etapa": "12-riesgos-financiamiento",
+      "probabilidad": "ALTA",
+      "impacto": "CRÍTICO",
+      "clave_afectada": "precios.plazo_cobro_dias",
+      "mitigacion": "Pactar 15 días con descuento por pronto pago en las primeras cuentas; no aceptar 60 días sin línea de capital de trabajo aprobada. Medir el plazo real en el piloto (gate G3).",
+      "nota": "9,3 días adicionales sobre los 30 supuestos agotan toda la holgura. A 60 días —práctica habitual del canal según el statement §8— el capital de trabajo sube a $24.702.598 y el fondeo máximo a $57.349.294."
+    },
+    "quiebre_volumen_pizzas_mes": {
+      "valor": 2254,
+      "unidad": "pizzas/mes del año 1",
+      "confianza": "ESTIMADO",
+      "fuente": "10-financiero/modelo.js",
+      "consultado": "2026-08-04",
+      "etapa": "12-riesgos-financiamiento",
+      "probabilidad": "ALTA",
+      "impacto": "CRÍTICO",
+      "clave_afectada": "mercado.som_ano1_pizzas_mes",
+      "mitigacion": "No firmar arriendo ni comprometer CAPEX sin cartas de intención por al menos 2.666 pizzas/mes al precio de lista (gate G1).",
+      "nota": "El VAN se anula en 1.972 pizzas/mes. El caso base (2.500) ya está por DEBAJO del punto de equilibrio (2.666): el año 1 nace con flujo de caja libre de −$3.165.722 por construcción."
+    },
+    "quiebre_precio_clp": {
+      "valor": 4083,
+      "unidad": "CLP neto/unidad familiar",
+      "confianza": "ESTIMADO",
+      "fuente": "10-financiero/modelo.js",
+      "consultado": "2026-08-04",
+      "etapa": "12-riesgos-financiamiento",
+      "probabilidad": "ALTA",
+      "impacto": "CRÍTICO",
+      "clave_afectada": "precios.precio_venta_b2b_familiar_clp",
+      "mitigacion": "Prueba monádica de la etapa 03 antes de publicar lista de precios; no anclar al retail promocional.",
+      "nota": "−2,8% sobre $4.200 rompe el techo de caja; el VAN se anula en $3.884 (−7,5%). Al piso retail observado de $3.017 la contribución unitaria cae a $364 contra $50.969.179 de costo fijo anual."
+    },
+    "quiebre_costo_variable_pct": {
+      "valor": 3.89,
+      "unidad": "% de alza sobre el costo variable unitario",
+      "confianza": "ESTIMADO",
+      "fuente": "10-financiero/modelo.js",
+      "consultado": "2026-08-04",
+      "etapa": "12-riesgos-financiamiento",
+      "probabilidad": "MEDIA",
+      "impacto": "ALTO",
+      "clave_afectada": "insumos.mozzarella_clp_kg",
+      "mitigacion": "Dos proveedores aprobados con precio por escalón de 25/100/300 kg y ficha técnica antes del piloto.",
+      "nota": "El VAN se anula con +11,68%. Costo variable base $2.653/pizza. Etapa 06 solo halló una referencia minorista de mozzarella, no una cotización industrial."
+    },
+    "quiebre_costo_fijo_pct": {
+      "valor": 6.51,
+      "unidad": "% de alza sobre el costo fijo mensual",
+      "confianza": "ESTIMADO",
+      "fuente": "10-financiero/modelo.js",
+      "consultado": "2026-08-04",
+      "etapa": "12-riesgos-financiamiento",
+      "probabilidad": "MEDIA",
+      "impacto": "ALTO",
+      "clave_afectada": "rrhh.nomina_bruta_mensual_clp",
+      "mitigacion": "Dotación mínima verificada por la etapa 09 y canon real de la etapa 07 antes del gate G4.",
+      "nota": "El VAN se anula con +31,35%. Costo fijo base $4.123.720/mes, del cual la nómina con factor de costo empresa es la partida dominante."
+    },
+    "quiebre_contingencia_pct": {
+      "valor": 29.98,
+      "unidad": "% sobre equipos, instalación y habilitación",
+      "confianza": "ESTIMADO",
+      "fuente": "10-financiero/modelo.js",
+      "consultado": "2026-08-04",
+      "etapa": "12-riesgos-financiamiento",
+      "probabilidad": "ALTA",
+      "impacto": "CRÍTICO",
+      "clave_afectada": "inversion.contingencia_pct",
+      "mitigacion": "Presupuesto desglosado de habilitación que permita bajar la contingencia con evidencia, no subirla con criterio.",
+      "nota": "Duplicar la contingencia vigente rompe el techo de $50.000.000. Con 25% el fondeo máximo queda en $48.896.491 y la holgura cae a $1.103.509."
+    },
+    "cadena_de_frio": {
+      "valor": null,
+      "unidad": "CLP de pérdida esperada",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "12-riesgos-financiamiento",
+      "probabilidad": "MEDIA",
+      "impacto": "ALTO",
+      "clave_afectada": "operacion.seguros_mensual_clp",
+      "mitigacion": "Registro de temperatura por lote, alarma de cámara, criterio documentado de rechazo y póliza con cobertura de daño a existencias por falla de equipo.",
+      "nota": "No se cuantifica. El daño principal es reputacional en un canal profesional pequeño y el modelo no lo representa de ninguna forma. Un número aquí sería inventado.",
+      "depende_de": [
+        "operacion.seguros_mensual_clp"
+      ]
+    },
+    "rampa_anos_3_a_5": {
+      "valor": null,
+      "unidad": "—",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "12-riesgos-financiamiento",
+      "probabilidad": "ALTA",
+      "impacto": "CRÍTICO",
+      "clave_afectada": "comercial.rampa_ano3_factor",
+      "mitigacion": "Fijar la forma de la rampa en la etapa 11 y recalcular VAN, TIR y fondeo antes del gate G4.",
+      "nota": "El VAN de $44.017.948 proviene casi íntegramente de años que ninguna etapa validó, mientras el año 1 aporta flujo negativo. No es un riesgo acotable con un valor de quiebre: es una ausencia de evidencia.",
+      "depende_de": [
+        "comercial.rampa_ano3_factor",
+        "comercial.rampa_ano4_factor",
+        "comercial.rampa_ano5_factor"
+      ]
+    },
+    "maquila_costo_maximo_admisible_clp_unidad": {
+      "valor": 354,
+      "unidad": "CLP netos/pizza de sobrecosto variable admisible",
+      "confianza": "ESTIMADO",
+      "fuente": "10-financiero/modelo.js",
+      "consultado": "2026-08-04",
+      "etapa": "12-riesgos-financiamiento",
+      "probabilidad": "—",
+      "impacto": "—",
+      "clave_afectada": "local.habilitacion_sanitaria_clp",
+      "mitigacion": "Es la mitigación estructural del riesgo de CAPEX, no un plan B.",
+      "nota": "Escenario con habilitación sanitaria en cero: CAPEX $14.161.534, fondeo máximo $32.882.445, holgura $17.117.555 y VAN $55.486.035 a 15% ($40.135.543 a 20,46%). El margen del maquilador NO está modelado; el modelo solo acota cuánto puede cobrar: hasta +$354/pizza el proyecto sigue cabiendo en $50.000.000, hasta +$389/pizza el VAN sigue positivo, y por sobre +$79/pizza la maquila deja de ser mejor que la planta propia en VAN. Esa cifra debe cotizarse con plantas con resolución sanitaria vigente.",
+      "depende_de": [
+        "produccion.costo_maquila_clp_unidad"
+      ]
+    }
+  },
+  "financiamiento": {
+    "subsidio_no_reembolsable_modelado_clp": {
+      "valor": 0,
+      "unidad": "CLP",
+      "confianza": "VERIFICADO",
+      "fuente": "10-financiero/modelo.js",
+      "consultado": "2026-08-04",
+      "etapa": "12-riesgos-financiamiento",
+      "nota": "Confirmación explícita de que el flujo no incorpora ningún aporte público. Si el coordinador decide agregar una línea de subsidio, debe ser una decisión declarada, no un supuesto silencioso."
+    },
+    "sercotec_capital_semilla_emprende_clp": {
+      "valor": 3500000,
+      "unidad": "CLP netos, no reembolsables",
+      "confianza": "VERIFICADO",
+      "fuente": "https://www.sercotec.cl/wp-content/uploads/2026/04/Bases-Semilla-EMPRENDE-2026-Araucania-Prov.Cautin-VB%C2%B0.pdf",
+      "consultado": "2026-08-04",
+      "etapa": "12-riesgos-financiamiento",
+      "instrumento": "Capital Semilla Emprende, Provincia de Cautín, Región de La Araucanía 2026",
+      "elegibilidad": "Persona natural mayor de 18 años SIN inicio de actividades en primera categoría ante el SII; aporte empresarial obligatorio del 3% del subsidio; sin deudas laborales, previsionales ni tributarias.",
+      "plazo_postulacion": "Desde las 12:00 del 29-04-2026 hasta las 15:00 del 13-05-2026. CERRADA al 04-08-2026.",
+      "modelado": false,
+      "nota": "AÚN NO MODELADO. De los $3.500.000, entre $200.000 y $500.000 deben ir a gestión empresarial y el resto a inversión, habilitación y capital de trabajo. Cubre el 8,0% de la inversión inicial de $43.516.722. Incompatibilidad estructural: exige NO haber iniciado actividades, de modo que no puede combinarse con una empresa ya formalizada. Convocatoria 2027 no publicada al 04-08-2026."
+    },
+    "sercotec_crece_sostenible_min_clp": {
+      "valor": 7000000,
+      "unidad": "CLP netos, no reembolsables",
+      "confianza": "VERIFICADO",
+      "fuente": "https://www.sercotec.cl/convocatoria/crece-sostenible-region-de-la-araucania-2026/",
+      "consultado": "2026-08-04",
+      "etapa": "12-riesgos-financiamiento",
+      "modelado": false,
+      "nota": "Piso del rango de financiamiento del instrumento. AÚN NO MODELADO."
+    },
+    "sercotec_crece_sostenible_max_clp": {
+      "valor": 9000000,
+      "unidad": "CLP netos, no reembolsables",
+      "confianza": "VERIFICADO",
+      "fuente": "https://www.sercotec.cl/wp-content/uploads/2026/07/Modificacion-Bases-de-Convocatoria-Crece-Sostenible-2026.pdf",
+      "consultado": "2026-08-04",
+      "etapa": "12-riesgos-financiamiento",
+      "instrumento": "Crece Sostenible, Región de La Araucanía 2026",
+      "elegibilidad": "Persona natural o jurídica CON inicio de actividades en primera categoría y ventas netas anuales entre 200 UF ($8.168.958) y 25.000 UF. Inversiones y acciones deben orientarse a prácticas sostenibles. Cobertura estimada: 29 empresas.",
+      "plazo_postulacion": "Desde las 12:00 del 22-06-2026 hasta las 15:00 del 15-07-2026 según modificación de bases de julio 2026 (las bases originales cerraban el 08-07-2026). CERRADA al 04-08-2026.",
+      "modelado": false,
+      "nota": "ÚNICO MONTO NO REEMBOLSABLE CONCRETO Y POTENCIALMENTE APLICABLE A ESTE PROYECTO. AÚN NO MODELADO, y no puede aliviar la inversión inicial: exige ventas previas de al menos 200 UF, de modo que llega después de haber comprometido el capital, no antes. Encaja en el gate G5 (mes 12), no en el arranque. Convocatoria 2027 no publicada al 04-08-2026."
+    },
+    "corfo_semilla_inicia_clp": {
+      "valor": 15000000,
+      "unidad": "CLP no reembolsables, hasta 75% del proyecto",
+      "confianza": "VERIFICADO",
+      "fuente": "https://www.corfo.gob.cl/sites/cpp/inf/semilla-inicia",
+      "consultado": "2026-08-04",
+      "etapa": "12-riesgos-financiamiento",
+      "instrumento": "Corfo Semilla Inicia",
+      "elegibilidad": "Emprendimiento INNOVADOR con potencial de escalamiento e internacionalización; persona jurídica con menos de 18 meses de inicio de actividades y sin ventas. Aporte del postulante 25%. $17.000.000 para empresas lideradas por mujeres.",
+      "plazo_postulacion": "Todas las convocatorias figuran CERRADAS al 04-08-2026; la última abierta corrió del 19-11-2025 al 18-12-2025.",
+      "modelado": false,
+      "nota": "AÚN NO MODELADO Y PROBABLEMENTE NO ELEGIBLE. Corfo declara expresamente que un emprendimiento tradicional, sin innovación, no puede postular. Una microfábrica de pizza congelada con proceso conocido no califica salvo que se construya un componente de innovación verificable, lo que este dossier no ha hecho ni debe inventar."
+    },
+    "corfo_credito_mipyme_tope_uf": {
+      "valor": 10000,
+      "unidad": "UF por RUT",
+      "confianza": "VERIFICADO",
+      "fuente": "https://www.chileatiende.gob.cl/fichas/868-credito-corfo-mipyme",
+      "consultado": "2026-08-04",
+      "etapa": "12-riesgos-financiamiento",
+      "instrumento": "Crédito Corfo MIPYME",
+      "elegibilidad": "MIPYME con ventas anuales hasta 100.000 UF; se accede a través de un intermediario financiero no bancario (IFNB), no directamente en Corfo. Plazo hasta 10 años.",
+      "plazo_postulacion": "Ventanilla abierta durante todo el año; vigente al 04-08-2026.",
+      "modelado": false,
+      "nota": "ES DEUDA, NO APORTE. AÚN NO MODELADO: el statement §5 fija capital propio sin deuda como supuesto base y este dossier no construye tabla de amortización ni escudo tributario. Se registra porque es el único instrumento de la lista efectivamente disponible en la fecha base."
+    },
+    "fogape_cobertura": {
+      "valor": null,
+      "unidad": "% del capital garantizado",
+      "confianza": "PENDIENTE",
+      "fuente": "https://www.fogape.cl/que-es-fogape-2/",
+      "consultado": "2026-08-04",
+      "etapa": "12-riesgos-financiamiento",
+      "instrumento": "Fondo de Garantía para Pequeños Empresarios (FOGAPE)",
+      "elegibilidad": "Micro, pequeños y medianos empresarios elegibles según la ley del Fondo, que no cuenten con garantías o cuyas garantías sean insuficientes. Administra BancoEstado; supervisa la CMF; se rige por el DL 3.472 de 1980.",
+      "plazo_postulacion": "Permanente; se solicita ante una institución financiera participante, no ante el Fondo.",
+      "modelado": false,
+      "nota": "NO ENTREGA DINERO Y AÚN NO ESTÁ MODELADO: garantiza un porcentaje del capital de un crédito que un banco debe aprobar antes. El porcentaje efectivo y el tope dependen de la licitación de derechos de garantía vigente y del producto de cada banco; no se pudo verificar la cifra exacta en fuente primaria (www.fogape.cl no publica la tabla y la página de garantías estatales de BancoEstado devuelve 404 al 04-08-2026). Gestión: solicitar condiciones a un ejecutivo de empresas de BancoEstado sucursal Temuco."
+    }
+  }
 }

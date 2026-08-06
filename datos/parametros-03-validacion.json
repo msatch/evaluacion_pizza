@@ -1,0 +1,230 @@
+{
+  "_dependencias": [
+    {
+      "clave": "mercado.establecimientos_horeca_temuco",
+      "duena": "01-mercado",
+      "para_que": "Universo del que se extrae el marco muestral y la lista de 120 prospectos.",
+      "que_hice": "Citada como referencia interna (datos/parametros-01-mercado.json#mercado.establecimientos_horeca_temuco). No se copió el valor a ninguna clave propia ni se recalculó.",
+      "estado": "CITADA"
+    },
+    {
+      "clave": "precios.precio_competencia_nacional_clp",
+      "duena": "02-competencia",
+      "para_que": "Ancla de los tres puntos de precio de la prueba monádica y del umbral de precio piso del criterio ir/no-ir.",
+      "que_hice": "Publiqué los umbrales como FACTORES sobre esa clave (validacion.umbral_precio_piso_factor y validacion.oferta_monadica_factor_*). El monto en CLP queda en null con depende_de. No se copió ni recalculó el valor de 02.",
+      "estado": "ABIERTA"
+    },
+    {
+      "clave": "precios.plazo_cobro_dias",
+      "duena": "02-competencia",
+      "para_que": "Driver de capital de trabajo en E10; esta etapa es la que lo mide en terreno (pregunta 5 del guion).",
+      "que_hice": "Dejo el eco en null + PENDIENTE con el diseño de medición en la nota. Fijo además un umbral de decisión propio (validacion.umbral_plazo_cobro_max_dias = 30).",
+      "estado": "ABIERTA"
+    },
+    {
+      "clave": "mercado.som_ano1_pizzas_mes",
+      "duena": "01-mercado",
+      "para_que": "Volumen del año 1 que hoy E10 sustituye por un supuesto de 2.500 u/mes.",
+      "que_hice": "Eco en null + PENDIENTE con la fórmula de cálculo desde las cuentas convertidas en terreno.",
+      "estado": "ABIERTA"
+    }
+  ],
+
+  "validacion": {
+    "n_prospectos_lista": {
+      "valor": 120,
+      "unidad": "n° cuentas nominales",
+      "confianza": "SUPUESTO",
+      "fuente": "Diseño propio de esta etapa, consistente con 01-mercado §5",
+      "consultado": "2026-08-05",
+      "etapa": "03-validacion",
+      "nota": "Cuotas: 60 pubs/bares/cafeterías, 25 hoteles y hostales, 15 casinos y concesionarias, 10 food trucks, 10 minimarkets de servicentro. Los nombres NO se pudieron obtener en gabinete: SERNATUR (https://serviciosturisticos.sernatur.cl/) filtra por comuna pero no permite descarga masiva, y la nómina de patentes comerciales de Temuco no está publicada como archivo abierto. Se entrega el marco muestral, no la lista nominal."
+    },
+    "n_entrevistas_objetivo": {
+      "valor": 30,
+      "unidad": "n° entrevistas válidas",
+      "confianza": "SUPUESTO",
+      "fuente": "01-mercado §5 'Qué debe medir la etapa 03'",
+      "consultado": "2026-08-05",
+      "etapa": "03-validacion",
+      "nota": "Entrevista válida = local visitado, interlocutor con decisión o acceso al decisor, y registro completo de las 8 preguntas del guion. No es una muestra probabilística: 30 casos con cuotas no permiten inferencia poblacional, solo descartar o sostener la hipótesis."
+    },
+    "n_min_observaciones_por_segmento": {
+      "valor": 5,
+      "unidad": "n° observaciones",
+      "confianza": "SUPUESTO",
+      "fuente": "01-mercado §5",
+      "consultado": "2026-08-05",
+      "etapa": "03-validacion",
+      "nota": "Bajo 5 observaciones válidas el segmento no se extrapola ni entra al cálculo de SAM/SOM. Regla heredada de 01, no verificada estadísticamente."
+    },
+    "tasa_entrevista_sobre_lista_pct": {
+      "valor": 25,
+      "unidad": "%",
+      "confianza": "SUPUESTO",
+      "fuente": "Razón de diseño 30/120",
+      "consultado": "2026-08-05",
+      "etapa": "03-validacion",
+      "nota": "NO es una tasa de respuesta observada: es el cociente aritmético entre la lista y la cuota de entrevistas. Si en terreno la tasa efectiva resulta menor, se amplía la lista, nunca se baja la cuota de 30."
+    },
+    "plazo_terreno_dias": {
+      "valor": 45,
+      "unidad": "días corridos",
+      "confianza": "SUPUESTO",
+      "fuente": "Diseño propio de esta etapa",
+      "consultado": "2026-08-05",
+      "etapa": "03-validacion",
+      "nota": "Ventana máxima del levantamiento. Más allá caducan las promociones retail que anclan el precio de la prueba monádica y rota el interlocutor en el canal. Es un límite de gestión, no una medición."
+    },
+    "n_ofertas_monadicas": {
+      "valor": 3,
+      "unidad": "n° puntos de precio",
+      "confianza": "SUPUESTO",
+      "fuente": "02-competencia §3, que prescribió prueba monádica",
+      "consultado": "2026-08-05",
+      "etapa": "03-validacion",
+      "nota": "Diseño monádico puro: cada entrevistado ve UNA sola oferta cerrada, asignada por rotación. Nunca se muestran los tres precios al mismo entrevistado ni se pregunta un precio abstracto."
+    },
+    "oferta_monadica_factor_bajo": {
+      "valor": 0.85,
+      "unidad": "multiplicador sobre precios.precio_competencia_nacional_clp",
+      "confianza": "SUPUESTO",
+      "fuente": "Diseño propio de esta etapa",
+      "consultado": "2026-08-05",
+      "etapa": "03-validacion",
+      "depende_de": ["precios.precio_competencia_nacional_clp"],
+      "nota": "Oferta A, piso de descarte. Si no hay pedido pagado ni a este precio, no existe negocio a ningún precio y la evaluación se detiene."
+    },
+    "oferta_monadica_factor_central": {
+      "valor": 1.0,
+      "unidad": "multiplicador sobre precios.precio_competencia_nacional_clp",
+      "confianza": "SUPUESTO",
+      "fuente": "Diseño propio de esta etapa",
+      "consultado": "2026-08-05",
+      "etapa": "03-validacion",
+      "depende_de": ["precios.precio_competencia_nacional_clp"],
+      "nota": "Oferta B, paridad con el ancla nacional. Es el punto que define el umbral ir/no-ir de precio."
+    },
+    "oferta_monadica_factor_alto": {
+      "valor": 1.15,
+      "unidad": "multiplicador sobre precios.precio_competencia_nacional_clp",
+      "confianza": "SUPUESTO",
+      "fuente": "Diseño propio de esta etapa",
+      "consultado": "2026-08-05",
+      "etapa": "03-validacion",
+      "depende_de": ["precios.precio_competencia_nacional_clp"],
+      "nota": "Oferta C. Mide directamente el supuesto crítico del statement §7: si el canal acepta sobreprecio por 'local y flexible'. Si C convierte, el precio objetivo de 02 debe fijarse ahí y no en B."
+    },
+    "pedido_prueba_min_unidades": {
+      "valor": 12,
+      "unidad": "unidades por pedido",
+      "confianza": "SUPUESTO",
+      "fuente": "Formato de caja observado por 02-competencia (caja de 12 en oferta foodservice)",
+      "consultado": "2026-08-05",
+      "etapa": "03-validacion",
+      "nota": "Unidad mínima de conversión. Un pedido pagado de una caja es el único dato duro de la entrevista; un 'sí, me interesa' no cuenta. No prueba recompra."
+    },
+    "umbral_conversion_pct": {
+      "valor": 20,
+      "unidad": "%",
+      "confianza": "SUPUESTO",
+      "fuente": "Criterio de decisión fijado por esta etapa",
+      "consultado": "2026-08-05",
+      "etapa": "03-validacion",
+      "nota": "Conversión mínima de entrevistas válidas a pedido de prueba pagado para justificar comprometer el grueso de la inversión. Fundamento: bajo 20% (6 de 30) la base de cuentas ancla no alcanza para sostener una rampa comercial ni para diversificar el riesgo de perder una cuenta. Es un criterio declarado, no una tasa observada en ningún mercado."
+    },
+    "umbral_conversion_min_cuentas": {
+      "valor": 6,
+      "unidad": "n° cuentas con pedido pagado",
+      "confianza": "SUPUESTO",
+      "fuente": "Criterio de decisión fijado por esta etapa",
+      "consultado": "2026-08-05",
+      "etapa": "03-validacion",
+      "nota": "Expresión absoluta de umbral_conversion_pct sobre n_entrevistas_objetivo (20% de 30). Se exige además que las 6 no provengan de un solo segmento."
+    },
+    "umbral_precio_piso_factor": {
+      "valor": 1.0,
+      "unidad": "multiplicador sobre precios.precio_competencia_nacional_clp",
+      "confianza": "SUPUESTO",
+      "fuente": "Criterio de decisión fijado por esta etapa",
+      "consultado": "2026-08-05",
+      "etapa": "03-validacion",
+      "depende_de": ["precios.precio_competencia_nacional_clp"],
+      "nota": "Precio neto puesto en el local, formato familiar, bajo el cual NO se sigue adelante. Fundamento: el ancla de 02 es un precio PROMOCIONAL de retail, que ya incluye margen minorista; exigir paridad con él en venta mayorista equivale exactamente a testear el supuesto del statement §7 (sobreprecio por local y flexible). Salvedad: el ancla es promocional y por tanto inestable; debe re-anclarse en el precio B2B puesto en Temuco cuando 02 lo cotice."
+    },
+    "umbral_precio_piso_familiar_clp": {
+      "valor": null,
+      "unidad": "CLP neto/unidad familiar",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "03-validacion",
+      "depende_de": ["precios.precio_competencia_nacional_clp"],
+      "nota": "Fórmula: umbral_precio_piso_familiar_clp = validacion.umbral_precio_piso_factor × precios.precio_competencia_nacional_clp. No se calcula aquí para no copiar ni congelar un valor de 02, que sigue siendo ESTIMADO y basado en promoción."
+    },
+    "umbral_plazo_cobro_max_dias": {
+      "valor": 30,
+      "unidad": "días corridos",
+      "confianza": "SUPUESTO",
+      "fuente": "https://registrodeacuerdos.economia.gob.cl/Normativa.aspx",
+      "consultado": "2026-08-05",
+      "etapa": "03-validacion",
+      "nota": "Plazo de cobro promedio ponderado máximo aceptable para seguir adelante. Fundamento legal: la Ley 21.131 fija 30 días corridos desde la recepción de la factura como regla supletoria, y todo plazo mayor debe inscribirse en el registro del Ministerio de Economía. Fundamento financiero: en E10 la cobranza se calcula como ingresos_año1 × plazo ÷ 365, de modo que cada 30 días de plazo pesan ~$10,7 millones de capital de trabajo sobre una restricción total de $50 millones. Es un umbral de decisión, no una medición de la práctica del canal."
+    },
+    "resultados_terreno": {
+      "valor": null,
+      "unidad": "registro de entrevistas",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "03-validacion",
+      "nota": "Vacío deliberado. Ninguna entrevista fue realizada: esta etapa entrega el instrumento (marco muestral, guion de 8 preguntas, protocolo monádico y umbral ir/no-ir) y no resultados. Cualquier cifra aquí sin trabajo de terreno violaría la regla 7 del statement."
+    }
+  },
+
+  "mercado": {
+    "som_ano1_pizzas_mes": {
+      "valor": null,
+      "unidad": "unidades/mes",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "01-mercado",
+      "depende_de": ["validacion.resultados_terreno"],
+      "nota": "DISEÑO DE MEDICIÓN: som_ano1_pizzas_mes = Σ (consumo mensual declarado en la pregunta 1 del guion) sobre las cuentas que firmaron pedido de prueba pagado, × factor de captura efectiva medido a los 60 días por recompra real. No se extrapola desde segmentos con menos de 5 observaciones válidas. Sustituye el supuesto de 2.500 u/mes que hoy corre en datos/parametros-10-financiero.json#operacion.volumen_ano1_unidades. Eco escrito por 03; la clave la cierra 01-mercado con el dato de terreno."
+    }
+  },
+
+  "precios": {
+    "precio_venta_b2b_familiar_clp": {
+      "valor": null,
+      "unidad": "CLP neto/unidad",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "02-competencia",
+      "depende_de": ["validacion.resultados_terreno", "precios.precio_competencia_nacional_clp"],
+      "nota": "DISEÑO DE MEDICIÓN: prueba monádica de la pregunta 4 del guion. Cada entrevistado ve UNA oferta cerrada (producto, caja de 12, entrega 24–48 h, comodato y plazo) a uno de tres puntos: 0,85× / 1,00× / 1,15× precios.precio_competencia_nacional_clp, asignados por rotación. El precio se fija en el punto más alto que alcance el umbral de conversión de 20%, medido con pedido pagado y no con intención declarada. Nunca se pregunta '¿cuánto pagaría usted?'. Eco escrito por 03; la clave la cierra 02-competencia."
+    },
+    "precio_venta_b2b_individual_clp": {
+      "valor": null,
+      "unidad": "CLP neto/unidad",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "02-competencia",
+      "depende_de": ["validacion.resultados_terreno", "precios.precio_venta_b2b_familiar_clp"],
+      "nota": "DISEÑO DE MEDICIÓN: mismo protocolo monádico, con oferta separada para el formato individual/pizzeta, dirigida a la cuota de pubs y bares, que es donde 01 ubica el consumo de formato chico. La relación individual/familiar NO se deriva por regla de tres desde el precio familiar: se mide con su propia oferta cerrada, porque el uso (unidad de servicio vs. compartir) es distinto. Eco escrito por 03; la clave la cierra 02-competencia."
+    },
+    "plazo_cobro_dias": {
+      "valor": null,
+      "unidad": "días",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "02-competencia",
+      "depende_de": ["validacion.resultados_terreno"],
+      "nota": "DISEÑO DE MEDICIÓN: pregunta 5 del guion, cerrada y con alternativas explícitas (contado / 7 / 30 / 60 días), aplicada a TODAS las entrevistas, sobre el proveedor de congelados actual y no sobre el ideal declarado. Se tabula por separado cadenas y centrales de compra vs. independientes (pregunta 6), porque 02 pidió esa separación y porque el promedio simple la oculta. El valor a publicar es el promedio ponderado por volumen declarado, no el promedio simple. VACÍO DECLARADO: ninguna fuente pública establece la práctica de pago del canal HORECA de Temuco; la Ley 21.131 fija 30 días corridos como regla supletoria y el Ministerio de Economía mantiene un registro público de acuerdos con plazo excepcional, prueba de que se pacta por sobre ese plazo. CRÍTICO: en E10 arrastra ~$10,7 de los $14,0 millones de capital de trabajo inicial, sobre una restricción de capital de $50 millones. Eco escrito por 03; la clave la cierra 02-competencia."
+    }
+  }
+}

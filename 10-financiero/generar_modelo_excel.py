@@ -60,6 +60,22 @@ def resolved(primary, fallback):
     return primary if primary.get("valor") is not None else fallback
 
 
+def maybe(obj, path):
+    """entry() tolerante: si la ruta no existe todavía en supuestos.json devuelve
+    una hoja vacía, de modo que resolved() caiga al fallback en vez de romper."""
+    cur = obj
+    for key in path.split("."):
+        if not isinstance(cur, dict) or key not in cur:
+            return {"valor": None}
+        cur = cur[key]
+    return cur if isinstance(cur, dict) else {"valor": None}
+
+
+def up(base, path, fallback):
+    """Misma precedencia que modelo.js: manda la etapa dueña, si no el stub E10."""
+    return resolved(maybe(base, path), fallback)
+
+
 def connect_office():
     profile = tempfile.mkdtemp(prefix="pizzeria-lo-")
     port = 2083
@@ -274,11 +290,13 @@ def build_inputs(doc, data, money_fmt, pct_fmt):
         rows.append((key, category, label, item, item.get("valor") if value is None else value, kind))
 
     add("scenario", "Modelo", "Escenario activo", {"valor": "Base", "unidad": "texto", "confianza": "SUPUESTO", "fuente": "Selección del usuario", "nota": "Valores permitidos: Pesimista, Base u Optimista."}, kind="text")
-    add("discount", "Modelo", "TMAR nominal anual", resolved(entry(base, "macro.tasa_descuento_pct"), entry(financial, "modelo.tasa_descuento_nominal_pct")), value=15 / 100, kind="pct")
-    add("inflation", "Modelo", "Inflación anual", entry(financial, "modelo.inflacion_anual_pct"), value=3 / 100, kind="pct")
+    discount_item = resolved(entry(base, "macro.tasa_descuento_pct"), entry(financial, "modelo.tasa_descuento_nominal_pct"))
+    add("discount", "Modelo", "TMAR nominal anual", discount_item, value=discount_item["valor"] / 100, kind="pct")
+    inflation_item = entry(financial, "modelo.inflacion_anual_pct")
+    add("inflation", "Modelo", "Inflación anual", inflation_item, value=inflation_item["valor"] / 100, kind="pct")
     add("capital_limit", "Modelo", "Capital máximo disponible", {"valor": base["meta"]["restriccion_capital_clp"], "unidad": "CLP", "confianza": "VERIFICADO", "fuente": "datos/supuestos.json#meta.restriccion_capital_clp", "nota": "Restricción declarada en el enunciado."}, kind="money")
     add("horizon", "Modelo", "Horizonte de evaluación", entry(financial, "modelo.horizonte_anios"))
-    add("price", "Ventas", "Precio B2B neto base", resolved(entry(prices, "precios.precio_venta_b2b_familiar_clp"), entry(financial, "modelo.precio_b2b_familiar_base_clp")), value=4200, kind="money")
+    add("price", "Ventas", "Precio B2B neto base", resolved(entry(prices, "precios.precio_venta_b2b_familiar_clp"), entry(financial, "modelo.precio_b2b_familiar_base_clp")), kind="money")
     for year in range(1, 6):
         add(f"volume{year}", "Ventas", f"Volumen año {year}", entry(financial, f"modelo.volumen_ano{year}_unidades"))
     for year in range(1, 6):
@@ -290,8 +308,13 @@ def build_inputs(doc, data, money_fmt, pct_fmt):
         ("pack_unit", "Envase por pizza", "envase_clp_unidad"), ("energy_unit", "Energía variable por pizza", "energia_variable_clp_unidad"),
         ("distribution_unit", "Distribución variable por pizza", "distribucion_variable_clp_unidad"), ("waste", "Merma de ingredientes", "merma_pct"),
     ]
+    # La merma la formula la etapa 04 bajo produccion.*; el envase lo precia la
+    # 06 bajo insumos.*. El resto vive en producto.* y lo puede sobrescribir la
+    # etapa dueña desde supuestos.json.
+    upstream_producto = {"waste": "produccion.merma_pct", "pack_unit": "insumos.envase_clp_unidad"}
     for key, label, name in product_map:
-        item = entry(financial, f"producto.{name}")
+        fallback = entry(financial, f"producto.{name}")
+        item = up(base, upstream_producto.get(key, f"producto.{name}"), fallback)
         val = item["valor"] / 100 if key == "waste" else item["valor"]
         add(key, "Producto", label, item, value=val, kind="pct" if key == "waste" else ("money" if "unit" in key else "number"))
     for key, label, path in [
@@ -302,7 +325,7 @@ def build_inputs(doc, data, money_fmt, pct_fmt):
         add(key, "Insumos", label, entry(inputs, path), kind="money")
 
     rent_item = entry(local, "local.arriendo_mensual_clp")
-    add("area", "Operación", "Superficie", resolved(entry(local, "local.superficie_requerida_m2"), entry(financial, "operacion.superficie_m2")), value=120)
+    add("area", "Operación", "Superficie", resolved(entry(local, "local.superficie_requerida_m2"), entry(financial, "operacion.superficie_m2")))
     add("rent_m2", "Operación", "Arriendo por m²/mes", entry(local, "local.arriendo_clp_m2_mes"), kind="money")
     add("rent_override", "Operación", "Arriendo mensual directo (0 = calcular)", {**rent_item, "valor": 0}, value=0, kind="money")
     op_map = [
@@ -317,11 +340,33 @@ def build_inputs(doc, data, money_fmt, pct_fmt):
         ("inventory_days", "Días inventario", "dias_inventario", "number"),
         ("ap_days", "Días cuentas por pagar", "dias_cuentas_pagar", "number"),
     ]
+    upstream_op = {
+        "payroll": "rrhh.nomina_bruta_mensual_clp",
+        "employer_factor": "macro.factor_costo_empresa",
+        "sales": "operacion.ventas_mensual_clp",
+        "insurance": "operacion.seguros_mensual_clp",
+    }
     for key, label, name, kind in op_map:
         item = entry(financial, f"operacion.{name}")
         if key == "ar_days":
             item = resolved(entry(prices, "precios.plazo_cobro_dias"), item)
+        elif key in upstream_op:
+            item = up(base, upstream_op[key], item)
         add(key, "Operación", label, item, kind=kind)
+    # La etapa 09 publica el costo de personal ya consolidado (nómina con
+    # cotizaciones + retiro de la titular, que no cotiza). Cuando existe, manda
+    # esa línea y NO se vuelve a multiplicar por el factor costo empresa.
+    add("payroll_total", "Operación", "Costo de personal mensual (0 = calcular)",
+        maybe(base, "rrhh.costo_personal_mensual_regimen_clp"),
+        value=maybe(base, "rrhh.costo_personal_mensual_regimen_clp").get("valor") or 0, kind="money")
+    # Capacidad instalada: la etapa 04 la deriva de la geometría del abatidor.
+    # Si es 0, el modelo no topa la producción.
+    cap_item = maybe(base, "produccion.capacidad_instalada_pizzas_dia")
+    days_item = maybe(base, "produccion.dias_operacion_mes")
+    add("capacity_day", "Operación", "Capacidad instalada (un/día, 0 = sin tope)",
+        cap_item, value=cap_item.get("valor") or 0)
+    add("operating_days", "Operación", "Días de operación al mes",
+        days_item, value=days_item.get("valor") or 0)
 
     inv_map = [
         ("blaster", "Abatidor", "abatidor_clp"), ("mixer", "Amasadora", "amasadora_clp"),
@@ -333,15 +378,24 @@ def build_inputs(doc, data, money_fmt, pct_fmt):
         add(key, "Inversión", label, entry(financial, f"inversion.{name}"), kind="money")
     habil = resolved(entry(local, "local.habilitacion_sanitaria_clp"), entry(financial, "inversion.habilitacion_sanitaria_clp"))
     permit = resolved(entry(legal, "capex.tramites_y_constitucion_clp"), entry(financial, "inversion.tramites_analisis_rotulado_clp"))
+    # La etapa 05 publica el envolvente de equipos; si está, manda sobre la suma
+    # línea a línea que armó la etapa 10 con precios de publicación.
+    envelope_item = maybe(base, "capex.equipamiento_base_clp")
+    add("equipment_envelope", "Inversión", "Envolvente de equipos etapa 05 (0 = sumar líneas)",
+        envelope_item, value=envelope_item.get("valor") or 0, kind="money")
+    install_item = up(base, "inversion.flete_instalacion_pct", entry(financial, "inversion.flete_instalacion_pct"))
+    conting_item = up(base, "inversion.contingencia_pct", entry(financial, "inversion.contingencia_pct"))
+    residual_item = up(base, "inversion.valor_residual_pct", entry(financial, "inversion.valor_residual_pct"))
+    life_item = up(base, "inversion.vida_depreciable_anios", entry(financial, "inversion.vida_depreciable_anios"))
     for key, label, item, kind, val in [
-        ("install_pct", "Flete e instalación", entry(financial, "inversion.flete_instalacion_pct"), "pct", 0.15),
+        ("install_pct", "Flete e instalación", install_item, "pct", install_item["valor"] / 100),
         ("habilitation", "Habilitación sanitaria", habil, "money", habil["valor"]),
         ("permits", "Trámites, análisis y rotulado", permit, "money", permit["valor"]),
         ("preop", "Preoperación", entry(financial, "inversion.preoperacion_clp"), "money", None),
-        ("contingency", "Contingencia", entry(financial, "inversion.contingencia_pct"), "pct", 0.15),
+        ("contingency", "Contingencia", conting_item, "pct", conting_item["valor"] / 100),
         ("rent_guarantee", "Garantía de arriendo", entry(financial, "inversion.garantia_arriendo_meses"), "number", None),
-        ("life", "Vida depreciable", entry(financial, "inversion.vida_depreciable_anios"), "number", None),
-        ("residual_pct", "Valor residual", entry(financial, "inversion.valor_residual_pct"), "pct", 0.10),
+        ("life", "Vida depreciable", life_item, "number", None),
+        ("residual_pct", "Valor residual", residual_item, "pct", residual_item["valor"] / 100),
     ]:
         add(key, "Inversión", label, item, value=item["valor"] if val is None else val, kind=kind)
 
@@ -422,7 +476,7 @@ def build_calc_block(sheet, start, name, refs, multipliers, money_fmt, pct_fmt):
     r += 6
     scalar = {}
     scalar_specs = [
-        ("equipment", "Equipos", "=" + "+".join(refs[k] for k in ["blaster", "mixer", "oven", "sealer", "cold_table", "freezers", "steel", "tools"])),
+        ("equipment", "Equipos", f"=IF({refs['equipment_envelope']}>0;{refs['equipment_envelope']};" + "+".join(refs[k] for k in ["blaster", "mixer", "oven", "sealer", "cold_table", "freezers", "steel", "tools"]) + ")"),
         ("installation", "Flete/instalación", None), ("rent", "Arriendo mensual", f"=IF({refs['rent_override']}>0;{refs['rent_override']};{refs['area']}*{refs['rent_m2']})"),
         ("variable_base", "Costo variable unitario base", f"=(({refs['flour_qty']}*{refs['flour_price']}+{refs['sauce_qty']}*{refs['sauce_price']}+{refs['cheese_qty']}*{refs['cheese_price']}+{refs['other_unit']})*(1+{refs['waste']})+{refs['pack_unit']}+{refs['energy_unit']}+{refs['distribution_unit']})"),
         ("fixed_month", "Costo fijo mensual base", None), ("depreciable", "CAPEX depreciable", None),
@@ -435,7 +489,8 @@ def build_calc_block(sheet, start, name, refs, multipliers, money_fmt, pct_fmt):
         if formula: set_formula(sheet, 1, r, formula)
         r += 1
     set_formula(sheet, 1, scalar["installation"], f"={addr(1, scalar['equipment'], 'Calculos')}*{refs['install_pct']}")
-    set_formula(sheet, 1, scalar["fixed_month"], f"=({scalar_cell(scalar,'rent')}+{refs['payroll']}*{refs['employer_factor']}+{refs['utilities']}+{refs['maintenance']}+{refs['admin']}+{refs['sales']}+{refs['insurance']})")
+    personal = f"IF({refs['payroll_total']}>0;{refs['payroll_total']};{refs['payroll']}*{refs['employer_factor']})"
+    set_formula(sheet, 1, scalar["fixed_month"], f"=({scalar_cell(scalar,'rent')}+{personal}+{refs['utilities']}+{refs['maintenance']}+{refs['admin']}+{refs['sales']}+{refs['insurance']})")
     capex_mult = addr(1, mult_rows["capex"], "Calculos")
     set_formula(sheet, 1, scalar["depreciable"], f"=({scalar_cell(scalar,'equipment')}+{scalar_cell(scalar,'installation')}+{refs['habilitation']})*(1+{refs['contingency']})*{capex_mult}")
     set_formula(sheet, 1, scalar["total_capex"], f"={scalar_cell(scalar,'depreciable')}+({refs['permits']}+{refs['preop']})*{capex_mult}")
@@ -461,7 +516,12 @@ def build_calc_block(sheet, start, name, refs, multipliers, money_fmt, pct_fmt):
     var_mult = addr(1, mult_rows["variable"], "Calculos")
     fixed_mult = addr(1, mult_rows["fixed"], "Calculos")
     for idx, col in enumerate(year_cols, 1):
-        set_formula(sheet, col, rows["Volumen"], f"={refs[f'volume{idx}']}*{v_mult}")
+        # No se puede vender lo que no se puede producir: la etapa 04 topa el
+        # volumen con la capacidad instalada. Con capacidad 0 el tope no opera.
+        cap_year = f"{refs['capacity_day']}*{refs['operating_days']}*12"
+        demanda = f"{refs[f'volume{idx}']}*{v_mult}"
+        set_formula(sheet, col, rows["Volumen"],
+                    f"=IF({refs['capacity_day']}>0;MIN({demanda};{cap_year});{demanda})")
         set_formula(sheet, col, rows["Escalador"], f"=(1+{refs['inflation']})^{idx}")
         set_formula(sheet, col, rows["Precio"], f"={refs['price']}*{p_mult}*{addr(col,rows['Escalador'],'Calculos')}")
         set_formula(sheet, col, rows["Costo variable unitario"], f"={scalar_cell(scalar,'variable_base')}*{var_mult}*{addr(col,rows['Escalador'],'Calculos')}")

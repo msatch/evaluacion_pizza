@@ -11,6 +11,15 @@ const get = (obj, path, fallback = null) => {
   return current?.valor ?? fallback;
 };
 
+// Lee la confianza declarada en la hoja. Si la hoja no existe o su valor es
+// null, el modelo está usando un fallback de la etapa 10: eso es SUPUESTO.
+const conf = (obj, path, fallback = "SUPUESTO") => {
+  let current = obj;
+  for (const key of path.split(".")) current = current?.[key];
+  if (!current || current.valor === null || current.valor === undefined) return fallback;
+  return current.confianza ?? fallback;
+};
+
 const badge = (confidence) => `<span class="b b-${confidence.toLowerCase()}">${confidence}</span>`;
 
 function npv(rate, flows) {
@@ -50,46 +59,82 @@ function buildModel(data, priceMultiplier = 1, volumeMultiplier = 1) {
   const discount = get(base, "macro.tasa_descuento_pct", get(financial, "modelo.tasa_descuento_nominal_pct")) / 100;
   const priceBase = get(prices, "precios.precio_venta_b2b_familiar_clp", get(financial, "modelo.precio_b2b_familiar_base_clp"));
   const somMonth = get(market, "mercado.som_ano1_pizzas_mes");
+  // La rampa comercial es FORMA, no nivel. La etapa 03 fija el nivel del año 1
+  // (SOM validado); la etapa 11 fija la forma de los años 2-5. Si 11 no la ha
+  // fijado, se usa la forma implícita en los stubs de la etapa 10 —declarada
+  // como supuesto— en vez de su nivel absoluto. Sustituir solo el año 1 dejaba
+  // el año 2 anclado a 42.000 y un SOM sobre ~3.500/mes invertía la rampa.
+  const stubYear1 = get(financial, "modelo.volumen_ano1_unidades");
+  const year1Volume = somMonth !== null ? somMonth * 12 : stubYear1;
   const volumes = [1, 2, 3, 4, 5].map((year) => {
-    const fallback = get(financial, `modelo.volumen_ano${year}_unidades`);
-    if (year === 1 && somMonth !== null) return somMonth * 12 * volumeMultiplier;
-    return fallback * volumeMultiplier;
+    if (year === 1) return year1Volume * volumeMultiplier;
+    const rampFallback = get(financial, `modelo.volumen_ano${year}_unidades`) / stubYear1;
+    const ramp = get(base, `comercial.rampa_ano${year}_factor`, rampFallback);
+    return year1Volume * ramp * volumeMultiplier;
   });
+  // Restricción de capacidad: solo muerde si la etapa 04 la publicó.
+  const capacityDay = get(base, "produccion.capacidad_instalada_pizzas_dia");
+  const operatingDays = get(base, "produccion.dias_operacion_mes");
+  const capacityYear = capacityDay !== null && operatingDays !== null
+    ? capacityDay * operatingDays * 12
+    : null;
+  if (capacityYear !== null) {
+    for (let i = 0; i < volumes.length; i += 1) volumes[i] = Math.min(volumes[i], capacityYear);
+  }
   const taxRates = [1, 2, 3, 4, 5].map((year) => get(financial, `modelo.impuesto_ano${year}_pct`) / 100);
 
-  const flour = get(inputs, "insumos.harina_clp_kg") * get(financial, "producto.harina_kg_unidad");
-  const sauce = get(inputs, "insumos.salsa_tomate_clp_kg") * get(financial, "producto.salsa_kg_unidad");
-  const cheese = get(inputs, "insumos.mozzarella_clp_kg") * get(financial, "producto.mozzarella_kg_unidad");
-  const others = get(financial, "producto.otros_ingredientes_clp_unidad");
+  // Los gramajes los formula la etapa 04; los precios/kg los publica la 06.
+  const gram = (key) => get(base, `producto.${key}`, get(financial, `producto.${key}`));
+  const flour = get(inputs, "insumos.harina_clp_kg") * gram("harina_kg_unidad");
+  const sauce = get(inputs, "insumos.salsa_tomate_clp_kg") * gram("salsa_kg_unidad");
+  const cheese = get(inputs, "insumos.mozzarella_clp_kg") * gram("mozzarella_kg_unidad");
+  const others = gram("otros_ingredientes_clp_unidad");
   const waste = get(base, "produccion.merma_pct", get(financial, "producto.merma_pct")) / 100;
   const packaging = get(inputs, "insumos.envase_clp_unidad", get(financial, "producto.envase_clp_unidad"));
+  const energy = get(base, "producto.energia_variable_clp_unidad",
+    get(financial, "producto.energia_variable_clp_unidad"));
+  const distribution = get(base, "producto.distribucion_variable_clp_unidad",
+    get(financial, "producto.distribucion_variable_clp_unidad"));
   const variableBase = (flour + sauce + cheese + others) * (1 + waste)
-    + packaging
-    + get(financial, "producto.energia_variable_clp_unidad")
-    + get(financial, "producto.distribucion_variable_clp_unidad");
+    + packaging + energy + distribution;
 
   const area = get(local, "local.superficie_requerida_m2", get(financial, "operacion.superficie_m2"));
   const rentBase = get(local, "local.arriendo_mensual_clp",
     area * get(local, "local.arriendo_clp_m2_mes"));
   const employerFactor = get(base, "macro.factor_costo_empresa", get(financial, "operacion.factor_costo_empresa"));
-  const payrollBase = get(financial, "operacion.nomina_bruta_mensual_clp") * employerFactor;
+  const payrollGross = get(base, "rrhh.nomina_bruta_mensual_clp",
+    get(financial, "operacion.nomina_bruta_mensual_clp"));
+  // La etapa 09 separa la nómina de dependientes del retiro de la titular, que
+  // no paga cotización patronal. Multiplicar solo la nómina por el factor
+  // borraría el retiro. Cuando 09 publica el costo de personal ya consolidado,
+  // manda esa línea y NO se vuelve a aplicar el factor.
+  const payrollTotal = get(base, "rrhh.costo_personal_mensual_regimen_clp");
+  const payrollBase = payrollTotal !== null ? payrollTotal : payrollGross * employerFactor;
   const otherFixedBase = ["servicios_fijos", "mantenimiento", "administracion", "ventas", "seguros"]
-    .reduce((sum, item) => sum + get(financial, `operacion.${item}_mensual_clp`), 0);
+    .reduce((sum, item) => sum + get(base, `operacion.${item}_mensual_clp`,
+      get(financial, `operacion.${item}_mensual_clp`)), 0);
   const fixedMonthlyBase = rentBase + payrollBase + otherFixedBase;
 
   const equipmentKeys = ["abatidor", "amasadora", "horno", "selladora_vacio", "meson_refrigerado", "congeladores", "acero_lavado_extraccion", "racks_bandejas_instrumentos"];
-  const equipment = equipmentKeys.reduce((sum, key) => sum + get(financial, `inversion.${key}_clp`), 0);
-  const installation = equipment * get(financial, "inversion.flete_instalacion_pct") / 100;
+  const equipmentLines = equipmentKeys.reduce((sum, key) => sum + get(financial, `inversion.${key}_clp`), 0);
+  // La etapa 05 publica el envolvente; mientras esté pendiente manda la suma
+  // línea a línea que armó la etapa 10 con precios de publicación.
+  const equipment = get(base, "capex.equipamiento_base_clp", equipmentLines);
+  const installation = equipment * get(base, "inversion.flete_instalacion_pct",
+    get(financial, "inversion.flete_instalacion_pct")) / 100;
   const habilitation = get(local, "local.habilitacion_sanitaria_clp", get(financial, "inversion.habilitacion_sanitaria_clp"));
   const capitalBeforeContingency = equipment + installation + habilitation;
-  const contingency = capitalBeforeContingency * get(financial, "inversion.contingencia_pct") / 100;
+  const contingency = capitalBeforeContingency * get(base, "inversion.contingencia_pct",
+    get(financial, "inversion.contingencia_pct")) / 100;
   const permits = get(legal, "capex.tramites_y_constitucion_clp", get(financial, "inversion.tramites_analisis_rotulado_clp"));
   const preoperation = get(financial, "inversion.preoperacion_clp");
   const depreciableCapex = capitalBeforeContingency + contingency;
   const totalCapex = depreciableCapex + permits + preoperation;
-  const depreciation = depreciableCapex / get(financial, "inversion.vida_depreciable_anios");
+  const depreciation = depreciableCapex / get(base, "inversion.vida_depreciable_anios",
+    get(financial, "inversion.vida_depreciable_anios"));
   const guarantee = rentBase * get(financial, "inversion.garantia_arriendo_meses");
-  const residualGross = depreciableCapex * get(financial, "inversion.valor_residual_pct") / 100;
+  const residualGross = depreciableCapex * get(base, "inversion.valor_residual_pct",
+    get(financial, "inversion.valor_residual_pct")) / 100;
 
   const receivableDays = get(prices, "precios.plazo_cobro_dias", get(financial, "operacion.dias_cuentas_cobrar"));
   const inventoryDays = get(financial, "operacion.dias_inventario");
@@ -160,13 +205,15 @@ function buildModel(data, priceMultiplier = 1, volumeMultiplier = 1) {
   const breakEven = contribution > 0 ? years[0].fixedCost / contribution : null;
 
   return {
-    inflation, discount, priceBase, variableBase, flour, sauce, cheese, packaging,
-    area, rentBase, payrollBase, fixedMonthlyBase, equipment, installation, habilitation,
+    inflation, discount, priceBase, variableBase, flour, sauce, cheese, packaging, waste, energy, distribution,
+    area, rentBase, payrollGross, employerFactor, payrollBase, fixedMonthlyBase, equipment, installation, habilitation,
     contingency, permits, preoperation, depreciableCapex, totalCapex, guarantee, initialNwc,
     initialInvestment, depreciation, residualGross, receivableDays, years, flows,
     npv: projectNpv, irr: projectIrr, payback, profitabilityIndex: pvInflows / initialInvestment,
     peakFunding, capitalLimit,
-    contribution, breakEven
+    contribution, breakEven,
+    capacityYear, capacityUse: capacityYear === null ? null : volumes[volumes.length - 1] / capacityYear,
+    breakEvenUse: capacityYear === null || breakEven === null ? null : breakEven / capacityYear
   };
 }
 
@@ -187,7 +234,10 @@ function render(data) {
     ["TIR", model.irr === null ? "No calculable" : pct(model.irr), `criterio > ${pct(model.discount)}`],
     ["Payback descontado", model.payback === null ? "> 5 años" : `${num.format(model.payback)} años`, "flujo descontado"],
     ["Índice rentabilidad", num.format(model.profitabilityIndex), "criterio > 1"],
-    ["Punto equilibrio", model.breakEven === null ? "Sin margen" : `${num.format(model.breakEven / 12)} pizzas/mes`, "año 1"]
+    ["Punto equilibrio", model.breakEven === null ? "Sin margen" : `${num.format(model.breakEven / 12)} pizzas/mes`,
+      model.breakEvenUse === null ? "año 1 · % de capacidad pendiente de etapa 04" : `año 1 · ${pct(model.breakEvenUse)} de la capacidad`],
+    ["Uso de capacidad", model.capacityUse === null ? "Pendiente" : pct(model.capacityUse),
+      model.capacityYear === null ? "etapa 04 no ha publicado capacidad" : "año 5 sobre capacidad instalada"]
   ];
   $("indicators").innerHTML = indicators.map(([label, value, note]) => `<div class="tarjeta"><div class="cifra-etiqueta">${label}</div><div class="cifra">${value}</div><div class="cifra-nota">${note}</div></div>`).join("");
 
@@ -230,18 +280,28 @@ function render(data) {
     return `<td class="num"><span class="b ${cls}">${clp.format(scenario.npv)}</span></td>`;
   }).join("")}</tr>`).join("");
 
+  // La confianza se lee de la hoja de origen, nunca se escribe a mano: esta es
+  // la tabla cuyo único trabajo es cumplir la regla 1 de trazabilidad.
   const traces = [
-    ["Precio B2B familiar", get(data.prices, "precios.precio_venta_b2b_familiar_clp"), model.priceBase, "02-competencia", get(data.prices, "precios.precio_venta_b2b_familiar_clp") === null ? "SUPUESTO" : "VERIFICADO"],
-    ["SOM año 1", get(data.market, "mercado.som_ano1_pizzas_mes"), model.years[0].volume / 12, "01-mercado", get(data.market, "mercado.som_ano1_pizzas_mes") === null ? "SUPUESTO" : "ESTIMADO"],
-    ["Mozzarella", get(data.inputs, "insumos.mozzarella_clp_kg"), get(data.inputs, "insumos.mozzarella_clp_kg"), "06-insumos", "ESTIMADO"],
-    ["Harina", get(data.inputs, "insumos.harina_clp_kg"), get(data.inputs, "insumos.harina_clp_kg"), "06-insumos", "VERIFICADO"],
-    ["Tomate", get(data.inputs, "insumos.salsa_tomate_clp_kg"), get(data.inputs, "insumos.salsa_tomate_clp_kg"), "06-insumos", "VERIFICADO"],
-    ["Envase", get(data.inputs, "insumos.envase_clp_unidad"), model.packaging, "06-insumos", get(data.inputs, "insumos.envase_clp_unidad") === null ? "SUPUESTO" : "VERIFICADO"],
-    ["Arriendo mensual", get(data.local, "local.arriendo_mensual_clp"), model.rentBase, "07-local", get(data.local, "local.arriendo_mensual_clp") === null ? "ESTIMADO" : "VERIFICADO"],
-    ["Habilitación", get(data.local, "local.habilitacion_sanitaria_clp"), model.habilitation, "07-local", get(data.local, "local.habilitacion_sanitaria_clp") === null ? "SUPUESTO" : "VERIFICADO"],
-    ["Plazo de cobro", get(data.prices, "precios.plazo_cobro_dias"), model.receivableDays, "02-competencia", get(data.prices, "precios.plazo_cobro_dias") === null ? "SUPUESTO" : "VERIFICADO"]
+    ["Precio B2B familiar", get(data.prices, "precios.precio_venta_b2b_familiar_clp"), model.priceBase, "02-competencia", conf(data.prices, "precios.precio_venta_b2b_familiar_clp")],
+    ["SOM año 1", get(data.market, "mercado.som_ano1_pizzas_mes"), model.years[0].volume / 12, "01-mercado · 03-validación", conf(data.market, "mercado.som_ano1_pizzas_mes")],
+    ["Mozzarella", get(data.inputs, "insumos.mozzarella_clp_kg"), get(data.inputs, "insumos.mozzarella_clp_kg"), "06-insumos", conf(data.inputs, "insumos.mozzarella_clp_kg")],
+    ["Harina", get(data.inputs, "insumos.harina_clp_kg"), get(data.inputs, "insumos.harina_clp_kg"), "06-insumos", conf(data.inputs, "insumos.harina_clp_kg")],
+    ["Tomate", get(data.inputs, "insumos.salsa_tomate_clp_kg"), get(data.inputs, "insumos.salsa_tomate_clp_kg"), "06-insumos", conf(data.inputs, "insumos.salsa_tomate_clp_kg")],
+    ["Envase", get(data.inputs, "insumos.envase_clp_unidad"), model.packaging, "06-insumos", conf(data.inputs, "insumos.envase_clp_unidad")],
+    ["Merma", get(data.base, "produccion.merma_pct"), model.waste * 100, "04-producto-proceso", conf(data.base, "produccion.merma_pct")],
+    ["Capacidad instalada", get(data.base, "produccion.capacidad_instalada_pizzas_dia"), model.capacityYear === null ? null : model.capacityYear / 12, "04-producto-proceso", conf(data.base, "produccion.capacidad_instalada_pizzas_dia")],
+    ["Envolvente de equipos", get(data.base, "capex.equipamiento_base_clp"), model.equipment, "05-maquinaria", conf(data.base, "capex.equipamiento_base_clp")],
+    ["Arriendo mensual", get(data.local, "local.arriendo_mensual_clp"), model.rentBase, "07-local", conf(data.local, "local.arriendo_mensual_clp", "ESTIMADO")],
+    ["Habilitación", get(data.local, "local.habilitacion_sanitaria_clp"), model.habilitation, "07-local", conf(data.local, "local.habilitacion_sanitaria_clp")],
+    ["Nómina bruta mensual", get(data.base, "rrhh.nomina_bruta_mensual_clp"), model.payrollGross, "09-rrhh", conf(data.base, "rrhh.nomina_bruta_mensual_clp")],
+    ["Factor costo empresa", get(data.base, "macro.factor_costo_empresa"), model.employerFactor, "09-rrhh", conf(data.base, "macro.factor_costo_empresa")],
+    ["Distribución por unidad", get(data.base, "producto.distribucion_variable_clp_unidad"), model.distribution, "11-comercial", conf(data.base, "producto.distribucion_variable_clp_unidad")],
+    ["Rampa año 2", get(data.base, "comercial.rampa_ano2_factor"), model.years[1].volume / model.years[0].volume, "11-comercial", conf(data.base, "comercial.rampa_ano2_factor")],
+    ["TMAR", get(data.base, "macro.tasa_descuento_pct"), model.discount * 100, "12-riesgos", conf(data.base, "macro.tasa_descuento_pct")],
+    ["Plazo de cobro", get(data.prices, "precios.plazo_cobro_dias"), model.receivableDays, "02-competencia · 03-validación", conf(data.prices, "precios.plazo_cobro_dias")]
   ];
-  $("trace-body").innerHTML = traces.map(([name, upstream, used, source, confidence]) => `<tr><td>${name}</td><td>${upstream === null ? "Pendiente" : num.format(upstream)}</td><td class="num">${num.format(used)}</td><td>${source}</td><td>${badge(confidence)}</td></tr>`).join("");
+  $("trace-body").innerHTML = traces.map(([name, upstream, used, source, confidence]) => `<tr><td>${name}</td><td>${upstream === null ? "Pendiente" : num.format(upstream)}</td><td class="num">${used === null ? "Pendiente" : num.format(used)}</td><td>${source}</td><td>${badge(confidence)}</td></tr>`).join("");
 
   $("cost-unit").textContent = clp.format(model.variableBase);
   $("fixed-month").textContent = clp.format(model.fixedMonthlyBase);

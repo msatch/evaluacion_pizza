@@ -1,0 +1,199 @@
+{
+  "_dependencias": [
+    {
+      "clave": "produccion.capacidad_instalada_pizzas_dia",
+      "duena": "04-producto-proceso",
+      "para_que": "Dimensionar turnos y decidir si la dotación de producción es de 1 o 2 turnos.",
+      "que_hice": "Publiqué la fórmula dotacion_produccion = techo( volumen_mes / (rendimiento_pizzas_hh × horas_mes_trabajador) ) y fijé la dotación de régimen por PRESENCIA mínima (recepción, proceso, abatimiento, envase, despacho y registros DS 977), no por productividad medida. La dotación propuesta es válida mientras la capacidad de E04 cubra el volumen de E01 en un turno.",
+      "estado": "ABIERTA"
+    },
+    {
+      "clave": "produccion.ciclo_abatimiento_min",
+      "duena": "04-producto-proceso",
+      "para_que": "Determinar la duración del turno: el abatidor es el cuello de botella y fija cuántas tandas caben en 42 h semanales.",
+      "que_hice": "No supuse un ciclo. Si el ciclo obliga a un segundo turno, sumar rrhh.costo_empresa_operario_adicional_clp por cada operario extra a jornada completa.",
+      "estado": "ABIERTA"
+    },
+    {
+      "clave": "mercado.som_ano1_pizzas_mes",
+      "duena": "01-mercado",
+      "para_que": "Verificar que la dotación de régimen cubre el volumen del año 1.",
+      "que_hice": "Usé como caso base el stub de E10 (30.000 u/año = 2.500 u/mes). Si el SOM validado supera ~2× ese volumen, la dotación debe revisarse.",
+      "estado": "ABIERTA"
+    },
+    {
+      "clave": "operacion.ventas_mensual_clp",
+      "duena": "11-comercial-logistica",
+      "para_que": "Separar gasto comercial (muestras, visitas, material) de remuneración comercial, para no contar dos veces.",
+      "que_hice": "No escribí esa clave ni incluí gasto comercial en la nómina. El año 1 no contempla vendedor contratado: la venta la hace la titular. La comisión de venta queda en rrhh.comision_ventas_pct = null hasta que E11 defina el plan de cobertura.",
+      "estado": "ABIERTA"
+    },
+    {
+      "clave": "macro.ingreso_minimo_mensual_clp",
+      "duena": "base",
+      "para_que": "Piso legal de cada sueldo base y tope de la gratificación del art. 50 (4,75 IMM anuales).",
+      "que_hice": "Usada tal cual ($553.553). Todos los sueldos base propuestos la superan, incluida la jornada parcial en proporción a sus horas.",
+      "estado": "CERRADA"
+    }
+  ],
+
+  "macro": {
+    "factor_costo_empresa": {
+      "valor": 1.0853,
+      "unidad": "multiplicador sobre sueldo bruto imponible de trabajador dependiente",
+      "confianza": "VERIFICADO",
+      "fuente": "https://www.spensiones.cl/portal/institucional/594/w3-propertyvalue-10906.html ; https://www.chileatiende.gob.cl/fichas/130987-aportes-del-empleador-al-sistema-de-pensiones ; https://www.isl.gob.cl/cotizaciones/ ; https://www.isl.gob.cl/wp-content/uploads/2024/08/Clasificador-Actividades-Economicas-2021.pdf ; https://www.previred.com/indicadores-previsionales/",
+      "consultado": "2026-08-04",
+      "etapa": "09-rrhh",
+      "nota": "MULTIPLICADOR DESNUDO, se usa tal cual (1,0853 = 8,53% sobre el bruto). Suma: 3,50% cotización de cargo del empleador Ley 21.735 vigente 08-2026 a 07-2027 (incluye el SIS, que desde agosto 2026 se financia dentro del Seguro Social Previsional y ya no se cotiza aparte) + 2,40% seguro de cesantía AFC contrato indefinido + 0,93% tasa base Ley 16.744 (0,90% básica + 0,03% SANNA) + 1,70% cotización adicional DS 110 para CIIU 107500 'elaboración de comidas y platos preparados envasados, rotulados y con información nutricional'. CONDICIONES: contrato indefinido (a plazo fijo el AFC sube a 3,00% y el factor a 1,0913); empresa nueva sin evaluación de siniestralidad (DS 67 puede subir o bajar la adicional desde el tercer año); rentas muy por debajo del tope imponible de 90 UF, por lo que todas las tasas aplican íntegras. NO APLICA al retiro de la titular por sueldo empresarial (ver rrhh.retiro_titular_mensual_clp). NO incluye provisiones de feriado ni de indemnización: para eso ver rrhh.factor_costo_empresa_con_provisiones. ADVERTENCIA: el stub 1,22 de la etapa 10 sobrestima el desembolso mensual exigible en ~14 puntos porcentuales.",
+      "vigencia": "Sube a 4,25% (factor 1,0928) desde 08-2027, 5,00% desde 08-2028, 5,70% desde 08-2029, 6,40% desde 08-2030 y 7,10% desde 08-2031 por gradualidad de la Ley 21.735. El factor NO es constante en un horizonte de 5 años."
+    }
+  },
+
+  "rrhh": {
+    "nomina_bruta_mensual_clp": {
+      "valor": 1100000,
+      "unidad": "CLP/mes, suma de sueldos brutos imponibles de trabajadores dependientes",
+      "confianza": "ESTIMADO",
+      "fuente": "https://www.ine.gob.cl/estadisticas-por-tema/mercado-laboral/encuesta-suplementaria-de-ingresos ; https://fcje.ufro.cl/noticias/la-araucania-frente-a-la-esi-2025-desafios-para-un-desarrollo-con-mejores-ingresos/ ; datos/supuestos.json#macro.ingreso_minimo_mensual_clp",
+      "consultado": "2026-08-04",
+      "etapa": "09-rrhh",
+      "nota": "RÉGIMEN, desde el mes 4. Dotación dependiente: 1 operario de producción a jornada completa 42 h ($700.000 bruto) + 1 operario polivalente a jornada parcial 24 h ($400.000 bruto). Cada bruto incluye sueldo base + gratificación art. 50 del Código del Trabajo (25% con tope de 4,75 IMM anuales = $219.115/mes); no volver a sumarla. ESTE VALOR NO INCLUYE EL RETIRO DE LA TITULAR: el modelo debe sumar rrhh.retiro_titular_mensual_clp SIN aplicarle macro.factor_costo_empresa. Si se prefiere una sola línea ya calculada, usar rrhh.costo_personal_mensual_regimen_clp. Los sueldos son ESTIMADOS: no existe serie pública de remuneración por cargo y comuna; se anclaron en el ingreso mínimo legal y en la ESI 2025 convertida de líquido a bruto."
+    },
+    "nomina_bruta_marcha_blanca_mensual_clp": {
+      "valor": 700000,
+      "unidad": "CLP/mes",
+      "confianza": "ESTIMADO",
+      "fuente": "09-rrhh/index.html",
+      "consultado": "2026-08-04",
+      "etapa": "09-rrhh",
+      "nota": "Meses 1 a 3 (habilitación, pruebas de proceso, validación de receta y trámite sanitario): titular + 1 operario de producción a jornada completa. Tampoco incluye el retiro de la titular."
+    },
+    "retiro_titular_mensual_clp": {
+      "valor": 1200000,
+      "unidad": "CLP/mes brutos",
+      "confianza": "SUPUESTO",
+      "fuente": "https://www.ine.gob.cl/estadisticas-por-tema/mercado-laboral/encuesta-suplementaria-de-ingresos",
+      "consultado": "2026-08-04",
+      "etapa": "09-rrhh",
+      "nota": "Sueldo empresarial de la titular (art. 31 N°6 LIR). NO se le aplica macro.factor_costo_empresa: no es trabajadora dependiente, no está afecta al seguro de cesantía ni a la cotización de cargo del empleador; sus cotizaciones de AFP y salud se descuentan de este mismo bruto. Punto a confirmar con contador antes de cerrar el modelo. El monto es una DECISIÓN de la titular, no un precio de mercado observado: queda entre la mediana de ingreso de La Araucanía (ESI 2025, $550.232 líquidos) y la mediana nacional del grupo 'directores, gerentes y administradores'. Sensibilizar en la etapa 12."
+    },
+    "costo_personal_mensual_regimen_clp": {
+      "valor": 2393830,
+      "unidad": "CLP/mes",
+      "confianza": "ESTIMADO",
+      "fuente": "09-rrhh/index.html",
+      "consultado": "2026-08-04",
+      "etapa": "09-rrhh",
+      "nota": "DERIVADO, no es un dato independiente: 1.100.000 × 1,0853 + 1.200.000. Existe sólo para evitar que el retiro de la titular se pierda si el modelo cablea una sola línea de personal. Si se usa esta clave, NO multiplicar de nuevo por macro.factor_costo_empresa. Compara contra el stub de E10 (2.200.000 × 1,22 = 2.684.000): $290.170/mes menos, $3.482.040 al año."
+    },
+    "costo_personal_mensual_marcha_blanca_clp": {
+      "valor": 1959710,
+      "unidad": "CLP/mes",
+      "confianza": "ESTIMADO",
+      "fuente": "09-rrhh/index.html",
+      "consultado": "2026-08-04",
+      "etapa": "09-rrhh",
+      "nota": "DERIVADO: 700.000 × 1,0853 + 1.200.000. Aplica meses 1 a 3."
+    },
+    "dotacion_total": {
+      "valor": 3,
+      "unidad": "personas en régimen (2 dependientes + titular)",
+      "confianza": "ESTIMADO",
+      "fuente": "09-rrhh/index.html",
+      "consultado": "2026-08-04",
+      "etapa": "09-rrhh",
+      "nota": "Marcha blanca: 2 personas (titular + 1 operario). Régimen: 3. Dimensionada por presencia y por la supervisión que exige el art. 60 del DS 977, no por productividad medida; depende de produccion.capacidad_instalada_pizzas_dia."
+    },
+    "sueldo_bruto_operario_produccion_clp": {
+      "valor": 700000,
+      "unidad": "CLP/mes brutos, jornada completa 42 h",
+      "confianza": "ESTIMADO",
+      "fuente": "https://fcje.ufro.cl/noticias/la-araucania-frente-a-la-esi-2025-desafios-para-un-desarrollo-con-mejores-ingresos/ ; datos/supuestos.json#macro.ingreso_minimo_mensual_clp",
+      "consultado": "2026-08-04",
+      "etapa": "09-rrhh",
+      "nota": "Base $560.000 + gratificación art. 50 $140.000. Equivale a 1,26 ingresos mínimos y a ~$567.000 líquidos, apenas sobre la mediana de ingreso líquido de La Araucanía ($550.232, ESI 2025). Cargo con capacitación en manipulación higiénica documentada (DS 977 art. 52) y responsabilidad de registros de proceso."
+    },
+    "sueldo_bruto_operario_parcial_clp": {
+      "valor": 400000,
+      "unidad": "CLP/mes brutos, jornada parcial 24 h",
+      "confianza": "ESTIMADO",
+      "fuente": "datos/supuestos.json#macro.ingreso_minimo_mensual_clp",
+      "consultado": "2026-08-04",
+      "etapa": "09-rrhh",
+      "nota": "Base $320.000 + gratificación art. 50 $80.000. Jornada parcial del art. 40 bis (tope: dos tercios de la jornada ordinaria, hoy 28 h). El ingreso mínimo proporcional para 24/42 h es $316.316, de modo que la base cumple el piso legal."
+    },
+    "costo_empresa_operario_adicional_clp": {
+      "valor": 759710,
+      "unidad": "CLP/mes",
+      "confianza": "ESTIMADO",
+      "fuente": "09-rrhh/index.html",
+      "consultado": "2026-08-04",
+      "etapa": "09-rrhh",
+      "nota": "700.000 × 1,0853. Costo marginal de cada operario adicional a jornada completa si E04 determina que se requiere un segundo turno o si el volumen valida crecer. Ya incluye el factor: no multiplicar otra vez."
+    },
+    "jornada_semanal_horas": {
+      "valor": 42,
+      "unidad": "horas/semana",
+      "confianza": "VERIFICADO",
+      "fuente": "https://www.mintrab.gob.cl/40horas-implementacion/",
+      "consultado": "2026-08-04",
+      "etapa": "09-rrhh",
+      "nota": "Ley 21.561: 44 h desde 26-04-2024, 42 h desde 26-04-2026, 40 h desde 26-04-2028. El horizonte de 5 años del estudio cruza la baja a 40 h: a igual dotación, el costo por hora disponible sube ~5% desde 2028."
+    },
+    "gratificacion_tope_mensual_clp": {
+      "valor": 219115,
+      "unidad": "CLP/mes por trabajador",
+      "confianza": "VERIFICADO",
+      "fuente": "https://www.dt.gob.cl/portal/1626/w3-article-99034.html ; datos/supuestos.json#macro.ingreso_minimo_mensual_clp",
+      "consultado": "2026-08-04",
+      "etapa": "09-rrhh",
+      "nota": "Art. 50 del Código del Trabajo: 25% de lo devengado con tope de 4,75 ingresos mínimos mensuales al 31-12 del ejercicio; 4,75 × 553.553 ÷ 12. La gratificación legal sólo se devenga si hay utilidad líquida, pero la práctica de pactarla garantizada la vuelve costo fijo: se incluye dentro de cada bruto."
+    },
+    "provision_feriado_pct": {
+      "valor": 5.83,
+      "unidad": "% sobre el bruto",
+      "confianza": "ESTIMADO",
+      "fuente": "https://www.dt.gob.cl/portal/1626/w3-article-99034.html",
+      "consultado": "2026-08-04",
+      "etapa": "09-rrhh",
+      "nota": "15 días hábiles de feriado anual ≈ 21 días corridos ≈ 0,7 mes sobre 12. Para un sueldo mensual NO es caja adicional: es costo de reemplazo o de planta detenida. No está dentro de macro.factor_costo_empresa."
+    },
+    "provision_indemnizacion_pct": {
+      "valor": 8.33,
+      "unidad": "% sobre el bruto",
+      "confianza": "ESTIMADO",
+      "fuente": "https://www.dt.gob.cl/portal/1626/w3-article-99034.html",
+      "consultado": "2026-08-04",
+      "etapa": "09-rrhh",
+      "nota": "Un mes por año de servicio (art. 163), sólo exigible si el término es por necesidades de la empresa (art. 161). Provisión prudente = 1/12. No está dentro de macro.factor_costo_empresa."
+    },
+    "factor_costo_empresa_con_provisiones": {
+      "valor": 1.2269,
+      "unidad": "multiplicador sobre sueldo bruto",
+      "confianza": "ESTIMADO",
+      "fuente": "09-rrhh/index.html",
+      "consultado": "2026-08-04",
+      "etapa": "09-rrhh",
+      "nota": "NO es macro.factor_costo_empresa y no debe cablearse en su lugar. 8,53% exigible + 5,83% feriado + 8,33% indemnización. Sirve para el escenario prudente de la etapa 12 y explica de dónde puede venir el 1,22 del stub: el 1,22 es defendible como factor CON provisiones, no como desembolso previsional mensual."
+    },
+    "comision_ventas_pct": {
+      "valor": null,
+      "unidad": "% sobre venta neta",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "09-rrhh",
+      "depende_de": ["operacion.ventas_mensual_clp"],
+      "nota": "El año 1 no contempla vendedor contratado: la venta la hace la titular dentro de su jornada. Cuando la etapa 11 fije el plan de cobertura (visitas/semana y cuentas activas), esta clave define la parte remuneracional del esquema; el gasto comercial no remuneracional sigue siendo de la etapa 11. Regla de gatillo: contratar cuando visitas_requeridas_semana × horas_por_visita supere las horas comerciales disponibles de la titular."
+    }
+  },
+
+  "historial": [
+    {
+      "fecha": "2026-08-05",
+      "etapa": "09-rrhh",
+      "cambio": "Creación. Se funda macro.factor_costo_empresa en tasas patronales citables (Ley 21.735, AFC, Ley 16.744 + DS 110 para CIIU 107500) y se separa la nómina en tres componentes que el stub de E10 tenía fundidos: retiro de la titular, mano de obra de producción y fuerza comercial (esta última, sin dotación en el año 1)."
+    }
+  ]
+}
