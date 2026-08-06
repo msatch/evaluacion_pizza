@@ -1338,117 +1338,117 @@
   },
   "riesgo": {
     "holgura_capital_clp": {
-      "valor": 3317555,
+      "valor": -75493563,
       "unidad": "CLP",
       "confianza": "ESTIMADO",
-      "fuente": "datos/supuestos.json#meta.restriccion_capital_clp menos el fondeo máximo de 10-financiero/modelo.js",
-      "consultado": "2026-08-04",
+      "fuente": "10-financiero/generar_modelo_excel.py#switching_values",
+      "consultado": "2026-08-06",
       "etapa": "12-riesgos-financiamiento",
-      "nota": "$50.000.000 − $46.682.445. Aritmética exacta sobre entradas SUPUESTO, por eso ESTIMADO y no VERIFICADO. Coincide casi peso a peso con la contingencia de $3.321.070: la holgura ES la contingencia."
+      "nota": "Recalculado el 06-08-2026 contra el motor vigente (TMAR 20,46%, tope de capacidad de la etapa 04, costo de personal de la etapa 09). $50.000.000 − $125.493.563. Antes se publicó como +$3.317.555 con el fondeo de $46,68M; ahora es NEGATIVA en $75,5 millones. No hay holgura: hay déficit."
     },
     "quiebre_habilitacion_sanitaria_clp": {
-      "valor": 14884831,
+      "valor": null,
       "unidad": "CLP",
-      "confianza": "ESTIMADO",
-      "fuente": "10-financiero/modelo.js",
-      "consultado": "2026-08-04",
+      "confianza": "PENDIENTE",
+      "fuente": "10-financiero/generar_modelo_excel.py#switching_values",
+      "consultado": "2026-08-06",
       "etapa": "12-riesgos-financiamiento",
       "probabilidad": "ALTA",
       "impacto": "CRÍTICO",
       "clave_afectada": "local.habilitacion_sanitaria_clp",
       "mitigacion": "Producir en maquila hasta disponer de presupuesto de arquitecto sobre un local real visitado; condicionar el arriendo a factibilidad sanitaria y municipal (gate G2/G4).",
-      "nota": "+24,0% sobre los $12.000.000 de fallback lleva el fondeo máximo a $50.000.000. Etapa 07 no encontró ningún aviso que acreditara simultáneamente uso alimentario, resolución sanitaria vigente y tamaño adecuado."
+      "nota": "Recalculado el 06-08-2026 contra el motor vigente (TMAR 20,46%, tope de capacidad de la etapa 04, costo de personal de la etapa 09). ATENCIÓN — cambio de sentido: el fondeo máximo ($125.493.563) ya SUPERA el límite de capital, así que esta columna dejó de marcar un punto de quiebre y pasó a marcar la MEJORA REQUERIDA. SIN QUIEBRE EN EL RANGO: no existe valor físicamente admisible de este parámetro que, por sí solo, devuelva el proyecto al límite de capital o anule el VAN. Ningún lever individual lo rescata. Ni siquiera con habilitación sanitaria en cero el fondeo vuelve al límite."
     },
     "quiebre_capex_pct": {
-      "valor": 13.03,
+      "valor": null,
       "unidad": "% de sobrecosto sobre equipos y habilitación",
-      "confianza": "ESTIMADO",
-      "fuente": "10-financiero/modelo.js",
-      "consultado": "2026-08-04",
+      "confianza": "PENDIENTE",
+      "fuente": "10-financiero/generar_modelo_excel.py#switching_values",
+      "consultado": "2026-08-06",
       "etapa": "12-riesgos-financiamiento",
       "probabilidad": "ALTA",
       "impacto": "CRÍTICO",
       "clave_afectada": "capex.equipamiento_base_clp",
       "mitigacion": "Dos cotizaciones formales por equipo con flete a Temuco antes del gate G2; reclasificar el estimado a Clase 4.",
-      "nota": "Muy por dentro de la banda alta de una estimación Clase 5 (+30% a +100%). Es el hallazgo que responde la pregunta 6 del statement."
+      "nota": "Recalculado el 06-08-2026 contra el motor vigente (TMAR 20,46%, tope de capacidad de la etapa 04, costo de personal de la etapa 09). ATENCIÓN — cambio de sentido: el fondeo máximo ($125.493.563) ya SUPERA el límite de capital, así que esta columna dejó de marcar un punto de quiebre y pasó a marcar la MEJORA REQUERIDA. SIN QUIEBRE EN EL RANGO: no existe valor físicamente admisible de este parámetro que, por sí solo, devuelva el proyecto al límite de capital o anule el VAN. Ningún lever individual lo rescata."
     },
     "quiebre_plazo_cobro_dias": {
-      "valor": 39.33,
+      "valor": null,
       "unidad": "días",
-      "confianza": "ESTIMADO",
-      "fuente": "10-financiero/modelo.js",
-      "consultado": "2026-08-04",
+      "confianza": "PENDIENTE",
+      "fuente": "10-financiero/generar_modelo_excel.py#switching_values",
+      "consultado": "2026-08-06",
       "etapa": "12-riesgos-financiamiento",
       "probabilidad": "ALTA",
       "impacto": "CRÍTICO",
       "clave_afectada": "precios.plazo_cobro_dias",
       "mitigacion": "Pactar 15 días con descuento por pronto pago en las primeras cuentas; no aceptar 60 días sin línea de capital de trabajo aprobada. Medir el plazo real en el piloto (gate G3).",
-      "nota": "9,3 días adicionales sobre los 30 supuestos agotan toda la holgura. A 60 días —práctica habitual del canal según el statement §8— el capital de trabajo sube a $24.702.598 y el fondeo máximo a $57.349.294."
+      "nota": "Recalculado el 06-08-2026 contra el motor vigente (TMAR 20,46%, tope de capacidad de la etapa 04, costo de personal de la etapa 09). ATENCIÓN — cambio de sentido: el fondeo máximo ($125.493.563) ya SUPERA el límite de capital, así que esta columna dejó de marcar un punto de quiebre y pasó a marcar la MEJORA REQUERIDA. SIN QUIEBRE EN EL RANGO: no existe valor físicamente admisible de este parámetro que, por sí solo, devuelva el proyecto al límite de capital o anule el VAN. Ningún lever individual lo rescata. Ni el pago al contado devuelve el fondeo al límite."
     },
     "quiebre_volumen_pizzas_mes": {
-      "valor": 2254,
+      "valor": null,
       "unidad": "pizzas/mes del año 1",
-      "confianza": "ESTIMADO",
-      "fuente": "10-financiero/modelo.js",
-      "consultado": "2026-08-04",
+      "confianza": "PENDIENTE",
+      "fuente": "10-financiero/generar_modelo_excel.py#switching_values",
+      "consultado": "2026-08-06",
       "etapa": "12-riesgos-financiamiento",
       "probabilidad": "ALTA",
       "impacto": "CRÍTICO",
       "clave_afectada": "mercado.som_ano1_pizzas_mes",
       "mitigacion": "No firmar arriendo ni comprometer CAPEX sin cartas de intención por al menos 2.666 pizzas/mes al precio de lista (gate G1).",
-      "nota": "El VAN se anula en 1.972 pizzas/mes. El caso base (2.500) ya está por DEBAJO del punto de equilibrio (2.666): el año 1 nace con flujo de caja libre de −$3.165.722 por construcción."
+      "nota": "Recalculado el 06-08-2026 contra el motor vigente (TMAR 20,46%, tope de capacidad de la etapa 04, costo de personal de la etapa 09). SIN QUIEBRE EN EL RANGO: no existe valor físicamente admisible de este parámetro que, por sí solo, devuelva el proyecto al límite de capital o anule el VAN. Ningún lever individual lo rescata. Subir el SOM no ayuda porque la producción está topada por la capacidad instalada de 1.320/mes: vender más de lo que se puede fabricar no genera flujo."
     },
     "quiebre_precio_clp": {
-      "valor": 4083,
+      "valor": 6152,
       "unidad": "CLP neto/unidad familiar",
       "confianza": "ESTIMADO",
-      "fuente": "10-financiero/modelo.js",
-      "consultado": "2026-08-04",
+      "fuente": "10-financiero/generar_modelo_excel.py#switching_values",
+      "consultado": "2026-08-06",
       "etapa": "12-riesgos-financiamiento",
       "probabilidad": "ALTA",
       "impacto": "CRÍTICO",
       "clave_afectada": "precios.precio_venta_b2b_familiar_clp",
       "mitigacion": "Prueba monádica de la etapa 03 antes de publicar lista de precios; no anclar al retail promocional.",
-      "nota": "−2,8% sobre $4.200 rompe el techo de caja; el VAN se anula en $3.884 (−7,5%). Al piso retail observado de $3.017 la contribución unitaria cae a $364 contra $50.969.179 de costo fijo anual."
+      "nota": "Recalculado el 06-08-2026 contra el motor vigente (TMAR 20,46%, tope de capacidad de la etapa 04, costo de personal de la etapa 09). Precio neto por familiar que anula el VAN: $6.152, es decir +46,5% sobre los $4.200 del caso base. Es uno de los dos únicos parámetros con raíz."
     },
     "quiebre_costo_variable_pct": {
-      "valor": 3.89,
+      "valor": null,
       "unidad": "% de alza sobre el costo variable unitario",
-      "confianza": "ESTIMADO",
-      "fuente": "10-financiero/modelo.js",
-      "consultado": "2026-08-04",
+      "confianza": "PENDIENTE",
+      "fuente": "10-financiero/generar_modelo_excel.py#switching_values",
+      "consultado": "2026-08-06",
       "etapa": "12-riesgos-financiamiento",
       "probabilidad": "MEDIA",
       "impacto": "ALTO",
       "clave_afectada": "insumos.mozzarella_clp_kg",
       "mitigacion": "Dos proveedores aprobados con precio por escalón de 25/100/300 kg y ficha técnica antes del piloto.",
-      "nota": "El VAN se anula con +11,68%. Costo variable base $2.653/pizza. Etapa 06 solo halló una referencia minorista de mozzarella, no una cotización industrial."
+      "nota": "Recalculado el 06-08-2026 contra el motor vigente (TMAR 20,46%, tope de capacidad de la etapa 04, costo de personal de la etapa 09). SIN QUIEBRE EN EL RANGO: no existe valor físicamente admisible de este parámetro que, por sí solo, devuelva el proyecto al límite de capital o anule el VAN. Ningún lever individual lo rescata. Ni llevando a cero los ingredientes menores se anula el VAN."
     },
     "quiebre_costo_fijo_pct": {
-      "valor": 6.51,
+      "valor": null,
       "unidad": "% de alza sobre el costo fijo mensual",
-      "confianza": "ESTIMADO",
-      "fuente": "10-financiero/modelo.js",
-      "consultado": "2026-08-04",
+      "confianza": "PENDIENTE",
+      "fuente": "10-financiero/generar_modelo_excel.py#switching_values",
+      "consultado": "2026-08-06",
       "etapa": "12-riesgos-financiamiento",
       "probabilidad": "MEDIA",
       "impacto": "ALTO",
       "clave_afectada": "rrhh.nomina_bruta_mensual_clp",
       "mitigacion": "Dotación mínima verificada por la etapa 09 y canon real de la etapa 07 antes del gate G4.",
-      "nota": "El VAN se anula con +31,35%. Costo fijo base $4.123.720/mes, del cual la nómina con factor de costo empresa es la partida dominante."
+      "nota": "Recalculado el 06-08-2026 contra el motor vigente (TMAR 20,46%, tope de capacidad de la etapa 04, costo de personal de la etapa 09). SIN QUIEBRE EN EL RANGO: no existe valor físicamente admisible de este parámetro que, por sí solo, devuelva el proyecto al límite de capital o anule el VAN. Ningún lever individual lo rescata. Ni con costo de personal en cero se anula el VAN."
     },
     "quiebre_contingencia_pct": {
-      "valor": 29.98,
+      "valor": null,
       "unidad": "% sobre equipos, instalación y habilitación",
-      "confianza": "ESTIMADO",
-      "fuente": "10-financiero/modelo.js",
-      "consultado": "2026-08-04",
+      "confianza": "PENDIENTE",
+      "fuente": "10-financiero/generar_modelo_excel.py#switching_values",
+      "consultado": "2026-08-06",
       "etapa": "12-riesgos-financiamiento",
       "probabilidad": "ALTA",
       "impacto": "CRÍTICO",
       "clave_afectada": "inversion.contingencia_pct",
       "mitigacion": "Presupuesto desglosado de habilitación que permita bajar la contingencia con evidencia, no subirla con criterio.",
-      "nota": "Duplicar la contingencia vigente rompe el techo de $50.000.000. Con 25% el fondeo máximo queda en $48.896.491 y la holgura cae a $1.103.509."
+      "nota": "Recalculado el 06-08-2026 contra el motor vigente (TMAR 20,46%, tope de capacidad de la etapa 04, costo de personal de la etapa 09). ATENCIÓN — cambio de sentido: el fondeo máximo ($125.493.563) ya SUPERA el límite de capital, así que esta columna dejó de marcar un punto de quiebre y pasó a marcar la MEJORA REQUERIDA. SIN QUIEBRE EN EL RANGO: no existe valor físicamente admisible de este parámetro que, por sí solo, devuelva el proyecto al límite de capital o anule el VAN. Ningún lever individual lo rescata."
     },
     "cadena_de_frio": {
       "valor": null,
@@ -1485,20 +1485,29 @@
       ]
     },
     "maquila_costo_maximo_admisible_clp_unidad": {
-      "valor": 354,
+      "valor": 810,
       "unidad": "CLP netos/pizza de sobrecosto variable admisible",
       "confianza": "ESTIMADO",
-      "fuente": "10-financiero/modelo.js",
-      "consultado": "2026-08-04",
+      "fuente": "10-financiero/generar_modelo_excel.py#switching_values",
+      "consultado": "2026-08-06",
       "etapa": "12-riesgos-financiamiento",
       "probabilidad": "—",
       "impacto": "—",
       "clave_afectada": "local.habilitacion_sanitaria_clp",
       "mitigacion": "Es la mitigación estructural del riesgo de CAPEX, no un plan B.",
-      "nota": "Escenario con habilitación sanitaria en cero: CAPEX $14.161.534, fondeo máximo $32.882.445, holgura $17.117.555 y VAN $55.486.035 a 15% ($40.135.543 a 20,46%). El margen del maquilador NO está modelado; el modelo solo acota cuánto puede cobrar: hasta +$354/pizza el proyecto sigue cabiendo en $50.000.000, hasta +$389/pizza el VAN sigue positivo, y por sobre +$79/pizza la maquila deja de ser mejor que la planta propia en VAN. Esa cifra debe cotizarse con plantas con resolución sanitaria vigente.",
+      "nota": "Recalculado el 06-08-2026 contra el motor vigente (TMAR 20,46%, tope de capacidad de la etapa 04, costo de personal de la etapa 09). Tarifa máxima de maquila que sigue cabiendo en $50.000.000, por bisección sobre el fondeo con habilitación y equipos propios en cero y sin tope de capacidad propia. Contra el techo de $30.000.000 que evalúa la etapa 13, el umbral baja a $560/pizza. No es una tarifa observada: es cuánto se puede pagar.",
       "depende_de": [
         "produccion.costo_maquila_clp_unidad"
       ]
+    },
+    "quiebre_capacidad_pizzas_dia": {
+      "valor": 135,
+      "unidad": "ver nota",
+      "confianza": "ESTIMADO",
+      "fuente": "10-financiero/generar_modelo_excel.py#switching_values",
+      "consultado": "2026-08-06",
+      "etapa": "12-riesgos-financiamiento",
+      "nota": "Recalculado el 06-08-2026 contra el motor vigente (TMAR 20,46%, tope de capacidad de la etapa 04, costo de personal de la etapa 09). Capacidad instalada que anula el VAN: 135 unidades/día contra las 60 que deriva la etapa 04 de la geometría del abatidor cotizado, es decir +125%. El otro de los dos parámetros con raíz, y el que señala que el rediseño necesario es técnico antes que financiero."
     }
   },
   "financiamiento": {

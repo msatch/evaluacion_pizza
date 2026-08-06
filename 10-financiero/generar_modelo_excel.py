@@ -2110,6 +2110,159 @@ def build_analysis_sheets(doc, sheets, data, m, fmts, refs, results_rows):
         ". Ningún crédito de consumo de este tamaño la cierra.", "P.Note")
     format_columns(sh, [7200, 5200, 4200, 4600, 4600, 4600, 4600, 11000])
 
+    # ---------------- Estado de resultados ----------------
+    # Separado del flujo de caja: el libro los mezclaba en una sola tabla, y esa
+    # confusión oculta que la pérdida contable y la pérdida de caja del año 1 no
+    # son la misma cifra —diferencia que la pérdida tributaria acumulada explota.
+    sh = new_sheet("Estado_Resultados", 0x548235)
+    add_title(sh, "ESTADO DE RESULTADOS", "Por año, con margen de contribución y porcentaje sobre ingresos.")
+    filas = [("Volumen (unidades)", "volume", "P.Int"), ("Ingresos", "revenue", "P.Money"),
+             ("Costos variables", "variableCost", "P.Money"),
+             ("Margen de contribución", None, "P.Money"), ("Costos fijos", "fixedCost", "P.Money"),
+             ("EBITDA", "ebitda", "P.Money"), ("Depreciación", "depreciation", "P.Money"),
+             ("EBIT", "ebit", "P.Money"), ("Renta imponible", "taxable", "P.Money"),
+             ("Impuesto", "tax", "P.Money"), ("Resultado neto", None, "P.Money")]
+    put(sh, 0, 4, "Concepto", "P.Header")
+    for j in range(5):
+        put(sh, 1 + j, 4, f"Año {j+1}", "P.HeaderNum")
+    put(sh, 6, 4, "% ingresos año 1", "P.HeaderNum")
+    for i, (label, key, st) in enumerate(filas):
+        r = 5 + i
+        alt = ".Alt" if i % 2 else ""
+        put(sh, 0, r, label, "P.Label" + alt)
+        for j, y in enumerate(m["years"]):
+            if key is None:
+                v = (y["revenue"] - y["variableCost"]) if "contribución" in label else (y["ebit"] - y["tax"])
+            else:
+                v = -y[key] if key in ("variableCost", "fixedCost", "depreciation", "tax") else y[key]
+            put(sh, 1 + j, r, v, st + alt)
+        base_rev = m["years"][0]["revenue"]
+        v1 = sh.getCellByPosition(1, r).Value
+        put(sh, 6, r, v1 / base_rev if base_rev and label != "Volumen (unidades)" else None, "P.Pct" + alt)
+    grid(sh.getCellRangeByPosition(0, 4, 6, 4 + len(filas)))
+    format_columns(sh, [7000] + [4600] * 5 + [4600])
+
+    # ---------------- Capital de trabajo ----------------
+    sh = new_sheet("Capital_Trabajo", 0x548235)
+    add_title(sh, "CAPITAL DE TRABAJO",
+              "Días de cobro, inventario y pago, y por qué un modelo anual subestima el peak.")
+    put(sh, 0, 4, "Concepto", "P.Header")
+    for j in range(5):
+        put(sh, 1 + j, 4, f"Año {j+1}", "P.HeaderNum")
+    ct = [("Cuentas por cobrar", lambda y: y["revenue"] * m["receivableDays"] / 365),
+          ("Inventario", lambda y: y["variableCost"] * gv(data["financial"], "operacion.dias_inventario", 0) / 365),
+          ("Cuentas por pagar", lambda y: -y["variableCost"] * gv(data["financial"], "operacion.dias_cuentas_pagar", 0) / 365),
+          ("Capital de trabajo neto", lambda y: y["nwc"]),
+          ("Variación del período", lambda y: y["deltaNwc"])]
+    for i, (label, fn) in enumerate(ct):
+        r = 5 + i
+        alt = ".Alt" if i % 2 else ""
+        put(sh, 0, r, label, "P.Label" + alt)
+        for j, y in enumerate(m["years"]):
+            put(sh, 1 + j, r, fn(y), "P.Money" + alt)
+    grid(sh.getCellRangeByPosition(0, 4, 5, 4 + len(ct)))
+    rd = 5 + len(ct) + 2
+    put(sh, 0, rd, "Indicadores de ciclo", "P.Section")
+    dso = m["receivableDays"]
+    dio = gv(data["financial"], "operacion.dias_inventario", 0)
+    dpo = gv(data["financial"], "operacion.dias_cuentas_pagar", 0)
+    for i, (lbl, v, u) in enumerate([("DSO · días de cobro", dso, "P.Days"),
+                                     ("DIO · días de inventario", dio, "P.Days"),
+                                     ("DPO · días de pago", dpo, "P.Days"),
+                                     ("Ciclo de conversión de caja", dso + dio - dpo, "P.Days")]):
+        put(sh, 0, rd + 1 + i, lbl, "P.KPI.Label")
+        put(sh, 1, rd + 1 + i, v, u)
+    grid(sh.getCellRangeByPosition(0, rd + 1, 1, rd + 4))
+    put(sh, 0, rd + 7,
+        "ADVERTENCIA. Este modelo es anual y no tiene perfil mensual de caja, así que el fondeo máximo "
+        "que reporta IGNORA el valle intra-anual. Con DPO en cero se supone además que ningún proveedor "
+        "da crédito, supuesto conservador que nadie ha verificado. La etapa 11 publicó un ratio peak/valle "
+        "de 2,1 para pernoctaciones INE, pero es un proxy turístico y no una serie de demanda de pizza: "
+        "usarlo como índice de estacionalidad sería inventar. El perfil mensual queda pendiente.", "P.Note")
+    sh.getCellRangeByPosition(0, rd + 7, 5, rd + 7).merge(True)
+    sh.Rows.getByIndex(rd + 7).Height = 1600
+    format_columns(sh, [7000] + [4600] * 5)
+
+    # ---------------- Ratios y unidad económica ----------------
+    sh = new_sheet("Ratios", 0x2E75B6)
+    add_title(sh, "RATIOS Y ECONOMÍA UNITARIA", "Por qué el proyecto no cierra, en indicadores.")
+    y1 = m["years"][0]
+    contrib = y1["price"] - y1["variableUnit"]
+    ratios = [
+        ("Precio neto por pizza", y1["price"], "P.Money", "Año 1, con escalador de inflación."),
+        ("Costo variable por pizza", y1["variableUnit"], "P.Money", "Insumos con merma, envase, energía y distribución."),
+        ("Margen de contribución por pizza", contrib, "P.Money", "Lo que deja cada pizza para pagar costos fijos."),
+        ("Margen de contribución %", contrib / y1["price"], "P.Pct", "Sobre precio de venta."),
+        ("Costo fijo mensual", m["fixedMonthlyBase"], "P.Money", "Arriendo, personal y gastos de estructura."),
+        ("Punto de equilibrio mensual", (m["breakEven"] or 0) / 12, "P.Int", "Unidades que igualan contribución y costo fijo."),
+        ("Capacidad instalada mensual", (m["capacityYear"] or 0) / 12, "P.Int", "Etapa 04, desde la geometría del abatidor."),
+        ("Equilibrio sobre capacidad", m["breakEvenUse"], "P.Pct", "Por sobre 100% el equilibrio es inalcanzable."),
+        ("Apalancamiento operativo (DOL)", None, "P.Dec2", "Contribución total sobre EBITDA; no definido con EBITDA negativo."),
+        ("Margen de seguridad", None, "P.Pct", "No definido: la operación no alcanza el equilibrio."),
+        ("VAN por peso de fondeo máximo", m["npv"] / m["peakFunding"], "P.Dec2",
+         "Índice correcto bajo racionamiento de capital: el denominador es la caja que hay que poner, no la inversión inicial."),
+        ("Índice de rentabilidad", m["profitabilityIndex"], "P.Dec2", "Criterio > 1. Usa la inversión inicial como denominador."),
+    ]
+    put(sh, 0, 4, "Indicador", "P.Header")
+    put(sh, 1, 4, "Valor", "P.HeaderNum")
+    put(sh, 2, 4, "Lectura", "P.Header")
+    for i, (lbl, v, st, nota) in enumerate(ratios):
+        r = 5 + i
+        alt = ".Alt" if i % 2 else ""
+        put(sh, 0, r, lbl, "P.Label" + alt)
+        put(sh, 1, r, v if v is not None else "No definido", (st if v is not None else "P.Label") + alt)
+        put(sh, 2, r, nota, "P.Note" + alt)
+    grid(sh.getCellRangeByPosition(0, 4, 2, 4 + len(ratios)))
+    idx = sheet_index(sh)
+    cond_format(doc, sh.getCellRangeByPosition(1, 12, 1, 12), idx, 1, 12,
+                [("B13>1", "P.Bad"), ("B13<=1", "P.Good")])
+    format_columns(sh, [8000, 5200, 13000])
+
+    # ---------------- Respuestas al statement ----------------
+    sh = new_sheet("Respuestas", 0x17324D)
+    add_title(sh, "LAS SEIS PREGUNTAS DEL STATEMENT",
+              "Respuesta actual de cada una, la etapa responsable y qué falta para cerrarla.")
+    put(sh, 0, 4, "#", "P.Header")
+    for c, h in enumerate(["Pregunta", "Respuesta", "Etapa", "Qué falta"], start=1):
+        put(sh, c, 4, h, "P.Header")
+    be_mes = (m["breakEven"] or 0) / 12
+    cap_mes = (m["capacityYear"] or 0) / 12
+    preguntas = [
+        ("¿Cuántos establecimientos HORECA hay y cuánto consumen?",
+         "1.187 en Temuco y 1.588 en el anillo 1. El consumo por establecimiento sigue sin medir.",
+         "01 · 03", "Entrevistas en terreno con el instrumento de la etapa 03."),
+        ("¿A qué precio compran hoy y cuánto pagarían por la alternativa local?",
+         "Referencias de retail y foodservice levantadas. La disposición a pagar no está medida.",
+         "02 · 03", "Prueba monádica de tres precios, etapa 03."),
+        ("¿Cuál es el CAPEX mínimo con cotizaciones reales?",
+         "$" + f"{m['totalCapex']:,.0f}".replace(",", ".") +
+         " con precios de publicación. Cinco de las ocho líneas heredadas no resistieron la auditoría.",
+         "05 · 07", "Cotizaciones formales; el escenario de equipo usado no pudo construirse por ausencia de mercado publicado."),
+        ("¿Cuánto capital de trabajo exige el ciclo de cobro?",
+         "$" + f"{m['initialNwc']:,.0f}".replace(",", ".") +
+         f" inicial, con plazo de cobro supuesto de {m['receivableDays']:.0f} días.",
+         "10", "Plazo de cobro real por segmento, y un perfil mensual que capture el valle intra-anual."),
+        ("¿Cuál es el punto de equilibrio y qué porcentaje de la capacidad representa?",
+         f"{be_mes:,.0f}".replace(",", ".") + " pizzas/mes contra una capacidad de " +
+         f"{cap_mes:,.0f}".replace(",", ".") + f"/mes: {m['breakEvenUse']*100:.0f}% de la capacidad instalada.",
+         "04 · 10", "Medir el ciclo real de abatimiento con sonda al centro térmico; los 240 min son un techo prestado."),
+        ("¿Cabe en $50 millones? Si no, ¿cuál es el mínimo real y qué caminos existen?",
+         "No con planta propia: exige $" + f"{m['peakFunding']:,.0f}".replace(",", ".") +
+         " de fondeo. Sí por maquila, mientras la tarifa no supere $810/pizza ($560 si el techo es $30 millones).",
+         "10 · 12 · 13", "Cotizar la maquila. Es el único camino que cabe en el capital disponible."),
+    ]
+    for i, (preg, resp, etapa, falta) in enumerate(preguntas):
+        r = 5 + i
+        alt = ".Alt" if i % 2 else ""
+        put(sh, 0, r, i + 1, "P.Int" + alt)
+        put(sh, 1, r, preg, "P.Note" + alt)
+        put(sh, 2, r, resp, "P.Note" + alt)
+        put(sh, 3, r, etapa, "P.Label" + alt)
+        put(sh, 4, r, falta, "P.Note" + alt)
+        sh.Rows.getByIndex(r).Height = 1500
+    grid(sh.getCellRangeByPosition(0, 4, 4, 4 + len(preguntas)))
+    format_columns(sh, [1200, 11000, 13000, 3400, 13000])
+
     return {"tornado": trows, "switching": sw, "mc": mc}
 
 

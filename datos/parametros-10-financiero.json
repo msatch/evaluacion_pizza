@@ -447,5 +447,16 @@
       "etapa": "10-financiero",
       "nota": "Valor de realización al año 5 antes de impuesto."
     }
+  },
+  "produccion": {
+    "costo_maquila_clp_unidad": {
+      "valor": null,
+      "unidad": "CLP neto/pizza, sobrecosto variable sobre insumos",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "10-financiero",
+      "nota": "No existe tarifa pública de maquila de pizza congelada en Chile. El modelo no la supone: entrega el COSTO MÁXIMO ADMISIBLE por bisección sobre el fondeo máximo — $810/pizza contra el techo de $50.000.000 y $560/pizza contra el de $30.000.000. La clave existe para recibir una cotización real; hasta entonces la vía de maquila se evalúa por su umbral, no por su costo."
+    }
   }
 }

@@ -7,7 +7,6 @@
     "metodo_valores_de_quiebre": "Se replicó el motor de 10-financiero/modelo.js sobre los JSON vigentes al 04-08-2026 y se resolvió por bisección la entrada que lleva el fondeo máximo acumulado a datos/supuestos.json#meta.restriccion_capital_clp ($50.000.000) o el VAN a cero. Caso base reproducido exactamente: CAPEX $27.961.534, capital de trabajo $14.035.748, inversión inicial $43.516.722, fondeo máximo $46.682.445, VAN@15% $44.017.948, TIR 35,69%, equilibrio 2.666 pizzas/mes, FCL año 1 −$3.165.722.",
     "advertencia": "Los valores de quiebre son aritmética exacta del modelo sobre entradas que siguen siendo SUPUESTO. Miden fragilidad, no probabilidad de ocurrencia."
   },
-
   "_dependencias": [
     {
       "clave": "local.habilitacion_sanitaria_clp",
@@ -73,7 +72,6 @@
       "estado": "ABIERTA"
     }
   ],
-
   "macro": {
     "tasa_descuento_pct": {
       "valor": 20.46,
@@ -85,7 +83,6 @@
       "nota": "PISO OBSERVADO, no el costo de oportunidad del titular. CMF, Certificado 07/2026 (promedios de junio 2026, vigente desde el 14-07-2026): interés corriente de 20,46% anual para operaciones no reajustables en moneda nacional de 90 días o más entre 200 y 5.000 UF. La inversión inicial de $43.516.722 equivale a 1.065 UF, dentro de ese tramo. El capital propio es subordinado a esa deuda, luego la TMAR correcta es MAYOR. Reemplaza el stub de 15% de la etapa 10, que quedaba por DEBAJO del costo observado de deuda del mismo tamaño. Spread sobre la TPM (4,5%, Banco Central, https://www.bcentral.cl/areas/politica-monetaria): 15,96 puntos. NO se descompone riesgo por riesgo: no existe fuente pública que lo permita para una microempresa de alimentos en Temuco y repartir los puntos con decimales sería inventar. Límite: el interés corriente es un promedio de operaciones heterogéneas, expresado en forma lineal anual base 360 días, no una cotización para esta empresa. La decisión no es sensible a la tasa: el VAN se anula recién en 35,69% (la TIR); VAN@15% $44.017.948, VAN@20,46% $28.308.713. Gestión que lo cerraría: que el titular declare por escrito el retorno de su alternativa real de inversión."
     }
   },
-
   "inversion": {
     "contingencia_pct": {
       "valor": 15,
@@ -97,7 +94,6 @@
       "nota": "SE MANTIENE EN 15% Y SE DECLARA POR QUÉ. No se encontró estándar chileno citable de contingencia por clase de estimación, y AACE 18R-97 es explícita en que la contingencia se determina por análisis de riesgo del proyecto y nunca se predetermina; subirla a un número redondo sería relleno. Datos duros: con 15% la reserva es de $3.321.070, prácticamente idéntica a la holgura de $3.317.555 contra el límite de $50.000.000 — es decir, consumir la contingencia equivale a agotar la holgura. Valor crítico: 29,98%; por sobre ese punto el fondeo máximo supera $50.000.000. Gestión: presupuesto desglosado de arquitecto o constructor sobre un local candidato visitado (etapa 07)."
     }
   },
-
   "operacion": {
     "seguros_mensual_clp": {
       "valor": null,
@@ -107,10 +103,12 @@
       "consultado": null,
       "etapa": "12-riesgos-financiamiento",
       "nota": "No existe tarifa pública para una planta de alimentos con cámara de frío; cualquier cifra sería inventada. Mientras esté en null el modelo usa el fallback de $60.000 de la etapa 10, declarado SUPUESTO. Gestión: cotizar póliza de incendio, equipo estático, rotura de maquinaria con daño a existencias refrigeradas y responsabilidad civil de producto, con un corredor y con BancoEstado Seguros, sobre el inventario de equipos de la etapa 05. La cobertura de daño a existencias por falla de frío es la relevante: el riesgo de cadena de frío no está representado en ninguna otra parte del modelo.",
-      "depende_de": ["capex.equipamiento_base_clp", "local.superficie_requerida_m2"]
+      "depende_de": [
+        "capex.equipamiento_base_clp",
+        "local.superficie_requerida_m2"
+      ]
     }
   },
-
   "escenarios": {
     "_nota": "Reemplazan los multiplicadores hardcodeados en 10-financiero/generar_modelo_excel.py (pess_/base_/opt_), que estaban fuera de todo JSON. Multiplicadores desnudos aplicados sobre el caso base.",
     "precio_pesimista_factor": {
@@ -121,223 +119,378 @@
       "consultado": "2026-08-04",
       "etapa": "12-riesgos-financiamiento",
       "nota": "Ancla: PF Listo familiar en promoción, $3.017 netos, precio retail regional observado en Temuco. 3.017 ÷ 4.200 = 0,718. Es un escenario definido, no un pronóstico. Consecuencia: la contribución unitaria cae de $1.547 a $364 contra un costo fijo anual de $50.969.179; VAN −$147.746.510. Recalcular si cambia precios.precio_venta_b2b_familiar_clp.",
-      "depende_de": ["precios.precio_venta_b2b_familiar_clp"]
+      "depende_de": [
+        "precios.precio_venta_b2b_familiar_clp"
+      ]
     },
     "precio_base_factor": {
-      "valor": 1, "unidad": "multiplicador", "confianza": "VERIFICADO",
+      "valor": 1,
+      "unidad": "multiplicador",
+      "confianza": "VERIFICADO",
       "fuente": "datos/parametros-10-financiero.json#modelo.precio_b2b_familiar_base_clp",
-      "consultado": "2026-08-04", "etapa": "12-riesgos-financiamiento",
+      "consultado": "2026-08-04",
+      "etapa": "12-riesgos-financiamiento",
       "nota": "Identidad. El nivel base sigue siendo SUPUESTO; lo verificado es el multiplicador."
     },
     "precio_optimista_factor": {
-      "valor": 1.20,
+      "valor": 1.2,
       "unidad": "multiplicador sobre el precio base",
       "confianza": "ESTIMADO",
       "fuente": "02-competencia/index.html",
       "consultado": "2026-08-04",
       "etapa": "12-riesgos-financiamiento",
       "nota": "Ancla: pizza familiar foodservice publicada a $5.034 netos (Meta Food, Santiago). 5.034 ÷ 4.200 = 1,199. Límite: ese precio no incluye flete a Temuco ni prueba disposición a pagar del canal local.",
-      "depende_de": ["precios.precio_venta_b2b_familiar_clp"]
+      "depende_de": [
+        "precios.precio_venta_b2b_familiar_clp"
+      ]
     },
     "volumen_pesimista_factor": {
-      "valor": null, "unidad": "multiplicador sobre el volumen del año 1", "confianza": "PENDIENTE",
-      "fuente": null, "consultado": null, "etapa": "12-riesgos-financiamiento",
+      "valor": null,
+      "unidad": "multiplicador sobre el volumen del año 1",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "12-riesgos-financiamiento",
       "nota": "Fórmula publicada: factor = mercado.som_ano1_pizzas_mes ÷ 2.500. No se inventa un 0,80. Referencias del modelo: a 2.254 pizzas/mes el fondeo máximo alcanza $50.000.000; a 1.972 pizzas/mes el VAN se anula; el equilibrio está en 2.666 pizzas/mes, por sobre el volumen base de 2.500.",
-      "depende_de": ["mercado.som_ano1_pizzas_mes"]
+      "depende_de": [
+        "mercado.som_ano1_pizzas_mes"
+      ]
     },
     "volumen_base_factor": {
-      "valor": 1, "unidad": "multiplicador", "confianza": "VERIFICADO",
+      "valor": 1,
+      "unidad": "multiplicador",
+      "confianza": "VERIFICADO",
       "fuente": "datos/parametros-10-financiero.json#modelo.volumen_ano1_unidades",
-      "consultado": "2026-08-04", "etapa": "12-riesgos-financiamiento", "nota": "Identidad."
+      "consultado": "2026-08-04",
+      "etapa": "12-riesgos-financiamiento",
+      "nota": "Identidad."
     },
     "volumen_optimista_factor": {
-      "valor": null, "unidad": "multiplicador sobre el volumen del año 1", "confianza": "PENDIENTE",
-      "fuente": null, "consultado": null, "etapa": "12-riesgos-financiamiento",
+      "valor": null,
+      "unidad": "multiplicador sobre el volumen del año 1",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "12-riesgos-financiamiento",
       "nota": "Misma fórmula. Debe además quedar acotado por produccion.capacidad_instalada_pizzas_dia; hoy esa restricción no muerde porque la etapa 04 no la publicó.",
-      "depende_de": ["mercado.som_ano1_pizzas_mes", "produccion.capacidad_instalada_pizzas_dia"]
+      "depende_de": [
+        "mercado.som_ano1_pizzas_mes",
+        "produccion.capacidad_instalada_pizzas_dia"
+      ]
     },
     "costo_variable_pesimista_factor": {
-      "valor": null, "unidad": "multiplicador sobre el costo variable unitario", "confianza": "PENDIENTE",
-      "fuente": null, "consultado": null, "etapa": "12-riesgos-financiamiento",
+      "valor": null,
+      "unidad": "multiplicador sobre el costo variable unitario",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "12-riesgos-financiamiento",
       "nota": "Sin cotización industrial de mozzarella no hay ancla. Referencias del modelo sobre un costo variable base de $2.653/pizza: +3,89% lleva el fondeo máximo a $50.000.000; +11,68% anula el VAN.",
-      "depende_de": ["insumos.mozzarella_clp_kg", "insumos.envase_clp_unidad", "produccion.merma_pct"]
+      "depende_de": [
+        "insumos.mozzarella_clp_kg",
+        "insumos.envase_clp_unidad",
+        "produccion.merma_pct"
+      ]
     },
     "costo_variable_base_factor": {
-      "valor": 1, "unidad": "multiplicador", "confianza": "VERIFICADO",
-      "fuente": "10-financiero/modelo.js", "consultado": "2026-08-04",
-      "etapa": "12-riesgos-financiamiento", "nota": "Identidad."
+      "valor": 1,
+      "unidad": "multiplicador",
+      "confianza": "VERIFICADO",
+      "fuente": "10-financiero/modelo.js",
+      "consultado": "2026-08-04",
+      "etapa": "12-riesgos-financiamiento",
+      "nota": "Identidad."
     },
     "costo_variable_optimista_factor": {
-      "valor": null, "unidad": "multiplicador sobre el costo variable unitario", "confianza": "PENDIENTE",
-      "fuente": null, "consultado": null, "etapa": "12-riesgos-financiamiento",
+      "valor": null,
+      "unidad": "multiplicador sobre el costo variable unitario",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "12-riesgos-financiamiento",
       "nota": "Debe salir del descuento por escalón de volumen que entregue la etapa 06, no de un supuesto.",
-      "depende_de": ["insumos.mozzarella_clp_kg"]
+      "depende_de": [
+        "insumos.mozzarella_clp_kg"
+      ]
     },
     "costo_fijo_pesimista_factor": {
-      "valor": null, "unidad": "multiplicador sobre el costo fijo mensual", "confianza": "PENDIENTE",
-      "fuente": null, "consultado": null, "etapa": "12-riesgos-financiamiento",
+      "valor": null,
+      "unidad": "multiplicador sobre el costo fijo mensual",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "12-riesgos-financiamiento",
       "nota": "Sin dotación de la etapa 09 ni canon real de la etapa 07 no hay ancla. Referencias del modelo sobre un costo fijo base de $4.123.720/mes: +6,51% lleva el fondeo máximo a $50.000.000; +31,35% anula el VAN.",
-      "depende_de": ["rrhh.nomina_bruta_mensual_clp", "macro.factor_costo_empresa", "local.arriendo_mensual_clp", "operacion.seguros_mensual_clp"]
+      "depende_de": [
+        "rrhh.nomina_bruta_mensual_clp",
+        "macro.factor_costo_empresa",
+        "local.arriendo_mensual_clp",
+        "operacion.seguros_mensual_clp"
+      ]
     },
     "costo_fijo_base_factor": {
-      "valor": 1, "unidad": "multiplicador", "confianza": "VERIFICADO",
-      "fuente": "10-financiero/modelo.js", "consultado": "2026-08-04",
-      "etapa": "12-riesgos-financiamiento", "nota": "Identidad."
+      "valor": 1,
+      "unidad": "multiplicador",
+      "confianza": "VERIFICADO",
+      "fuente": "10-financiero/modelo.js",
+      "consultado": "2026-08-04",
+      "etapa": "12-riesgos-financiamiento",
+      "nota": "Identidad."
     },
     "costo_fijo_optimista_factor": {
-      "valor": null, "unidad": "multiplicador sobre el costo fijo mensual", "confianza": "PENDIENTE",
-      "fuente": null, "consultado": null, "etapa": "12-riesgos-financiamiento",
+      "valor": null,
+      "unidad": "multiplicador sobre el costo fijo mensual",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "12-riesgos-financiamiento",
       "nota": "No se propone un factor menor a 1: el costo fijo del caso base ya asume una dotación mínima sin verificar.",
-      "depende_de": ["rrhh.nomina_bruta_mensual_clp", "local.arriendo_mensual_clp"]
+      "depende_de": [
+        "rrhh.nomina_bruta_mensual_clp",
+        "local.arriendo_mensual_clp"
+      ]
     },
     "capex_pesimista_factor": {
-      "valor": 1.30,
+      "valor": 1.3,
       "unidad": "multiplicador sobre equipos y habilitación",
       "confianza": "ESTIMADO",
       "fuente": "AACE International 18R-97 (rev. 01-03-2016), Tabla 1 — https://services.austintexas.gov/edims/document.cfm?id=280770",
       "consultado": "2026-08-04",
       "etapa": "12-riesgos-financiamiento",
       "nota": "El CAPEX vigente es una estimación Clase 5 (definición 0–2%, método de juicio y analogía, precios de publicación web y ninguna cotización de habilitación). AACE asigna a la Clase 5 un rango alto de +30% a +100% DESPUÉS de aplicar contingencia. Se toma el extremo MENOS alarmante de esa banda, +30%. Consecuencia: fondeo máximo $54.320.905, es decir NO CABE en $50.000.000. El valor de quiebre es apenas +13,03%, muy por dentro del rango propio de la clase de estimación.",
-      "depende_de": ["capex.equipamiento_base_clp", "local.habilitacion_sanitaria_clp"]
+      "depende_de": [
+        "capex.equipamiento_base_clp",
+        "local.habilitacion_sanitaria_clp"
+      ]
     },
     "capex_base_factor": {
-      "valor": 1, "unidad": "multiplicador", "confianza": "VERIFICADO",
-      "fuente": "10-financiero/modelo.js", "consultado": "2026-08-04",
-      "etapa": "12-riesgos-financiamiento", "nota": "Identidad."
+      "valor": 1,
+      "unidad": "multiplicador",
+      "confianza": "VERIFICADO",
+      "fuente": "10-financiero/modelo.js",
+      "consultado": "2026-08-04",
+      "etapa": "12-riesgos-financiamiento",
+      "nota": "Identidad."
     },
     "capex_optimista_factor": {
-      "valor": 0.80,
+      "valor": 0.8,
       "unidad": "multiplicador sobre equipos y habilitación",
       "confianza": "ESTIMADO",
       "fuente": "AACE International 18R-97 (rev. 01-03-2016), Tabla 1 — https://services.austintexas.gov/edims/document.cfm?id=280770",
       "consultado": "2026-08-04",
       "etapa": "12-riesgos-financiamiento",
       "nota": "Extremo estrecho de la banda baja de Clase 5 (−20% a −50%). Consecuencia: CAPEX $22.869.227 y fondeo máximo $41.590.138. Simetría falsa: la banda de AACE es asimétrica hacia arriba y así debe leerse.",
-      "depende_de": ["capex.equipamiento_base_clp", "local.habilitacion_sanitaria_clp"]
+      "depende_de": [
+        "capex.equipamiento_base_clp",
+        "local.habilitacion_sanitaria_clp"
+      ]
     },
     "clase_estimacion_capex_aace": {
-      "valor": 5, "unidad": "clase AACE 18R-97 (5 = menos madura)", "confianza": "ESTIMADO",
+      "valor": 5,
+      "unidad": "clase AACE 18R-97 (5 = menos madura)",
+      "confianza": "ESTIMADO",
       "fuente": "https://services.austintexas.gov/edims/document.cfm?id=280770",
-      "consultado": "2026-08-04", "etapa": "12-riesgos-financiamiento",
+      "consultado": "2026-08-04",
+      "etapa": "12-riesgos-financiamiento",
       "nota": "Clasificación aplicada por esta etapa al estimado vigente. Sube a Clase 4 cuando existan dos cotizaciones formales por equipo y un presupuesto de habilitación sobre un local visitado (gate G2)."
     }
   },
-
   "riesgo": {
     "_escalas": {
       "probabilidad": "ALTA = ya evidenciado por una etapa cerrada del dossier. MEDIA = plausible y sin evidencia en contra. BAJA = exige que falle un dato ya verificado. No se asignan probabilidades numéricas: no existe base para calcularlas y una probabilidad inventada con decimales es una cifra plausible sin respaldo.",
       "impacto": "CRÍTICO = rompe el techo de $50.000.000 o anula el VAN. ALTO = consume más de la mitad de la holgura. MEDIO = consume menos de la mitad. La escala es de consecuencia sobre el modelo, no de gravedad percibida."
     },
     "holgura_capital_clp": {
-      "valor": 3317555, "unidad": "CLP", "confianza": "ESTIMADO",
-      "fuente": "datos/supuestos.json#meta.restriccion_capital_clp menos el fondeo máximo de 10-financiero/modelo.js",
-      "consultado": "2026-08-04", "etapa": "12-riesgos-financiamiento",
-      "nota": "$50.000.000 − $46.682.445. Aritmética exacta sobre entradas SUPUESTO, por eso ESTIMADO y no VERIFICADO. Coincide casi peso a peso con la contingencia de $3.321.070: la holgura ES la contingencia."
+      "valor": -75493563,
+      "unidad": "CLP",
+      "confianza": "ESTIMADO",
+      "fuente": "10-financiero/generar_modelo_excel.py#switching_values",
+      "consultado": "2026-08-06",
+      "etapa": "12-riesgos-financiamiento",
+      "nota": "Recalculado el 06-08-2026 contra el motor vigente (TMAR 20,46%, tope de capacidad de la etapa 04, costo de personal de la etapa 09). $50.000.000 − $125.493.563. Antes se publicó como +$3.317.555 con el fondeo de $46,68M; ahora es NEGATIVA en $75,5 millones. No hay holgura: hay déficit."
     },
     "quiebre_habilitacion_sanitaria_clp": {
-      "valor": 14884831, "unidad": "CLP", "confianza": "ESTIMADO",
-      "fuente": "10-financiero/modelo.js", "consultado": "2026-08-04", "etapa": "12-riesgos-financiamiento",
-      "probabilidad": "ALTA", "impacto": "CRÍTICO",
+      "valor": null,
+      "unidad": "CLP",
+      "confianza": "PENDIENTE",
+      "fuente": "10-financiero/generar_modelo_excel.py#switching_values",
+      "consultado": "2026-08-06",
+      "etapa": "12-riesgos-financiamiento",
+      "probabilidad": "ALTA",
+      "impacto": "CRÍTICO",
       "clave_afectada": "local.habilitacion_sanitaria_clp",
       "mitigacion": "Producir en maquila hasta disponer de presupuesto de arquitecto sobre un local real visitado; condicionar el arriendo a factibilidad sanitaria y municipal (gate G2/G4).",
-      "nota": "+24,0% sobre los $12.000.000 de fallback lleva el fondeo máximo a $50.000.000. Etapa 07 no encontró ningún aviso que acreditara simultáneamente uso alimentario, resolución sanitaria vigente y tamaño adecuado."
+      "nota": "Recalculado el 06-08-2026 contra el motor vigente (TMAR 20,46%, tope de capacidad de la etapa 04, costo de personal de la etapa 09). ATENCIÓN — cambio de sentido: el fondeo máximo ($125.493.563) ya SUPERA el límite de capital, así que esta columna dejó de marcar un punto de quiebre y pasó a marcar la MEJORA REQUERIDA. SIN QUIEBRE EN EL RANGO: no existe valor físicamente admisible de este parámetro que, por sí solo, devuelva el proyecto al límite de capital o anule el VAN. Ningún lever individual lo rescata. Ni siquiera con habilitación sanitaria en cero el fondeo vuelve al límite."
     },
     "quiebre_capex_pct": {
-      "valor": 13.03, "unidad": "% de sobrecosto sobre equipos y habilitación", "confianza": "ESTIMADO",
-      "fuente": "10-financiero/modelo.js", "consultado": "2026-08-04", "etapa": "12-riesgos-financiamiento",
-      "probabilidad": "ALTA", "impacto": "CRÍTICO",
+      "valor": null,
+      "unidad": "% de sobrecosto sobre equipos y habilitación",
+      "confianza": "PENDIENTE",
+      "fuente": "10-financiero/generar_modelo_excel.py#switching_values",
+      "consultado": "2026-08-06",
+      "etapa": "12-riesgos-financiamiento",
+      "probabilidad": "ALTA",
+      "impacto": "CRÍTICO",
       "clave_afectada": "capex.equipamiento_base_clp",
       "mitigacion": "Dos cotizaciones formales por equipo con flete a Temuco antes del gate G2; reclasificar el estimado a Clase 4.",
-      "nota": "Muy por dentro de la banda alta de una estimación Clase 5 (+30% a +100%). Es el hallazgo que responde la pregunta 6 del statement."
+      "nota": "Recalculado el 06-08-2026 contra el motor vigente (TMAR 20,46%, tope de capacidad de la etapa 04, costo de personal de la etapa 09). ATENCIÓN — cambio de sentido: el fondeo máximo ($125.493.563) ya SUPERA el límite de capital, así que esta columna dejó de marcar un punto de quiebre y pasó a marcar la MEJORA REQUERIDA. SIN QUIEBRE EN EL RANGO: no existe valor físicamente admisible de este parámetro que, por sí solo, devuelva el proyecto al límite de capital o anule el VAN. Ningún lever individual lo rescata."
     },
     "quiebre_plazo_cobro_dias": {
-      "valor": 39.33, "unidad": "días", "confianza": "ESTIMADO",
-      "fuente": "10-financiero/modelo.js", "consultado": "2026-08-04", "etapa": "12-riesgos-financiamiento",
-      "probabilidad": "ALTA", "impacto": "CRÍTICO",
+      "valor": null,
+      "unidad": "días",
+      "confianza": "PENDIENTE",
+      "fuente": "10-financiero/generar_modelo_excel.py#switching_values",
+      "consultado": "2026-08-06",
+      "etapa": "12-riesgos-financiamiento",
+      "probabilidad": "ALTA",
+      "impacto": "CRÍTICO",
       "clave_afectada": "precios.plazo_cobro_dias",
       "mitigacion": "Pactar 15 días con descuento por pronto pago en las primeras cuentas; no aceptar 60 días sin línea de capital de trabajo aprobada. Medir el plazo real en el piloto (gate G3).",
-      "nota": "9,3 días adicionales sobre los 30 supuestos agotan toda la holgura. A 60 días —práctica habitual del canal según el statement §8— el capital de trabajo sube a $24.702.598 y el fondeo máximo a $57.349.294."
+      "nota": "Recalculado el 06-08-2026 contra el motor vigente (TMAR 20,46%, tope de capacidad de la etapa 04, costo de personal de la etapa 09). ATENCIÓN — cambio de sentido: el fondeo máximo ($125.493.563) ya SUPERA el límite de capital, así que esta columna dejó de marcar un punto de quiebre y pasó a marcar la MEJORA REQUERIDA. SIN QUIEBRE EN EL RANGO: no existe valor físicamente admisible de este parámetro que, por sí solo, devuelva el proyecto al límite de capital o anule el VAN. Ningún lever individual lo rescata. Ni el pago al contado devuelve el fondeo al límite."
     },
     "quiebre_volumen_pizzas_mes": {
-      "valor": 2254, "unidad": "pizzas/mes del año 1", "confianza": "ESTIMADO",
-      "fuente": "10-financiero/modelo.js", "consultado": "2026-08-04", "etapa": "12-riesgos-financiamiento",
-      "probabilidad": "ALTA", "impacto": "CRÍTICO",
+      "valor": null,
+      "unidad": "pizzas/mes del año 1",
+      "confianza": "PENDIENTE",
+      "fuente": "10-financiero/generar_modelo_excel.py#switching_values",
+      "consultado": "2026-08-06",
+      "etapa": "12-riesgos-financiamiento",
+      "probabilidad": "ALTA",
+      "impacto": "CRÍTICO",
       "clave_afectada": "mercado.som_ano1_pizzas_mes",
       "mitigacion": "No firmar arriendo ni comprometer CAPEX sin cartas de intención por al menos 2.666 pizzas/mes al precio de lista (gate G1).",
-      "nota": "El VAN se anula en 1.972 pizzas/mes. El caso base (2.500) ya está por DEBAJO del punto de equilibrio (2.666): el año 1 nace con flujo de caja libre de −$3.165.722 por construcción."
+      "nota": "Recalculado el 06-08-2026 contra el motor vigente (TMAR 20,46%, tope de capacidad de la etapa 04, costo de personal de la etapa 09). SIN QUIEBRE EN EL RANGO: no existe valor físicamente admisible de este parámetro que, por sí solo, devuelva el proyecto al límite de capital o anule el VAN. Ningún lever individual lo rescata. Subir el SOM no ayuda porque la producción está topada por la capacidad instalada de 1.320/mes: vender más de lo que se puede fabricar no genera flujo."
     },
     "quiebre_precio_clp": {
-      "valor": 4083, "unidad": "CLP neto/unidad familiar", "confianza": "ESTIMADO",
-      "fuente": "10-financiero/modelo.js", "consultado": "2026-08-04", "etapa": "12-riesgos-financiamiento",
-      "probabilidad": "ALTA", "impacto": "CRÍTICO",
+      "valor": 6152,
+      "unidad": "CLP neto/unidad familiar",
+      "confianza": "ESTIMADO",
+      "fuente": "10-financiero/generar_modelo_excel.py#switching_values",
+      "consultado": "2026-08-06",
+      "etapa": "12-riesgos-financiamiento",
+      "probabilidad": "ALTA",
+      "impacto": "CRÍTICO",
       "clave_afectada": "precios.precio_venta_b2b_familiar_clp",
       "mitigacion": "Prueba monádica de la etapa 03 antes de publicar lista de precios; no anclar al retail promocional.",
-      "nota": "−2,8% sobre $4.200 rompe el techo de caja; el VAN se anula en $3.884 (−7,5%). Al piso retail observado de $3.017 la contribución unitaria cae a $364 contra $50.969.179 de costo fijo anual."
+      "nota": "Recalculado el 06-08-2026 contra el motor vigente (TMAR 20,46%, tope de capacidad de la etapa 04, costo de personal de la etapa 09). Precio neto por familiar que anula el VAN: $6.152, es decir +46,5% sobre los $4.200 del caso base. Es uno de los dos únicos parámetros con raíz."
     },
     "quiebre_costo_variable_pct": {
-      "valor": 3.89, "unidad": "% de alza sobre el costo variable unitario", "confianza": "ESTIMADO",
-      "fuente": "10-financiero/modelo.js", "consultado": "2026-08-04", "etapa": "12-riesgos-financiamiento",
-      "probabilidad": "MEDIA", "impacto": "ALTO",
+      "valor": null,
+      "unidad": "% de alza sobre el costo variable unitario",
+      "confianza": "PENDIENTE",
+      "fuente": "10-financiero/generar_modelo_excel.py#switching_values",
+      "consultado": "2026-08-06",
+      "etapa": "12-riesgos-financiamiento",
+      "probabilidad": "MEDIA",
+      "impacto": "ALTO",
       "clave_afectada": "insumos.mozzarella_clp_kg",
       "mitigacion": "Dos proveedores aprobados con precio por escalón de 25/100/300 kg y ficha técnica antes del piloto.",
-      "nota": "El VAN se anula con +11,68%. Costo variable base $2.653/pizza. Etapa 06 solo halló una referencia minorista de mozzarella, no una cotización industrial."
+      "nota": "Recalculado el 06-08-2026 contra el motor vigente (TMAR 20,46%, tope de capacidad de la etapa 04, costo de personal de la etapa 09). SIN QUIEBRE EN EL RANGO: no existe valor físicamente admisible de este parámetro que, por sí solo, devuelva el proyecto al límite de capital o anule el VAN. Ningún lever individual lo rescata. Ni llevando a cero los ingredientes menores se anula el VAN."
     },
     "quiebre_costo_fijo_pct": {
-      "valor": 6.51, "unidad": "% de alza sobre el costo fijo mensual", "confianza": "ESTIMADO",
-      "fuente": "10-financiero/modelo.js", "consultado": "2026-08-04", "etapa": "12-riesgos-financiamiento",
-      "probabilidad": "MEDIA", "impacto": "ALTO",
+      "valor": null,
+      "unidad": "% de alza sobre el costo fijo mensual",
+      "confianza": "PENDIENTE",
+      "fuente": "10-financiero/generar_modelo_excel.py#switching_values",
+      "consultado": "2026-08-06",
+      "etapa": "12-riesgos-financiamiento",
+      "probabilidad": "MEDIA",
+      "impacto": "ALTO",
       "clave_afectada": "rrhh.nomina_bruta_mensual_clp",
       "mitigacion": "Dotación mínima verificada por la etapa 09 y canon real de la etapa 07 antes del gate G4.",
-      "nota": "El VAN se anula con +31,35%. Costo fijo base $4.123.720/mes, del cual la nómina con factor de costo empresa es la partida dominante."
+      "nota": "Recalculado el 06-08-2026 contra el motor vigente (TMAR 20,46%, tope de capacidad de la etapa 04, costo de personal de la etapa 09). SIN QUIEBRE EN EL RANGO: no existe valor físicamente admisible de este parámetro que, por sí solo, devuelva el proyecto al límite de capital o anule el VAN. Ningún lever individual lo rescata. Ni con costo de personal en cero se anula el VAN."
     },
     "quiebre_contingencia_pct": {
-      "valor": 29.98, "unidad": "% sobre equipos, instalación y habilitación", "confianza": "ESTIMADO",
-      "fuente": "10-financiero/modelo.js", "consultado": "2026-08-04", "etapa": "12-riesgos-financiamiento",
-      "probabilidad": "ALTA", "impacto": "CRÍTICO",
+      "valor": null,
+      "unidad": "% sobre equipos, instalación y habilitación",
+      "confianza": "PENDIENTE",
+      "fuente": "10-financiero/generar_modelo_excel.py#switching_values",
+      "consultado": "2026-08-06",
+      "etapa": "12-riesgos-financiamiento",
+      "probabilidad": "ALTA",
+      "impacto": "CRÍTICO",
       "clave_afectada": "inversion.contingencia_pct",
       "mitigacion": "Presupuesto desglosado de habilitación que permita bajar la contingencia con evidencia, no subirla con criterio.",
-      "nota": "Duplicar la contingencia vigente rompe el techo de $50.000.000. Con 25% el fondeo máximo queda en $48.896.491 y la holgura cae a $1.103.509."
+      "nota": "Recalculado el 06-08-2026 contra el motor vigente (TMAR 20,46%, tope de capacidad de la etapa 04, costo de personal de la etapa 09). ATENCIÓN — cambio de sentido: el fondeo máximo ($125.493.563) ya SUPERA el límite de capital, así que esta columna dejó de marcar un punto de quiebre y pasó a marcar la MEJORA REQUERIDA. SIN QUIEBRE EN EL RANGO: no existe valor físicamente admisible de este parámetro que, por sí solo, devuelva el proyecto al límite de capital o anule el VAN. Ningún lever individual lo rescata."
     },
     "cadena_de_frio": {
-      "valor": null, "unidad": "CLP de pérdida esperada", "confianza": "PENDIENTE",
-      "fuente": null, "consultado": null, "etapa": "12-riesgos-financiamiento",
-      "probabilidad": "MEDIA", "impacto": "ALTO",
+      "valor": null,
+      "unidad": "CLP de pérdida esperada",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "12-riesgos-financiamiento",
+      "probabilidad": "MEDIA",
+      "impacto": "ALTO",
       "clave_afectada": "operacion.seguros_mensual_clp",
       "mitigacion": "Registro de temperatura por lote, alarma de cámara, criterio documentado de rechazo y póliza con cobertura de daño a existencias por falla de equipo.",
       "nota": "No se cuantifica. El daño principal es reputacional en un canal profesional pequeño y el modelo no lo representa de ninguna forma. Un número aquí sería inventado.",
-      "depende_de": ["operacion.seguros_mensual_clp"]
+      "depende_de": [
+        "operacion.seguros_mensual_clp"
+      ]
     },
     "rampa_anos_3_a_5": {
-      "valor": null, "unidad": "—", "confianza": "PENDIENTE",
-      "fuente": null, "consultado": null, "etapa": "12-riesgos-financiamiento",
-      "probabilidad": "ALTA", "impacto": "CRÍTICO",
+      "valor": null,
+      "unidad": "—",
+      "confianza": "PENDIENTE",
+      "fuente": null,
+      "consultado": null,
+      "etapa": "12-riesgos-financiamiento",
+      "probabilidad": "ALTA",
+      "impacto": "CRÍTICO",
       "clave_afectada": "comercial.rampa_ano3_factor",
       "mitigacion": "Fijar la forma de la rampa en la etapa 11 y recalcular VAN, TIR y fondeo antes del gate G4.",
       "nota": "El VAN de $44.017.948 proviene casi íntegramente de años que ninguna etapa validó, mientras el año 1 aporta flujo negativo. No es un riesgo acotable con un valor de quiebre: es una ausencia de evidencia.",
-      "depende_de": ["comercial.rampa_ano3_factor", "comercial.rampa_ano4_factor", "comercial.rampa_ano5_factor"]
+      "depende_de": [
+        "comercial.rampa_ano3_factor",
+        "comercial.rampa_ano4_factor",
+        "comercial.rampa_ano5_factor"
+      ]
     },
     "maquila_costo_maximo_admisible_clp_unidad": {
-      "valor": 354, "unidad": "CLP netos/pizza de sobrecosto variable admisible", "confianza": "ESTIMADO",
-      "fuente": "10-financiero/modelo.js", "consultado": "2026-08-04", "etapa": "12-riesgos-financiamiento",
-      "probabilidad": "—", "impacto": "—",
+      "valor": 810,
+      "unidad": "CLP netos/pizza de sobrecosto variable admisible",
+      "confianza": "ESTIMADO",
+      "fuente": "10-financiero/generar_modelo_excel.py#switching_values",
+      "consultado": "2026-08-06",
+      "etapa": "12-riesgos-financiamiento",
+      "probabilidad": "—",
+      "impacto": "—",
       "clave_afectada": "local.habilitacion_sanitaria_clp",
       "mitigacion": "Es la mitigación estructural del riesgo de CAPEX, no un plan B.",
-      "nota": "Escenario con habilitación sanitaria en cero: CAPEX $14.161.534, fondeo máximo $32.882.445, holgura $17.117.555 y VAN $55.486.035 a 15% ($40.135.543 a 20,46%). El margen del maquilador NO está modelado; el modelo solo acota cuánto puede cobrar: hasta +$354/pizza el proyecto sigue cabiendo en $50.000.000, hasta +$389/pizza el VAN sigue positivo, y por sobre +$79/pizza la maquila deja de ser mejor que la planta propia en VAN. Esa cifra debe cotizarse con plantas con resolución sanitaria vigente.",
-      "depende_de": ["produccion.costo_maquila_clp_unidad"]
+      "nota": "Recalculado el 06-08-2026 contra el motor vigente (TMAR 20,46%, tope de capacidad de la etapa 04, costo de personal de la etapa 09). Tarifa máxima de maquila que sigue cabiendo en $50.000.000, por bisección sobre el fondeo con habilitación y equipos propios en cero y sin tope de capacidad propia. Contra el techo de $30.000.000 que evalúa la etapa 13, el umbral baja a $560/pizza. No es una tarifa observada: es cuánto se puede pagar.",
+      "depende_de": [
+        "produccion.costo_maquila_clp_unidad"
+      ]
+    },
+    "quiebre_capacidad_pizzas_dia": {
+      "valor": 135,
+      "unidad": "ver nota",
+      "confianza": "ESTIMADO",
+      "fuente": "10-financiero/generar_modelo_excel.py#switching_values",
+      "consultado": "2026-08-06",
+      "etapa": "12-riesgos-financiamiento",
+      "nota": "Recalculado el 06-08-2026 contra el motor vigente (TMAR 20,46%, tope de capacidad de la etapa 04, costo de personal de la etapa 09). Capacidad instalada que anula el VAN: 135 unidades/día contra las 60 que deriva la etapa 04 de la geometría del abatidor cotizado, es decir +125%. El otro de los dos parámetros con raíz, y el que señala que el rediseño necesario es técnico antes que financiero."
     }
   },
-
   "financiamiento": {
     "_nota": "ALCANCE DIFERIDO. Registro documental: NINGÚN instrumento de esta sección está incorporado al flujo de la etapa 10. No hay tabla de amortización, no hay intereses, no hay escudo tributario y no hay línea de subsidio. El modelo sigue siendo económico puro y 100% capital propio, conforme a datos/supuestos.json#meta.restriccion_capital_clp y al statement §5. Fecha de corte de vigencia: 04-08-2026.",
     "subsidio_no_reembolsable_modelado_clp": {
-      "valor": 0, "unidad": "CLP", "confianza": "VERIFICADO",
-      "fuente": "10-financiero/modelo.js", "consultado": "2026-08-04", "etapa": "12-riesgos-financiamiento",
+      "valor": 0,
+      "unidad": "CLP",
+      "confianza": "VERIFICADO",
+      "fuente": "10-financiero/modelo.js",
+      "consultado": "2026-08-04",
+      "etapa": "12-riesgos-financiamiento",
       "nota": "Confirmación explícita de que el flujo no incorpora ningún aporte público. Si el coordinador decide agregar una línea de subsidio, debe ser una decisión declarada, no un supuesto silencioso."
     },
     "sercotec_capital_semilla_emprende_clp": {
-      "valor": 3500000, "unidad": "CLP netos, no reembolsables", "confianza": "VERIFICADO",
+      "valor": 3500000,
+      "unidad": "CLP netos, no reembolsables",
+      "confianza": "VERIFICADO",
       "fuente": "https://www.sercotec.cl/wp-content/uploads/2026/04/Bases-Semilla-EMPRENDE-2026-Araucania-Prov.Cautin-VB%C2%B0.pdf",
-      "consultado": "2026-08-04", "etapa": "12-riesgos-financiamiento",
+      "consultado": "2026-08-04",
+      "etapa": "12-riesgos-financiamiento",
       "instrumento": "Capital Semilla Emprende, Provincia de Cautín, Región de La Araucanía 2026",
       "elegibilidad": "Persona natural mayor de 18 años SIN inicio de actividades en primera categoría ante el SII; aporte empresarial obligatorio del 3% del subsidio; sin deudas laborales, previsionales ni tributarias.",
       "plazo_postulacion": "Desde las 12:00 del 29-04-2026 hasta las 15:00 del 13-05-2026. CERRADA al 04-08-2026.",
@@ -345,15 +498,22 @@
       "nota": "AÚN NO MODELADO. De los $3.500.000, entre $200.000 y $500.000 deben ir a gestión empresarial y el resto a inversión, habilitación y capital de trabajo. Cubre el 8,0% de la inversión inicial de $43.516.722. Incompatibilidad estructural: exige NO haber iniciado actividades, de modo que no puede combinarse con una empresa ya formalizada. Convocatoria 2027 no publicada al 04-08-2026."
     },
     "sercotec_crece_sostenible_min_clp": {
-      "valor": 7000000, "unidad": "CLP netos, no reembolsables", "confianza": "VERIFICADO",
+      "valor": 7000000,
+      "unidad": "CLP netos, no reembolsables",
+      "confianza": "VERIFICADO",
       "fuente": "https://www.sercotec.cl/convocatoria/crece-sostenible-region-de-la-araucania-2026/",
-      "consultado": "2026-08-04", "etapa": "12-riesgos-financiamiento",
-      "modelado": false, "nota": "Piso del rango de financiamiento del instrumento. AÚN NO MODELADO."
+      "consultado": "2026-08-04",
+      "etapa": "12-riesgos-financiamiento",
+      "modelado": false,
+      "nota": "Piso del rango de financiamiento del instrumento. AÚN NO MODELADO."
     },
     "sercotec_crece_sostenible_max_clp": {
-      "valor": 9000000, "unidad": "CLP netos, no reembolsables", "confianza": "VERIFICADO",
+      "valor": 9000000,
+      "unidad": "CLP netos, no reembolsables",
+      "confianza": "VERIFICADO",
       "fuente": "https://www.sercotec.cl/wp-content/uploads/2026/07/Modificacion-Bases-de-Convocatoria-Crece-Sostenible-2026.pdf",
-      "consultado": "2026-08-04", "etapa": "12-riesgos-financiamiento",
+      "consultado": "2026-08-04",
+      "etapa": "12-riesgos-financiamiento",
       "instrumento": "Crece Sostenible, Región de La Araucanía 2026",
       "elegibilidad": "Persona natural o jurídica CON inicio de actividades en primera categoría y ventas netas anuales entre 200 UF ($8.168.958) y 25.000 UF. Inversiones y acciones deben orientarse a prácticas sostenibles. Cobertura estimada: 29 empresas.",
       "plazo_postulacion": "Desde las 12:00 del 22-06-2026 hasta las 15:00 del 15-07-2026 según modificación de bases de julio 2026 (las bases originales cerraban el 08-07-2026). CERRADA al 04-08-2026.",
@@ -361,9 +521,12 @@
       "nota": "ÚNICO MONTO NO REEMBOLSABLE CONCRETO Y POTENCIALMENTE APLICABLE A ESTE PROYECTO. AÚN NO MODELADO, y no puede aliviar la inversión inicial: exige ventas previas de al menos 200 UF, de modo que llega después de haber comprometido el capital, no antes. Encaja en el gate G5 (mes 12), no en el arranque. Convocatoria 2027 no publicada al 04-08-2026."
     },
     "corfo_semilla_inicia_clp": {
-      "valor": 15000000, "unidad": "CLP no reembolsables, hasta 75% del proyecto", "confianza": "VERIFICADO",
+      "valor": 15000000,
+      "unidad": "CLP no reembolsables, hasta 75% del proyecto",
+      "confianza": "VERIFICADO",
       "fuente": "https://www.corfo.gob.cl/sites/cpp/inf/semilla-inicia",
-      "consultado": "2026-08-04", "etapa": "12-riesgos-financiamiento",
+      "consultado": "2026-08-04",
+      "etapa": "12-riesgos-financiamiento",
       "instrumento": "Corfo Semilla Inicia",
       "elegibilidad": "Emprendimiento INNOVADOR con potencial de escalamiento e internacionalización; persona jurídica con menos de 18 meses de inicio de actividades y sin ventas. Aporte del postulante 25%. $17.000.000 para empresas lideradas por mujeres.",
       "plazo_postulacion": "Todas las convocatorias figuran CERRADAS al 04-08-2026; la última abierta corrió del 19-11-2025 al 18-12-2025.",
@@ -371,9 +534,12 @@
       "nota": "AÚN NO MODELADO Y PROBABLEMENTE NO ELEGIBLE. Corfo declara expresamente que un emprendimiento tradicional, sin innovación, no puede postular. Una microfábrica de pizza congelada con proceso conocido no califica salvo que se construya un componente de innovación verificable, lo que este dossier no ha hecho ni debe inventar."
     },
     "corfo_credito_mipyme_tope_uf": {
-      "valor": 10000, "unidad": "UF por RUT", "confianza": "VERIFICADO",
+      "valor": 10000,
+      "unidad": "UF por RUT",
+      "confianza": "VERIFICADO",
       "fuente": "https://www.chileatiende.gob.cl/fichas/868-credito-corfo-mipyme",
-      "consultado": "2026-08-04", "etapa": "12-riesgos-financiamiento",
+      "consultado": "2026-08-04",
+      "etapa": "12-riesgos-financiamiento",
       "instrumento": "Crédito Corfo MIPYME",
       "elegibilidad": "MIPYME con ventas anuales hasta 100.000 UF; se accede a través de un intermediario financiero no bancario (IFNB), no directamente en Corfo. Plazo hasta 10 años.",
       "plazo_postulacion": "Ventanilla abierta durante todo el año; vigente al 04-08-2026.",
@@ -381,9 +547,12 @@
       "nota": "ES DEUDA, NO APORTE. AÚN NO MODELADO: el statement §5 fija capital propio sin deuda como supuesto base y este dossier no construye tabla de amortización ni escudo tributario. Se registra porque es el único instrumento de la lista efectivamente disponible en la fecha base."
     },
     "fogape_cobertura": {
-      "valor": null, "unidad": "% del capital garantizado", "confianza": "PENDIENTE",
+      "valor": null,
+      "unidad": "% del capital garantizado",
+      "confianza": "PENDIENTE",
       "fuente": "https://www.fogape.cl/que-es-fogape-2/",
-      "consultado": "2026-08-04", "etapa": "12-riesgos-financiamiento",
+      "consultado": "2026-08-04",
+      "etapa": "12-riesgos-financiamiento",
       "instrumento": "Fondo de Garantía para Pequeños Empresarios (FOGAPE)",
       "elegibilidad": "Micro, pequeños y medianos empresarios elegibles según la ley del Fondo, que no cuenten con garantías o cuyas garantías sean insuficientes. Administra BancoEstado; supervisa la CMF; se rige por el DL 3.472 de 1980.",
       "plazo_postulacion": "Permanente; se solicita ante una institución financiera participante, no ante el Fondo.",
