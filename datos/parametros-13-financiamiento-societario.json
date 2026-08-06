@@ -1,0 +1,195 @@
+{
+  "_dependencias": [
+    {
+      "clave": "produccion.costo_maquila_clp_unidad",
+      "duena": "04-producto-proceso",
+      "para_que": "cerrar la única configuración que cabe en el techo de capital de $30.000.000",
+      "que_hice": "publiqué el costo máximo admisible por bisección contra cada techo en vez de suponer una tarifa; la clave sigue en null",
+      "estado": "ABIERTA"
+    },
+    {
+      "clave": "mercado.som_ano1_pizzas_mes",
+      "duena": "01-mercado",
+      "para_que": "los umbrales de tarifa de maquila dependen del volumen; con el volumen del caso base son referenciales",
+      "que_hice": "declaré el volumen usado en la nota de cada umbral",
+      "estado": "ABIERTA"
+    }
+  ],
+  "societario": {
+    "capital_minimo_legal_spa_clp": {
+      "valor": 0,
+      "unidad": "CLP",
+      "confianza": "VERIFICADO",
+      "fuente": "https://leyes-cl.com/codigo_de_comercio/425.htm",
+      "consultado": "2026-08-05",
+      "etapa": "13-financiamiento-societario",
+      "nota": "El art. 425 CCom exige indicar el capital y el número de acciones, pero no fija piso alguno. La ausencia de norma es el dato, no una omisión de la búsqueda."
+    },
+    "plazo_supletorio_entero_capital_anios": {
+      "valor": 5,
+      "unidad": "años",
+      "confianza": "VERIFICADO",
+      "fuente": "https://leyes-cl.com/codigo_de_comercio/434.htm",
+      "consultado": "2026-08-05",
+      "etapa": "13-financiamiento-societario",
+      "nota": "Plazo supletorio si el estatuto nada dice. Si no se entera, el capital queda reducido de pleno derecho al monto efectivamente pagado; no hay multa ni nulidad."
+    },
+    "patente_municipal_temuco_por_mil": {
+      "valor": 5,
+      "unidad": "por mil anual sobre capital propio tributario",
+      "confianza": "VERIFICADO",
+      "fuente": "https://legacy.temuco.cl/tramite-y-servicio/pago-de-patentes-comerciales/",
+      "consultado": "2026-08-05",
+      "etapa": "13-financiamiento-societario",
+      "nota": "Temuco aplica el máximo del rango 2,5‰-5‰ del DL 3.063 art. 24. Piso de 1 UTM anual si el capital es inferior a 200 UTM. Recurrente cada año, no un pago único."
+    },
+    "arancel_sanitario_pct_capital": {
+      "valor": 0.5,
+      "unidad": "% del capital inicial declarado ante el SII",
+      "confianza": "VERIFICADO",
+      "fuente": "https://www.chileatiende.gob.cl/fichas/172-autorizacion-sanitaria-de-alimentos",
+      "consultado": "2026-08-05",
+      "etapa": "13-financiamiento-societario",
+      "nota": "Se suma al arancel base de $12.100 a $899.700 según instalación. Por una sola vez; la resolución dura 3 años renovables."
+    },
+    "costo_anual_declarar_30m_clp": {
+      "valor": 150000,
+      "unidad": "CLP/año",
+      "confianza": "ESTIMADO",
+      "fuente": "https://legacy.temuco.cl/tramite-y-servicio/pago-de-patentes-comerciales/",
+      "consultado": "2026-08-05",
+      "etapa": "13-financiamiento-societario",
+      "nota": "5‰ sobre $30.000.000. Costo recurrente de declarar ese capital, más $150.000 por una vez en el arancel sanitario. Declarar capital alto no aporta nada al negocio."
+    },
+    "constitucion_res_clp": {
+      "valor": 0,
+      "unidad": "CLP",
+      "confianza": "VERIFICADO",
+      "fuente": "https://www.chileatiende.gob.cl/fichas/21409-tu-empresa-en-un-dia",
+      "consultado": "2026-08-05",
+      "etapa": "13-financiamiento-societario",
+      "nota": "Gratuito sólo si se firma con firma electrónica avanzada por ClaveÚnica. Con firma manuscrita ante notario reaparece el costo notarial, que no tiene arancel público verificable."
+    },
+    "spa_admite_patente_microempresa_familiar": {
+      "valor": 0,
+      "unidad": "booleano: 0 = no admite",
+      "confianza": "VERIFICADO",
+      "fuente": "https://www.temuco.cl/tramites-servicios/patente-microempresa-familiar/",
+      "consultado": "2026-08-05",
+      "etapa": "13-financiamiento-societario",
+      "nota": "La patente de microempresa familiar de Temuco admite sólo persona natural y EIRL, y exime de los requisitos de uso de suelo. Es el único punto donde elegir SpA cierra una puerta."
+    },
+    "regimen_matrimonial_titular": {
+      "valor": null,
+      "unidad": "sociedad conyugal | separación total | participación en gananciales",
+      "confianza": "PENDIENTE",
+      "fuente": "https://leyes-cl.com/codigo_civil/1749.htm",
+      "consultado": "2026-08-05",
+      "etapa": "13-financiamiento-societario",
+      "nota": "Determinante y no averiguado. Bajo sociedad conyugal las acciones de ambos son haber social (art. 1725 N.º 5) y el marido es dueño frente a terceros (art. 1750); si la cónyuge autoriza el aval, queda expuesto todo el haber social (art. 1749). Bajo separación total responde sólo quien avala. Verificar con abogado antes de constituir y antes de avalar."
+    }
+  },
+  "financiamiento": {
+    "tasa_interes_corriente_tramo_proyecto_pct": {
+      "valor": 20.46,
+      "unidad": "% anual, no reajustable, >200 y ≤5.000 UF, 90 días o más",
+      "confianza": "VERIFICADO",
+      "fuente": "https://www.cmfchile.cl/portal/estadisticas/626/articles-111825_recurso_1.pdf",
+      "consultado": "2026-08-05",
+      "etapa": "13-financiamiento-societario",
+      "nota": "Certificado 07/2026 de la CMF, calculado sobre operaciones de junio de 2026. Es un promedio de lo efectivamente cobrado por la banca, no una oferta: una microempresa sin historial se cotiza por sobre esa tasa, no por debajo."
+    },
+    "tasa_maxima_convencional_tramo_proyecto_pct": {
+      "valor": 30.69,
+      "unidad": "% anual, mismo tramo",
+      "confianza": "VERIFICADO",
+      "fuente": "https://www.cmfchile.cl/portal/estadisticas/626/articles-111825_recurso_1.pdf",
+      "consultado": "2026-08-05",
+      "etapa": "13-financiamiento-societario",
+      "nota": "Techo legal. Pactar por sobre la TMC hace que el interés se reduzca al corriente (Ley 18.010 art. 8)."
+    },
+    "credito_consumo_es_deducible": {
+      "valor": 0,
+      "unidad": "booleano: 0 = el interés no es gasto deducible de la sociedad",
+      "confianza": "ESTIMADO",
+      "fuente": "https://www.cmfchile.cl/educa/621/w3-propertyvalue-43579.html",
+      "consultado": "2026-08-05",
+      "etapa": "13-financiamiento-societario",
+      "nota": "En el crédito de consumo el deudor es la persona natural y la SpA no es parte del contrato: el interés no entra a la renta líquida de la sociedad ni hay crédito fiscal de IVA. No se encontró prohibición normativa de destinar consumo a fines de empresa; la CMF lo define como libre disposición. No afirmar que está prohibido."
+    },
+    "antiguedad_minima_credito_comercial_meses": {
+      "valor": 12,
+      "unidad": "meses de funcionamiento",
+      "confianza": "ESTIMADO",
+      "fuente": "BancoEstado Microempresas; páginas de producto responden 200 pero renderizan por JavaScript y no fueron verificables en fuente primaria",
+      "consultado": "2026-08-05",
+      "etapa": "13-financiamiento-societario",
+      "nota": "Restricción dura del mes cero: una SpA recién constituida no es sujeto de crédito comercial. Es la verdadera limitante del caso, más que la tasa. Confirmar en sucursal."
+    },
+    "corfo_mipyme_tope_uf": {
+      "valor": 10000,
+      "unidad": "UF por RUT",
+      "confianza": "VERIFICADO",
+      "fuente": "https://www.chileatiende.gob.cl/fichas/868-credito-corfo-mipyme",
+      "consultado": "2026-08-05",
+      "etapa": "13-financiamiento-societario",
+      "nota": "Ventanilla abierta todo el año, sin convocatoria. CORFO no presta directamente: financia a intermediarios no bancarios que fijan la tasa. Plazo hasta 10 años, incluye leasing y factoring."
+    },
+    "corfo_desarrolla_inversion_aplicable": {
+      "valor": 0,
+      "unidad": "booleano: 0 = no aplicable hoy",
+      "confianza": "VERIFICADO",
+      "fuente": "https://www.corfo.gob.cl/sites/cpp/regiones/araucania/",
+      "consultado": "2026-08-05",
+      "etapa": "13-financiamiento-societario",
+      "nota": "Las dos convocatorias de inversión abiertas en La Araucanía a agosto de 2026 son exclusivas del sector frutícola y de la Provincia de Malleco. Temuco está en Cautín: el proyecto queda excluido por ambas condiciones."
+    },
+    "sercotec_capital_semilla_aplicable": {
+      "valor": 0,
+      "unidad": "booleano: 0 = no aplicable",
+      "confianza": "VERIFICADO",
+      "fuente": "https://www.sercotec.cl/wp-content/uploads/2026/04/Bases-Semilla-EMPRENDE-2026-Araucania-Prov.Cautin-VB%C2%B0.pdf",
+      "consultado": "2026-08-05",
+      "etapa": "13-financiamiento-societario",
+      "nota": "Doblemente inaplicable: la convocatoria cerró el 13-05-2026 y las bases exigen NO tener inicio de actividades en primera categoría, lo que excluye a una SpA constituida. La página web sigue mostrándola abierta; prevalecen las bases."
+    },
+    "fogape_cobertura_pct": {
+      "valor": null,
+      "unidad": "% de cobertura de la garantía",
+      "confianza": "PENDIENTE",
+      "fuente": "https://www.fogape.cl/2023/06/30/preguntas-frecuentes/",
+      "consultado": "2026-08-05",
+      "etapa": "13-financiamiento-societario",
+      "nota": "El fondo es permanente (DL 3.472) y se accede vía banco, no postulando. Pero la tabla de cobertura no está publicada: la entrada más reciente del sitio oficial es del 23-12-2024. Las coberturas de 95/90/85% que circulan corresponden al programa Chile Apoya, cuya vigencia terminó el 31-12-2023. No citarlas como vigentes."
+    },
+    "leasing_financia_pct_max": {
+      "valor": 100,
+      "unidad": "% del bien, sin pie",
+      "confianza": "VERIFICADO",
+      "fuente": "https://www.sii.cl/portales/mipyme/modulo_fomento/leasing_pyme.htm",
+      "consultado": "2026-08-05",
+      "etapa": "13-financiamiento-societario",
+      "nota": "Contradice el supuesto del statement de que la restricción de capital 'obliga a cotizar equipo usado y leasing': el leasing alivia la restricción en vez de derivarse de ella, y Leasing Pyme de CORFO exige bienes NUEVOS. Usado y leasing son alternativas, no complementos. La tarifa no es pública."
+    },
+    "maquila_tarifa_max_techo_30m_clp_unidad": {
+      "valor": 560,
+      "unidad": "CLP/pizza de sobrecosto variable admisible",
+      "confianza": "ESTIMADO",
+      "fuente": "10-financiero/generar_modelo_excel.py#build_model",
+      "consultado": "2026-08-06",
+      "etapa": "13-financiamiento-societario",
+      "depende_de": ["produccion.costo_maquila_clp_unidad", "mercado.som_ano1_pizzas_mes"],
+      "nota": "Bisección sobre el fondeo máximo con habilitación sanitaria y envolvente de equipos en cero y sin tope de capacidad propia. Es un umbral de negociación, no una tarifa observada: por sobre $560/pizza la maquila deja de caber en $30.000.000. Depende del volumen del caso base, que ninguna etapa validó."
+    },
+    "maquila_tarifa_max_techo_50m_clp_unidad": {
+      "valor": 810,
+      "unidad": "CLP/pizza de sobrecosto variable admisible",
+      "confianza": "ESTIMADO",
+      "fuente": "10-financiero/generar_modelo_excel.py#build_model",
+      "consultado": "2026-08-06",
+      "etapa": "13-financiamiento-societario",
+      "depende_de": ["produccion.costo_maquila_clp_unidad", "mercado.som_ano1_pizzas_mes"],
+      "nota": "Mismo método contra el techo original de $50.000.000."
+    }
+  }
+}

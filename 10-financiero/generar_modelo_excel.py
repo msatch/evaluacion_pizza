@@ -2015,6 +2015,101 @@ def build_analysis_sheets(doc, sheets, data, m, fmts, refs, results_rows):
               [(sheet_index(sh), 0, 12, 0, 23), (sheet_index(sh), 1, 12, 1, 23)],
               kind="xy", title="VAN frente a la tasa de descuento")
 
+    # ---------------- Estructura de capital ----------------
+    # El motor sigue siendo 100% capital propio, como declara el statement. El
+    # crédito se calcula aquí, con aritmética propia y explícita: meterlo en las
+    # tres implementaciones del motor sería sobreingeniería y triplicaría el
+    # riesgo de divergencia para una empresa de 3-4 personas.
+    sh = new_sheet("Estructura_Capital", 0x7030A0)
+    add_title(sh, "ESTRUCTURA DE CAPITAL",
+              "Configuraciones comparadas contra dos techos de capital: $30.000.000 y $50.000.000.")
+    add_guard(sh, 3)
+
+    maquila_ov = {"capex.equipamiento_base_clp": 0, "local.habilitacion_sanitaria_clp": 0,
+                  "produccion.capacidad_instalada_pizzas_dia": 100000}
+    configs = [
+        ("Planta propia · $15M + $15M, sin deuda", {},
+         "Los socios aportan $30M. La brecha contra el fondeo exigido no la cierra ninguna estructura."),
+        ("Planta propia · $30M + crédito de consumo", {},
+         "La deuda no cambia el fondeo requerido: cambia quién lo aporta y añade costo financiero y riesgo personal."),
+        ("Maquila · sin planta propia, tarifa $0", maquila_ov,
+         "Cota superior: falta la tarifa del maquilador. Sin habilitación ni equipos propios y sin tope de capacidad propia."),
+    ]
+    hdr = ["Configuración", "CAPEX", "Inversión inicial", "Fondeo máximo",
+           "Holgura vs $30M", "Holgura vs $50M", "VAN", "Lectura"]
+    r0 = 6
+    for c, h in enumerate(hdr):
+        put(sh, c, r0, h, "P.HeaderNum" if 1 <= c <= 6 else "P.Header")
+    for i, (label, ov, lectura) in enumerate(configs):
+        r = r0 + 1 + i
+        alt = ".Alt" if i % 2 else ""
+        cm = build_model(data, overrides=ov) if ov else m
+        put(sh, 0, r, label, "P.Label" + alt)
+        for c, v in enumerate([cm["totalCapex"], cm["initialInvestment"], cm["peakFunding"],
+                               30_000_000 - cm["peakFunding"], 50_000_000 - cm["peakFunding"],
+                               cm["npv"]], start=1):
+            put(sh, c, r, v, "P.Money" + alt)
+        put(sh, 7, r, lectura, "P.Note" + alt)
+    grid(sh.getCellRangeByPosition(0, r0, 7, r0 + len(configs)))
+    idx = sheet_index(sh)
+    cond_format(doc, sh.getCellRangeByPosition(4, r0 + 1, 5, r0 + len(configs)), idx, 4, r0 + 1,
+                [(f"E{r0+2}>=0", "P.Good"), (f"E{r0+2}<0", "P.Bad")])
+
+    # Umbral de tarifa de maquila: el número que sirve para negociar.
+    rt = r0 + len(configs) + 2
+    put(sh, 0, rt, "Tarifa máxima de maquila admisible", "P.Section")
+    put(sh, 0, rt + 1,
+        "La tarifa del maquilador no es dato público, así que el modelo no la supone: acota cuánto se "
+        "puede pagar. Por bisección sobre el fondeo máximo, con los volúmenes del caso base.", "P.Note")
+    put(sh, 0, rt + 2, "Techo de capital", "P.Header")
+    put(sh, 1, rt + 2, "Tarifa máxima CLP/pizza", "P.HeaderNum")
+    for j, limit in enumerate((30_000_000, 50_000_000)):
+        lo, hi = 0.0, 20000.0
+        for _ in range(60):
+            mid = (lo + hi) / 2
+            if build_model(data, overrides={**maquila_ov,
+                                            "producto.energia_variable_clp_unidad": 120 + mid}
+                           )["peakFunding"] <= limit:
+                lo = mid
+            else:
+                hi = mid
+        put(sh, 0, rt + 3 + j, f"${limit:,.0f}".replace(",", "."), "P.Label")
+        put(sh, 1, rt + 3 + j, round(lo), "P.Money")
+    grid(sh.getCellRangeByPosition(0, rt + 2, 1, rt + 4))
+
+    # Crédito de consumo: amortización francesa, tasa mensual equivalente.
+    rc = rt + 7
+    put(sh, 0, rc, "Crédito de consumo · tramo CMF 200 a 5.000 UF, 90 días o más", "P.Section")
+    put(sh, 0, rc + 1,
+        "En el crédito de consumo el deudor es la persona natural: la SpA no es parte del contrato, así "
+        "que su responsabilidad limitada no llega a activarse y la deuda sobrevive a la empresa. La cuota "
+        "no depende de que el negocio funcione.", "P.Note")
+    for c, h in enumerate(["Monto", "Tasa anual", "Plazo", "Cuota mensual", "Total pagado",
+                           "Costo financiero", "% de la brecha que cubre"]):
+        put(sh, c, rc + 2, h, "P.HeaderNum" if c else "P.Header")
+    brecha = m["peakFunding"] - 30_000_000
+    row = rc + 3
+    for j, (monto, tasa, nombre, meses) in enumerate(
+            [(15e6, 0.2046, "Corriente 20,46%", 48), (20e6, 0.2046, "Corriente 20,46%", 48),
+             (20e6, 0.3069, "Máxima convencional 30,69%", 48), (30e6, 0.2046, "Corriente 20,46%", 48)]):
+        im = (1 + tasa) ** (1 / 12) - 1
+        cuota = monto * im / (1 - (1 + im) ** -meses)
+        alt = ".Alt" if j % 2 else ""
+        put(sh, 0, row, monto, "P.Money" + alt)
+        put(sh, 1, row, nombre, "P.Label" + alt)
+        put(sh, 2, row, meses, "P.Dec2" + alt)
+        put(sh, 3, row, cuota, "P.Money" + alt)
+        put(sh, 4, row, cuota * meses, "P.Money" + alt)
+        put(sh, 5, row, cuota * meses - monto, "P.Money" + alt)
+        put(sh, 6, row, monto / brecha if brecha > 0 else None, "P.Pct" + alt)
+        row += 1
+    grid(sh.getCellRangeByPosition(0, rc + 2, 6, row - 1))
+    put(sh, 0, row + 1,
+        f"Brecha a cubrir con planta propia contra el techo de $30.000.000: "
+        f"${brecha:,.0f}".replace(",", ".") +
+        ". Ningún crédito de consumo de este tamaño la cierra.", "P.Note")
+    format_columns(sh, [7200, 5200, 4200, 4600, 4600, 4600, 4600, 11000])
+
     return {"tornado": trows, "switching": sw, "mc": mc}
 
 

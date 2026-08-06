@@ -45,10 +45,42 @@
       "etapa": "10-financiero",
       "nota": "2.500 unidades/mes. Sustituir por mercado.som_ano1_pizzas_mes × 12 cuando etapa 03 lo valide."
     },
-    "volumen_ano2_unidades": {"valor": 42000, "unidad": "pizzas/año", "confianza": "SUPUESTO", "fuente": "Etapa 10", "consultado": "2026-08-04", "etapa": "10-financiero", "nota": "Rampa comercial no validada."},
-    "volumen_ano3_unidades": {"valor": 54000, "unidad": "pizzas/año", "confianza": "SUPUESTO", "fuente": "Etapa 10", "consultado": "2026-08-04", "etapa": "10-financiero", "nota": "Rampa comercial no validada."},
-    "volumen_ano4_unidades": {"valor": 66000, "unidad": "pizzas/año", "confianza": "SUPUESTO", "fuente": "Etapa 10", "consultado": "2026-08-04", "etapa": "10-financiero", "nota": "Rampa comercial no validada."},
-    "volumen_ano5_unidades": {"valor": 72000, "unidad": "pizzas/año", "confianza": "SUPUESTO", "fuente": "Etapa 10", "consultado": "2026-08-04", "etapa": "10-financiero", "nota": "Rampa comercial no validada."},
+    "volumen_ano2_unidades": {
+      "valor": 42000,
+      "unidad": "pizzas/año",
+      "confianza": "SUPUESTO",
+      "fuente": "Etapa 10",
+      "consultado": "2026-08-04",
+      "etapa": "10-financiero",
+      "nota": "Rampa comercial no validada."
+    },
+    "volumen_ano3_unidades": {
+      "valor": 54000,
+      "unidad": "pizzas/año",
+      "confianza": "SUPUESTO",
+      "fuente": "Etapa 10",
+      "consultado": "2026-08-04",
+      "etapa": "10-financiero",
+      "nota": "Rampa comercial no validada."
+    },
+    "volumen_ano4_unidades": {
+      "valor": 66000,
+      "unidad": "pizzas/año",
+      "confianza": "SUPUESTO",
+      "fuente": "Etapa 10",
+      "consultado": "2026-08-04",
+      "etapa": "10-financiero",
+      "nota": "Rampa comercial no validada."
+    },
+    "volumen_ano5_unidades": {
+      "valor": 72000,
+      "unidad": "pizzas/año",
+      "confianza": "SUPUESTO",
+      "fuente": "Etapa 10",
+      "consultado": "2026-08-04",
+      "etapa": "10-financiero",
+      "nota": "Rampa comercial no validada."
+    },
     "impuesto_ano1_pct": {
       "valor": 12.5,
       "unidad": "% IDPC Pro Pyme año comercial 2027",
@@ -58,50 +90,362 @@
       "etapa": "10-financiero",
       "nota": "Aplica si la empresa califica al régimen Pro Pyme General del art. 14 D N°3."
     },
-    "impuesto_ano2_pct": {"valor": 15, "unidad": "% IDPC Pro Pyme año comercial 2028", "confianza": "VERIFICADO", "fuente": "https://www.sii.cl/normativa_legislacion/circulares/2025/circu53.pdf", "consultado": "2026-08-04", "etapa": "10-financiero", "nota": "Tasa transitoria informada por Circular SII 53/2025."},
-    "impuesto_ano3_pct": {"valor": 25, "unidad": "% IDPC permanente", "confianza": "ESTIMADO", "fuente": "https://www.sii.cl/destacados/modernizacion/tipos_regimenes_mt.html", "consultado": "2026-08-04", "etapa": "10-financiero", "nota": "Tasa permanente vigente; se supone desde 2029 salvo nueva ley."},
-    "impuesto_ano4_pct": {"valor": 25, "unidad": "% IDPC permanente", "confianza": "ESTIMADO", "fuente": "https://www.sii.cl/destacados/modernizacion/tipos_regimenes_mt.html", "consultado": "2026-08-04", "etapa": "10-financiero", "nota": "Supone permanencia normativa."},
-    "impuesto_ano5_pct": {"valor": 25, "unidad": "% IDPC permanente", "confianza": "ESTIMADO", "fuente": "https://www.sii.cl/destacados/modernizacion/tipos_regimenes_mt.html", "consultado": "2026-08-04", "etapa": "10-financiero", "nota": "Supone permanencia normativa."}
+    "impuesto_ano2_pct": {
+      "valor": 12.5,
+      "unidad": "% IDPC Pro Pyme año comercial 2028",
+      "confianza": "VERIFICADO",
+      "fuente": "https://www.sii.cl/preguntas_frecuentes/declaracion_renta/001_140_4708.htm",
+      "consultado": "2026-08-06",
+      "etapa": "10-financiero",
+      "nota": "Año comercial 2027. La tabla de tasas IDPC del SII muestra 12,5% para los años comerciales 2025, 2026 y 2027 bajo el art. 14 D N°3 (rebaja de la Ley 21.755, art. vigésimo quinto). Corrige el 15% anterior, que adelantaba un año la escala."
+    },
+    "impuesto_ano3_pct": {
+      "valor": 15,
+      "unidad": "% IDPC permanente",
+      "confianza": "ESTIMADO",
+      "fuente": "https://www.sii.cl/preguntas_frecuentes/declaracion_renta/001_140_4708.htm",
+      "consultado": "2026-08-06",
+      "etapa": "10-financiero",
+      "nota": "Año comercial 2028. Corrige el 25% anterior, que contradecía su propia nota: ésta decía que el 25% rige desde 2029, pero se aplicaba al año 3, que es 2028."
+    },
+    "impuesto_ano4_pct": {
+      "valor": 25,
+      "unidad": "% IDPC permanente",
+      "confianza": "ESTIMADO",
+      "fuente": "https://www.sii.cl/preguntas_frecuentes/declaracion_renta/001_140_4708.htm",
+      "consultado": "2026-08-06",
+      "etapa": "10-financiero",
+      "nota": "Año comercial 2029: tasa permanente del régimen. Supone permanencia normativa."
+    },
+    "impuesto_ano5_pct": {
+      "valor": 25,
+      "unidad": "% IDPC permanente",
+      "confianza": "ESTIMADO",
+      "fuente": "https://www.sii.cl/preguntas_frecuentes/declaracion_renta/001_140_4708.htm",
+      "consultado": "2026-08-06",
+      "etapa": "10-financiero",
+      "nota": "Año comercial 2030: tasa permanente del régimen. Supone permanencia normativa."
+    }
   },
   "producto": {
-    "harina_kg_unidad": {"valor": 0.2, "unidad": "kg/pizza", "confianza": "SUPUESTO", "fuente": "Etapa 10", "consultado": "2026-08-04", "etapa": "10-financiero", "nota": "Debe sustituirse por formulación de etapa 04."},
-    "salsa_kg_unidad": {"valor": 0.08, "unidad": "kg/pizza", "confianza": "SUPUESTO", "fuente": "Etapa 10", "consultado": "2026-08-04", "etapa": "10-financiero", "nota": "Debe sustituirse por formulación de etapa 04."},
-    "mozzarella_kg_unidad": {"valor": 0.12, "unidad": "kg/pizza", "confianza": "SUPUESTO", "fuente": "Etapa 10", "consultado": "2026-08-04", "etapa": "10-financiero", "nota": "Principal driver de costo; validar rendimiento y gramaje."},
-    "otros_ingredientes_clp_unidad": {"valor": 550, "unidad": "CLP neto/pizza", "confianza": "SUPUESTO", "fuente": "Etapa 10", "consultado": "2026-08-04", "etapa": "10-financiero", "nota": "Aceite, levadura, sal, especias y topping; pendiente de receta y cotización."},
-    "envase_clp_unidad": {"valor": 300, "unidad": "CLP neto/pizza", "confianza": "SUPUESTO", "fuente": "06-insumos/index.html", "consultado": "2026-08-04", "etapa": "10-financiero", "nota": "Fallback hasta que etapa 06 cierre film, etiqueta y caja máster."},
-    "energia_variable_clp_unidad": {"valor": 120, "unidad": "CLP/pizza", "confianza": "SUPUESTO", "fuente": "https://calvac.cl/venta/abatidor-10-bandejas-2/", "consultado": "2026-08-04", "etapa": "10-financiero", "nota": "Bolsa de costo para horno, abatimiento y congelación. Debe reemplazarse por balance kWh/ciclo y tarifa contratada."},
-    "distribucion_variable_clp_unidad": {"valor": 220, "unidad": "CLP/pizza", "confianza": "SUPUESTO", "fuente": "Etapa 10", "consultado": "2026-08-04", "etapa": "10-financiero", "nota": "Despacho consolidado local sin vehículo propio; cotizar por ruta."},
-    "merma_pct": {"valor": 5, "unidad": "% de ingredientes", "confianza": "SUPUESTO", "fuente": "Etapa 10", "consultado": "2026-08-04", "etapa": "10-financiero", "nota": "Sustituir por pruebas de proceso."}
+    "harina_kg_unidad": {
+      "valor": 0.2,
+      "unidad": "kg/pizza",
+      "confianza": "SUPUESTO",
+      "fuente": "Etapa 10",
+      "consultado": "2026-08-04",
+      "etapa": "10-financiero",
+      "nota": "Debe sustituirse por formulación de etapa 04."
+    },
+    "salsa_kg_unidad": {
+      "valor": 0.08,
+      "unidad": "kg/pizza",
+      "confianza": "SUPUESTO",
+      "fuente": "Etapa 10",
+      "consultado": "2026-08-04",
+      "etapa": "10-financiero",
+      "nota": "Debe sustituirse por formulación de etapa 04."
+    },
+    "mozzarella_kg_unidad": {
+      "valor": 0.12,
+      "unidad": "kg/pizza",
+      "confianza": "SUPUESTO",
+      "fuente": "Etapa 10",
+      "consultado": "2026-08-04",
+      "etapa": "10-financiero",
+      "nota": "Principal driver de costo; validar rendimiento y gramaje."
+    },
+    "otros_ingredientes_clp_unidad": {
+      "valor": 550,
+      "unidad": "CLP neto/pizza",
+      "confianza": "SUPUESTO",
+      "fuente": "Etapa 10",
+      "consultado": "2026-08-04",
+      "etapa": "10-financiero",
+      "nota": "Aceite, levadura, sal, especias y topping; pendiente de receta y cotización."
+    },
+    "envase_clp_unidad": {
+      "valor": 300,
+      "unidad": "CLP neto/pizza",
+      "confianza": "SUPUESTO",
+      "fuente": "06-insumos/index.html",
+      "consultado": "2026-08-04",
+      "etapa": "10-financiero",
+      "nota": "Fallback hasta que etapa 06 cierre film, etiqueta y caja máster."
+    },
+    "energia_variable_clp_unidad": {
+      "valor": 120,
+      "unidad": "CLP/pizza",
+      "confianza": "SUPUESTO",
+      "fuente": "https://calvac.cl/venta/abatidor-10-bandejas-2/",
+      "consultado": "2026-08-04",
+      "etapa": "10-financiero",
+      "nota": "Bolsa de costo para horno, abatimiento y congelación. Debe reemplazarse por balance kWh/ciclo y tarifa contratada."
+    },
+    "distribucion_variable_clp_unidad": {
+      "valor": 220,
+      "unidad": "CLP/pizza",
+      "confianza": "SUPUESTO",
+      "fuente": "Etapa 10",
+      "consultado": "2026-08-04",
+      "etapa": "10-financiero",
+      "nota": "Despacho consolidado local sin vehículo propio; cotizar por ruta."
+    },
+    "merma_pct": {
+      "valor": 5,
+      "unidad": "% de ingredientes",
+      "confianza": "SUPUESTO",
+      "fuente": "Etapa 10",
+      "consultado": "2026-08-04",
+      "etapa": "10-financiero",
+      "nota": "Sustituir por pruebas de proceso."
+    }
   },
   "operacion": {
-    "superficie_m2": {"valor": 120, "unidad": "m²", "confianza": "SUPUESTO", "fuente": "07-local-habilitacion/index.html", "consultado": "2026-08-04", "etapa": "10-financiero", "nota": "Fallback hasta layout de etapa 04."},
-    "nomina_bruta_mensual_clp": {"valor": 2200000, "unidad": "CLP/mes", "confianza": "SUPUESTO", "fuente": "datos/supuestos.json#macro.ingreso_minimo_mensual_clp", "consultado": "2026-08-04", "etapa": "10-financiero", "nota": "Incluye costo de oportunidad del trabajo del titular y apoyo productivo/comercial; etapa 09 debe reemplazarlo."},
-    "factor_costo_empresa": {"valor": 1.22, "unidad": "multiplicador", "confianza": "SUPUESTO", "fuente": "datos/supuestos.json#macro.factor_costo_empresa", "consultado": "2026-08-04", "etapa": "10-financiero", "nota": "Fallback dentro del rango preliminar declarado; requiere cálculo previsional de etapa 09."},
-    "servicios_fijos_mensual_clp": {"valor": 180000, "unidad": "CLP/mes", "confianza": "SUPUESTO", "fuente": "Etapa 10", "consultado": "2026-08-04", "etapa": "10-financiero", "nota": "Cargo fijo de electricidad, agua, gas, internet y residuos, separado del consumo variable."},
-    "mantenimiento_mensual_clp": {"valor": 100000, "unidad": "CLP/mes", "confianza": "SUPUESTO", "fuente": "Etapa 10", "consultado": "2026-08-04", "etapa": "10-financiero", "nota": "Reserva preventiva; validar con equipos elegidos."},
-    "administracion_mensual_clp": {"valor": 160000, "unidad": "CLP/mes", "confianza": "SUPUESTO", "fuente": "Etapa 10", "consultado": "2026-08-04", "etapa": "10-financiero", "nota": "Contabilidad, software básico, telefonía y gastos bancarios."},
-    "ventas_mensual_clp": {"valor": 180000, "unidad": "CLP/mes", "confianza": "SUPUESTO", "fuente": "Etapa 10", "consultado": "2026-08-04", "etapa": "10-financiero", "nota": "Muestras, visitas y material comercial."},
-    "seguros_mensual_clp": {"valor": 60000, "unidad": "CLP/mes", "confianza": "SUPUESTO", "fuente": "Etapa 10", "consultado": "2026-08-04", "etapa": "10-financiero", "nota": "Cotización pendiente."},
-    "dias_cuentas_cobrar": {"valor": 30, "unidad": "días", "confianza": "SUPUESTO", "fuente": "datos/parametros-02-competencia.json#precios.plazo_cobro_dias", "consultado": "2026-08-04", "etapa": "10-financiero", "nota": "Fallback consistente con el modelo de negocio; debe sustituirse por práctica validada."},
-    "dias_inventario": {"valor": 15, "unidad": "días de costo variable", "confianza": "SUPUESTO", "fuente": "Etapa 10", "consultado": "2026-08-04", "etapa": "10-financiero", "nota": "Materia prima más producto terminado."},
-    "dias_cuentas_pagar": {"valor": 0, "unidad": "días de costo variable", "confianza": "SUPUESTO", "fuente": "Etapa 10", "consultado": "2026-08-04", "etapa": "10-financiero", "nota": "Caso conservador sin crédito de proveedores."}
+    "superficie_m2": {
+      "valor": 120,
+      "unidad": "m²",
+      "confianza": "SUPUESTO",
+      "fuente": "07-local-habilitacion/index.html",
+      "consultado": "2026-08-04",
+      "etapa": "10-financiero",
+      "nota": "Fallback hasta layout de etapa 04."
+    },
+    "nomina_bruta_mensual_clp": {
+      "valor": 2200000,
+      "unidad": "CLP/mes",
+      "confianza": "SUPUESTO",
+      "fuente": "datos/supuestos.json#macro.ingreso_minimo_mensual_clp",
+      "consultado": "2026-08-04",
+      "etapa": "10-financiero",
+      "nota": "Incluye costo de oportunidad del trabajo del titular y apoyo productivo/comercial; etapa 09 debe reemplazarlo."
+    },
+    "factor_costo_empresa": {
+      "valor": 1.22,
+      "unidad": "multiplicador",
+      "confianza": "SUPUESTO",
+      "fuente": "datos/supuestos.json#macro.factor_costo_empresa",
+      "consultado": "2026-08-04",
+      "etapa": "10-financiero",
+      "nota": "Fallback dentro del rango preliminar declarado; requiere cálculo previsional de etapa 09."
+    },
+    "servicios_fijos_mensual_clp": {
+      "valor": 180000,
+      "unidad": "CLP/mes",
+      "confianza": "SUPUESTO",
+      "fuente": "Etapa 10",
+      "consultado": "2026-08-04",
+      "etapa": "10-financiero",
+      "nota": "Cargo fijo de electricidad, agua, gas, internet y residuos, separado del consumo variable."
+    },
+    "mantenimiento_mensual_clp": {
+      "valor": 100000,
+      "unidad": "CLP/mes",
+      "confianza": "SUPUESTO",
+      "fuente": "Etapa 10",
+      "consultado": "2026-08-04",
+      "etapa": "10-financiero",
+      "nota": "Reserva preventiva; validar con equipos elegidos."
+    },
+    "administracion_mensual_clp": {
+      "valor": 160000,
+      "unidad": "CLP/mes",
+      "confianza": "SUPUESTO",
+      "fuente": "Etapa 10",
+      "consultado": "2026-08-04",
+      "etapa": "10-financiero",
+      "nota": "Contabilidad, software básico, telefonía y gastos bancarios."
+    },
+    "ventas_mensual_clp": {
+      "valor": 180000,
+      "unidad": "CLP/mes",
+      "confianza": "SUPUESTO",
+      "fuente": "Etapa 10",
+      "consultado": "2026-08-04",
+      "etapa": "10-financiero",
+      "nota": "Muestras, visitas y material comercial."
+    },
+    "seguros_mensual_clp": {
+      "valor": 60000,
+      "unidad": "CLP/mes",
+      "confianza": "SUPUESTO",
+      "fuente": "Etapa 10",
+      "consultado": "2026-08-04",
+      "etapa": "10-financiero",
+      "nota": "Cotización pendiente."
+    },
+    "dias_cuentas_cobrar": {
+      "valor": 30,
+      "unidad": "días",
+      "confianza": "SUPUESTO",
+      "fuente": "datos/parametros-02-competencia.json#precios.plazo_cobro_dias",
+      "consultado": "2026-08-04",
+      "etapa": "10-financiero",
+      "nota": "Fallback consistente con el modelo de negocio; debe sustituirse por práctica validada."
+    },
+    "dias_inventario": {
+      "valor": 15,
+      "unidad": "días de costo variable",
+      "confianza": "SUPUESTO",
+      "fuente": "Etapa 10",
+      "consultado": "2026-08-04",
+      "etapa": "10-financiero",
+      "nota": "Materia prima más producto terminado."
+    },
+    "dias_cuentas_pagar": {
+      "valor": 0,
+      "unidad": "días de costo variable",
+      "confianza": "SUPUESTO",
+      "fuente": "Etapa 10",
+      "consultado": "2026-08-04",
+      "etapa": "10-financiero",
+      "nota": "Caso conservador sin crédito de proveedores."
+    }
   },
   "inversion": {
-    "abatidor_clp": {"valor": 2779980, "unidad": "CLP neto", "confianza": "VERIFICADO", "fuente": "https://calvac.cl/venta/abatidor-10-bandejas-2/", "consultado": "2026-08-04", "etapa": "10-financiero", "nota": "10 bandejas, congelación declarada hasta 30 kg; precio publicado + IVA."},
-    "amasadora_clp": {"valor": 747815, "unidad": "CLP neto", "confianza": "VERIFICADO", "fuente": "https://www.supermaq.cl/amasadoras/amasadora_20_kilos/", "consultado": "2026-08-04", "etapa": "10-financiero", "nota": "Amasadora espiral 20 kg, precio internet + IVA."},
-    "horno_clp": {"valor": 400000, "unidad": "CLP neto", "confianza": "VERIFICADO", "fuente": "https://www.supermaq.cl/hornos_pizza/horno_electrico_pizzero_2_camara_40x40.pdf", "consultado": "2026-08-04", "etapa": "10-financiero", "nota": "Horno pizzero eléctrico dos cámaras, oferta + IVA; verificar capacidad real de precocción."},
-    "selladora_vacio_clp": {"valor": 570000, "unidad": "CLP neto", "confianza": "ESTIMADO", "fuente": "https://www.supermaq.cl/pdf/camara.cl_selladora_al_vacio_300_mm_dz300.pdf", "consultado": "2026-08-04", "etapa": "10-financiero", "nota": "Ficha con precio publicado; confirmar vigencia y compatibilidad con formato."},
-    "meson_refrigerado_clp": {"valor": 620000, "unidad": "CLP neto", "confianza": "ESTIMADO", "fuente": "https://www.industriaminera.cl/producto/biggi-chile-sa-mesones-refrigerados/", "consultado": "2026-08-04", "etapa": "10-financiero", "nota": "Mesón 120 cm publicado + IVA; confirmar vigencia."},
-    "congeladores_clp": {"valor": 700000, "unidad": "CLP neto", "confianza": "SUPUESTO", "fuente": "https://gastronomicareal.cl/refrigeracion/congeladoras", "consultado": "2026-08-04", "etapa": "10-financiero", "nota": "Bolsa para almacenamiento −18 °C; requiere selección por capacidad y redundancia."},
-    "acero_lavado_extraccion_clp": {"valor": 1800000, "unidad": "CLP neto", "confianza": "SUPUESTO", "fuente": "Etapa 10", "consultado": "2026-08-04", "etapa": "10-financiero", "nota": "Mesones, lavaderos, campana y elementos fijos; cotización pendiente."},
-    "racks_bandejas_instrumentos_clp": {"valor": 1200000, "unidad": "CLP neto", "confianza": "SUPUESTO", "fuente": "Etapa 10", "consultado": "2026-08-04", "etapa": "10-financiero", "nota": "Carros, bandejas, balanzas, sondas y utensilios."},
-    "flete_instalacion_pct": {"valor": 15, "unidad": "% sobre equipos", "confianza": "SUPUESTO", "fuente": "Etapa 10", "consultado": "2026-08-04", "etapa": "10-financiero", "nota": "Flete Santiago–Temuco, conexión y puesta en marcha."},
-    "habilitacion_sanitaria_clp": {"valor": 12000000, "unidad": "CLP neto", "confianza": "SUPUESTO", "fuente": "07-local-habilitacion/index.html", "consultado": "2026-08-04", "etapa": "10-financiero", "nota": "Riesgo principal; reemplazar por presupuesto desglosado de un local real."},
-    "tramites_analisis_rotulado_clp": {"valor": 1000000, "unidad": "CLP neto", "confianza": "SUPUESTO", "fuente": "08-legal-normativo/index.html", "consultado": "2026-08-04", "etapa": "10-financiero", "nota": "Aranceles, laboratorio y artes; cotización pendiente."},
-    "preoperacion_clp": {"valor": 1500000, "unidad": "CLP neto", "confianza": "SUPUESTO", "fuente": "Etapa 10", "consultado": "2026-08-04", "etapa": "10-financiero", "nota": "Pruebas, capacitación, muestras y apertura."},
-    "contingencia_pct": {"valor": 15, "unidad": "% sobre equipos, instalación y habilitación", "confianza": "SUPUESTO", "fuente": "Etapa 10", "consultado": "2026-08-04", "etapa": "10-financiero", "nota": "Reserva de estimación conceptual; no reemplaza cotizaciones."},
-    "garantia_arriendo_meses": {"valor": 2, "unidad": "meses", "confianza": "SUPUESTO", "fuente": "Etapa 10", "consultado": "2026-08-04", "etapa": "10-financiero", "nota": "Activo recuperable al final si no hay daños."},
-    "vida_depreciable_anios": {"valor": 5, "unidad": "años lineales", "confianza": "SUPUESTO", "fuente": "https://www.sii.cl/valores_y_fechas/tabla_vida_util_activo_inmovilizado.html", "consultado": "2026-08-04", "etapa": "10-financiero", "nota": "Simplificación financiera; validar categoría y depreciación tributaria por activo."},
-    "valor_residual_pct": {"valor": 10, "unidad": "% del CAPEX depreciable", "confianza": "SUPUESTO", "fuente": "Etapa 10", "consultado": "2026-08-04", "etapa": "10-financiero", "nota": "Valor de realización al año 5 antes de impuesto."}
+    "abatidor_clp": {
+      "valor": 2779980,
+      "unidad": "CLP neto",
+      "confianza": "VERIFICADO",
+      "fuente": "https://calvac.cl/venta/abatidor-10-bandejas-2/",
+      "consultado": "2026-08-04",
+      "etapa": "10-financiero",
+      "nota": "10 bandejas, congelación declarada hasta 30 kg; precio publicado + IVA."
+    },
+    "amasadora_clp": {
+      "valor": 747815,
+      "unidad": "CLP neto",
+      "confianza": "VERIFICADO",
+      "fuente": "https://www.supermaq.cl/amasadoras/amasadora_20_kilos/",
+      "consultado": "2026-08-04",
+      "etapa": "10-financiero",
+      "nota": "Amasadora espiral 20 kg, precio internet + IVA."
+    },
+    "horno_clp": {
+      "valor": 400000,
+      "unidad": "CLP neto",
+      "confianza": "VERIFICADO",
+      "fuente": "https://www.supermaq.cl/hornos_pizza/horno_electrico_pizzero_2_camara_40x40.pdf",
+      "consultado": "2026-08-04",
+      "etapa": "10-financiero",
+      "nota": "Horno pizzero eléctrico dos cámaras, oferta + IVA; verificar capacidad real de precocción."
+    },
+    "selladora_vacio_clp": {
+      "valor": 570000,
+      "unidad": "CLP neto",
+      "confianza": "ESTIMADO",
+      "fuente": "https://www.supermaq.cl/pdf/camara.cl_selladora_al_vacio_300_mm_dz300.pdf",
+      "consultado": "2026-08-04",
+      "etapa": "10-financiero",
+      "nota": "Ficha con precio publicado; confirmar vigencia y compatibilidad con formato."
+    },
+    "meson_refrigerado_clp": {
+      "valor": 620000,
+      "unidad": "CLP neto",
+      "confianza": "ESTIMADO",
+      "fuente": "https://www.industriaminera.cl/producto/biggi-chile-sa-mesones-refrigerados/",
+      "consultado": "2026-08-04",
+      "etapa": "10-financiero",
+      "nota": "Mesón 120 cm publicado + IVA; confirmar vigencia."
+    },
+    "congeladores_clp": {
+      "valor": 700000,
+      "unidad": "CLP neto",
+      "confianza": "SUPUESTO",
+      "fuente": "https://gastronomicareal.cl/refrigeracion/congeladoras",
+      "consultado": "2026-08-04",
+      "etapa": "10-financiero",
+      "nota": "Bolsa para almacenamiento −18 °C; requiere selección por capacidad y redundancia."
+    },
+    "acero_lavado_extraccion_clp": {
+      "valor": 1800000,
+      "unidad": "CLP neto",
+      "confianza": "SUPUESTO",
+      "fuente": "Etapa 10",
+      "consultado": "2026-08-04",
+      "etapa": "10-financiero",
+      "nota": "Mesones, lavaderos, campana y elementos fijos; cotización pendiente."
+    },
+    "racks_bandejas_instrumentos_clp": {
+      "valor": 1200000,
+      "unidad": "CLP neto",
+      "confianza": "SUPUESTO",
+      "fuente": "Etapa 10",
+      "consultado": "2026-08-04",
+      "etapa": "10-financiero",
+      "nota": "Carros, bandejas, balanzas, sondas y utensilios."
+    },
+    "flete_instalacion_pct": {
+      "valor": 15,
+      "unidad": "% sobre equipos",
+      "confianza": "SUPUESTO",
+      "fuente": "Etapa 10",
+      "consultado": "2026-08-04",
+      "etapa": "10-financiero",
+      "nota": "Flete Santiago–Temuco, conexión y puesta en marcha."
+    },
+    "habilitacion_sanitaria_clp": {
+      "valor": 12000000,
+      "unidad": "CLP neto",
+      "confianza": "SUPUESTO",
+      "fuente": "07-local-habilitacion/index.html",
+      "consultado": "2026-08-04",
+      "etapa": "10-financiero",
+      "nota": "Riesgo principal; reemplazar por presupuesto desglosado de un local real."
+    },
+    "tramites_analisis_rotulado_clp": {
+      "valor": 1000000,
+      "unidad": "CLP neto",
+      "confianza": "SUPUESTO",
+      "fuente": "08-legal-normativo/index.html",
+      "consultado": "2026-08-04",
+      "etapa": "10-financiero",
+      "nota": "Aranceles, laboratorio y artes; cotización pendiente."
+    },
+    "preoperacion_clp": {
+      "valor": 1500000,
+      "unidad": "CLP neto",
+      "confianza": "SUPUESTO",
+      "fuente": "Etapa 10",
+      "consultado": "2026-08-04",
+      "etapa": "10-financiero",
+      "nota": "Pruebas, capacitación, muestras y apertura."
+    },
+    "contingencia_pct": {
+      "valor": 15,
+      "unidad": "% sobre equipos, instalación y habilitación",
+      "confianza": "SUPUESTO",
+      "fuente": "Etapa 10",
+      "consultado": "2026-08-04",
+      "etapa": "10-financiero",
+      "nota": "Reserva de estimación conceptual; no reemplaza cotizaciones."
+    },
+    "garantia_arriendo_meses": {
+      "valor": 2,
+      "unidad": "meses",
+      "confianza": "SUPUESTO",
+      "fuente": "Etapa 10",
+      "consultado": "2026-08-04",
+      "etapa": "10-financiero",
+      "nota": "Activo recuperable al final si no hay daños."
+    },
+    "vida_depreciable_anios": {
+      "valor": 5,
+      "unidad": "años lineales",
+      "confianza": "SUPUESTO",
+      "fuente": "https://www.sii.cl/valores_y_fechas/tabla_vida_util_activo_inmovilizado.html",
+      "consultado": "2026-08-04",
+      "etapa": "10-financiero",
+      "nota": "Simplificación financiera; validar categoría y depreciación tributaria por activo."
+    },
+    "valor_residual_pct": {
+      "valor": 10,
+      "unidad": "% del CAPEX depreciable",
+      "confianza": "SUPUESTO",
+      "fuente": "Etapa 10",
+      "consultado": "2026-08-04",
+      "etapa": "10-financiero",
+      "nota": "Valor de realización al año 5 antes de impuesto."
+    }
   }
 }
