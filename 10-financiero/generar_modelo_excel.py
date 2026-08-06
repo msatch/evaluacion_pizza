@@ -4,17 +4,37 @@
 from __future__ import annotations
 
 import json
+import math
 import os
+import re
 import shutil
 import subprocess
 import sys
 import tempfile
 import time
+import unicodedata
 from pathlib import Path
 
 import uno
 from com.sun.star.beans import PropertyValue
-from com.sun.star.table import BorderLine2
+from com.sun.star.table import BorderLine2, TableBorder2
+from com.sun.star.util import CellProtection
+
+# Alineación: ausente por completo en la versión anterior del libro, y es el
+# defecto visual que más se nota. Los grupos de constantes cambiaron de nombre
+# entre versiones de LibreOffice, así que se resuelven con respaldo.
+H_LEFT = uno.Enum("com.sun.star.table.CellHoriJustify", "LEFT")
+H_CENTER = uno.Enum("com.sun.star.table.CellHoriJustify", "CENTER")
+H_RIGHT = uno.Enum("com.sun.star.table.CellHoriJustify", "RIGHT")
+try:
+    from com.sun.star.table import CellVertJustify2
+    V_TOP, V_CENTER = CellVertJustify2.TOP, CellVertJustify2.CENTER
+except Exception:  # pragma: no cover - builds antiguas
+    V_TOP, V_CENTER = 1, 2
+try:
+    from com.sun.star.awt.FontSlant import ITALIC as SLANT_ITALIC
+except Exception:  # pragma: no cover
+    SLANT_ITALIC = 2
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -320,6 +340,153 @@ def build_model(data, price_mult=1.0, volume_mult=1.0, overrides=None):
     }
 
 
+def analysis_params(m):
+    """Parámetros que se perturban en tornado y valores de quiebre.
+
+    Cada uno declara su banda Y de dónde sale. Donde la etapa 12 publicó una
+    banda se usa esa; donde no existe banda publicada se usa un swing uniforme
+    de ±20% ETIQUETADO COMO EXPLORATORIO. La distinción importa: un swing
+    exploratorio sirve para ordenar sensibilidades, no para afirmar un rango.
+    Devuelve (etiqueta, ruta, base, bajo, alto, ancla, tiene_banda)."""
+    p = m["priceBase"]
+    B = "banda publicada"
+    X = "swing exploratorio ±20% — sin banda publicada"
+    capex_lo, capex_hi = 0.80, 1.30
+    return [
+        ("Precio B2B familiar", "precios.precio_venta_b2b_familiar_clp", p, p * 0.72, p * 1.20,
+         "escenarios.precio_*_factor · PF Listo $3.017 / Meta Food $5.034", B),
+        ("Envolvente de equipos", "capex.equipamiento_base_clp", m["equipment"],
+         m["equipment"] * capex_lo, m["equipment"] * capex_hi,
+         "AACE 18R-97 Clase 5 · escenarios.capex_*_factor", B),
+        ("Habilitación sanitaria", "local.habilitacion_sanitaria_clp", m["habilitation"],
+         m["habilitation"] * capex_lo, m["habilitation"] * capex_hi,
+         "AACE 18R-97 Clase 5 · escenarios.capex_*_factor", B),
+        ("Plazo de cobro", "precios.plazo_cobro_dias", m["receivableDays"], 30, 60,
+         "statement §8 · rango declarado 30–60 días", B),
+        ("Capacidad instalada", "produccion.capacidad_instalada_pizzas_dia", 60, 48, 72, X, X),
+        ("Días de operación", "produccion.dias_operacion_mes", 22, 17.6, 26.4, X, X),
+        ("Mozzarella $/kg", "insumos.mozzarella_clp_kg", 8403.36, 6722.69, 10084.03, X, X),
+        ("Gramaje mozzarella", "producto.mozzarella_kg_unidad", 0.10, 0.08, 0.12, X, X),
+        ("Costo de personal", "rrhh.costo_personal_mensual_regimen_clp", 2393830,
+         1915064, 2872596, X, X),
+        ("Arriendo mensual", "local.arriendo_mensual_clp", m["rentBase"],
+         m["rentBase"] * 0.8, m["rentBase"] * 1.2, X, X),
+        ("TMAR", "macro.tasa_descuento_pct", m["discount"] * 100,
+         m["discount"] * 80, m["discount"] * 120, X, X),
+        ("Contingencia", "inversion.contingencia_pct", 15, 12, 18, X, X),
+        ("Merma", "produccion.merma_pct", 5, 4, 6, X, X),
+        ("Vida depreciable", "inversion.vida_depreciable_anios", 10, 8, 12, X, X),
+        ("Otros ingredientes", "producto.otros_ingredientes_clp_unidad", 550, 440, 660, X, X),
+        ("Distribución por unidad", "producto.distribucion_variable_clp_unidad", 220, 176, 264, X, X),
+        ("Envase por unidad", "insumos.envase_clp_unidad", 300, 240, 360, X, X),
+    ]
+
+
+def tornado(data, m):
+    """Sensibilidad de una vía. Devuelve filas ordenadas por |ΔVAN|."""
+    out = []
+    for label, path, base, lo, hi, anchor, band in analysis_params(m):
+        r_lo = build_model(data, overrides={path: lo})
+        r_hi = build_model(data, overrides={path: hi})
+        out.append({
+            "label": label, "path": path, "base": base, "lo": lo, "hi": hi,
+            "anchor": anchor, "band": band,
+            "npv_lo": r_lo["npv"], "npv_hi": r_hi["npv"],
+            "fund_lo": r_lo["peakFunding"], "fund_hi": r_hi["peakFunding"],
+            "d_npv": abs(r_hi["npv"] - r_lo["npv"]),
+            "d_fund": abs(r_hi["peakFunding"] - r_lo["peakFunding"]),
+        })
+    out.sort(key=lambda r: r["d_npv"], reverse=True)
+    return out
+
+
+def switching_values(data, m):
+    """Valor de cada parámetro que anula el VAN y valor que lleva el fondeo
+    máximo al límite de capital.
+
+    No hay forma cerrada: el capital de trabajo, el arrastre de pérdidas y los
+    MIN() de capacidad y de caja acumulada no se invierten analíticamente. Se
+    resuelve por bisección sobre un intervalo acotado, y cuando no hay raíz
+    dentro del rango físico se dice, en vez de devolver una raíz espuria."""
+    limit = m["capitalLimit"]
+    rows = []
+    for label, path, base, lo, hi, anchor, band in analysis_params(m):
+        # Intervalo de búsqueda amplio pero físicamente admisible.
+        span_lo, span_hi = min(lo, base) * 0.1, max(hi, base) * 10
+        if path == "macro.tasa_descuento_pct":
+            span_lo, span_hi = 0.01, 200.0
+        entry_ = {"label": label, "base": base, "anchor": anchor, "band": band}
+        for target_name, fn in (("npv", lambda r: r["npv"]),
+                                ("fund", lambda r: limit - r["peakFunding"])):
+            a, b_ = span_lo, span_hi
+            try:
+                fa, fb = fn(build_model(data, overrides={path: a})), fn(build_model(data, overrides={path: b_}))
+            except Exception:
+                entry_[target_name] = None
+                continue
+            if fa * fb > 0:
+                entry_[target_name] = None  # sin raíz en el rango
+                continue
+            for _ in range(60):
+                mid = (a + b_) / 2
+                fm = fn(build_model(data, overrides={path: mid}))
+                if abs(fm) < 1:
+                    break
+                if fa * fm <= 0:
+                    b_ = mid
+                else:
+                    a, fa = mid, fm
+            entry_[target_name] = (a + b_) / 2
+        rows.append(entry_)
+    return rows
+
+
+def monte_carlo(data, m, n=10000, seed=20260804):
+    """Perfil de riesgo por simulación.
+
+    SOLO entran parámetros con banda publicada. El volumen no tiene banda
+    (escenarios.volumen_* está PENDIENTE por diseño) y por tanto no se simula:
+    inventar su distribución sería exactamente la cifra plausible que la regla 7
+    prohíbe. Triangular por CDF inversa, semilla fija y declarada para que el
+    resultado sea reproducible."""
+    import random
+    rng = random.Random(seed)
+    dists = [(lbl, path, lo, base, hi, anchor)
+             for lbl, path, base, lo, hi, anchor, band in analysis_params(m)
+             if band == "banda publicada"]
+
+    def tri(lo, mode, hi, u):
+        if hi <= lo:
+            return lo
+        c = (mode - lo) / (hi - lo)
+        if u < c:
+            return lo + math.sqrt(u * (hi - lo) * (mode - lo))
+        return hi - math.sqrt((1 - u) * (hi - lo) * (hi - mode))
+
+    npvs, funds = [], []
+    for _ in range(n):
+        ov = {}
+        for _lbl, path, lo, base, hi, _a in dists:
+            ov[path] = tri(min(lo, base), base, max(hi, base), rng.random())
+        r = build_model(data, overrides=ov)
+        npvs.append(r["npv"])
+        funds.append(r["peakFunding"])
+    npvs.sort()
+    limit = m["capitalLimit"]
+
+    def pct_of(sorted_list, q):
+        return sorted_list[max(0, min(len(sorted_list) - 1, int(q * len(sorted_list))))]
+
+    return {
+        "n": n, "seed": seed, "dists": dists,
+        "p10": pct_of(npvs, 0.10), "p50": pct_of(npvs, 0.50), "p90": pct_of(npvs, 0.90),
+        "mean": sum(npvs) / len(npvs),
+        "p_npv_pos": sum(1 for v in npvs if v > 0) / len(npvs),
+        "p_fits": sum(1 for v in funds if v <= limit) / len(funds),
+        "npvs": npvs,
+    }
+
+
 DATA_FILES = {
     "base": "supuestos.json",
     "market": "parametros-01-mercado.json",
@@ -507,6 +674,298 @@ def apply_border(rng, color=0xCCD6DD, width=18):
     rng.RightBorder = line
 
 
+def grid(rng, outer=BLUE, outer_w=26, inner=GRID, inner_w=8):
+    """Reticulado con exterior grueso e interior fino, en UNA asignación por
+    tabla. apply_border() pone el mismo borde en las cuatro caras de cada celda,
+    que es exactamente el aspecto de planilla cruda que había que quitar."""
+    thick, thin = BorderLine2(), BorderLine2()
+    thick.Color, thick.LineWidth, thick.OuterLineWidth = outer, outer_w, outer_w
+    thin.Color, thin.LineWidth, thin.OuterLineWidth = inner, inner_w, inner_w
+    tb = TableBorder2()
+    tb.TopLine = tb.BottomLine = tb.LeftLine = tb.RightLine = thick
+    tb.HorizontalLine = tb.VerticalLine = thin
+    for flag in ("IsTopLineValid", "IsBottomLineValid", "IsLeftLineValid",
+                 "IsRightLineValid", "IsHorizontalLineValid", "IsVerticalLineValid",
+                 "IsDistanceValid"):
+        setattr(tb, flag, True)
+    tb.Distance = 0
+    rng.TableBorder2 = tb
+
+
+def _protection(locked=True):
+    p = CellProtection()
+    p.IsLocked = locked
+    p.IsFormulaHidden = False
+    p.IsHidden = False
+    p.IsPrintHidden = False
+    return p
+
+
+def make_style(doc, name, parent=None, **props):
+    """Crea (o reusa) un estilo de celda. Hay que RE-OBTENER el estilo después de
+    insertarlo, y fijar ParentStyle antes que el resto para que la herencia
+    resuelva bien."""
+    fam = doc.StyleFamilies.getByName("CellStyles")
+    if not fam.hasByName(name):
+        fam.insertByName(name, doc.createInstance("com.sun.star.style.CellStyle"))
+    st = fam.getByName(name)
+    if parent and fam.hasByName(parent):
+        try:
+            st.ParentStyle = parent
+        except Exception:
+            pass
+    for key, value in props.items():
+        try:
+            setattr(st, key, value)
+        except Exception:
+            pass
+    return st
+
+
+def build_style_system(doc, fmts):
+    """Todo el formato del libro cuelga de aquí. Aplicar un estilo es una
+    asignación por rango, no diez propiedades por celda."""
+    money, pct, integer, decimal = fmts["money"], fmts["pct"], fmts["int"], fmts["dec"]
+    mult = number_format(doc, '#.##0,00"×"')
+    years_f = number_format(doc, '#.##0,0" años"')
+    days_f = number_format(doc, '#.##0" d"')
+    pct2 = number_format(doc, "0,00%")
+    locked, unlocked = _protection(True), _protection(False)
+
+    make_style(doc, "P.Base", None, CharFontName="Liberation Sans", CharHeight=10,
+               CharColor=TEXT, VertJustify=V_CENTER, CellProtection=locked)
+    make_style(doc, "P.Title", "P.Base", CharHeight=18, CharWeight=150, CharColor=NAVY,
+               CellBackColor=TITLE_FILL, HoriJustify=H_LEFT)
+    make_style(doc, "P.Subtitle", "P.Base", CharHeight=10, CharPosture=SLANT_ITALIC,
+               CellBackColor=0xF6FAFD, HoriJustify=H_LEFT)
+    make_style(doc, "P.Section", "P.Base", CharHeight=11, CharWeight=150, CharColor=NAVY,
+               CellBackColor=SECTION_FILL, HoriJustify=H_LEFT)
+    make_style(doc, "P.Header", "P.Base", CharWeight=150, CharColor=NAVY,
+               CellBackColor=HEADER_FILL, HoriJustify=H_CENTER, IsTextWrapped=True)
+    # Un encabezado centrado sobre una columna alineada a la derecha es
+    # justamente lo que se lee como "no profesional".
+    make_style(doc, "P.HeaderNum", "P.Header", HoriJustify=H_RIGHT)
+
+    make_style(doc, "P.Label", "P.Base", HoriJustify=H_LEFT)
+    make_style(doc, "P.LabelSub", "P.Label", ParaIndent=300)
+    make_style(doc, "P.Note", "P.Base", CharHeight=9, CharColor=0x6B7280,
+               IsTextWrapped=True, VertJustify=V_TOP, HoriJustify=H_LEFT)
+    make_style(doc, "P.Stamp", "P.Base", CharHeight=8, CharColor=0x6B7280, HoriJustify=H_LEFT)
+
+    numeric = {"P.Money": money, "P.Pct": pct, "P.Pct2": pct2, "P.Int": integer,
+               "P.Dec2": decimal, "P.Mult": mult, "P.Years": years_f, "P.Days": days_f}
+    for name, fmt in numeric.items():
+        make_style(doc, name, "P.Base", HoriJustify=H_RIGHT, NumberFormat=fmt)
+
+    # Gemelos para la banda cebra: la alternancia pasa a ser un estilo, no un
+    # bucle que pinta fondo fila por fila.
+    for name in list(numeric) + ["P.Label", "P.Note"]:
+        make_style(doc, name + ".Alt", name, CellBackColor=FORMULA_FILL)
+
+    # Celdas de entrada: la protección viaja EN el estilo, así que "edite sólo
+    # las amarillas" deja de ser un consejo y pasa a ser una propiedad.
+    for suffix, fmt in [("Money", money), ("Pct", pct), ("Int", integer),
+                        ("Mult", mult), ("Dec2", decimal)]:
+        make_style(doc, f"P.In.{suffix}", "P.Base", CellBackColor=INPUT_FILL,
+                   CharColor=0x0000FF, CharWeight=150, HoriJustify=H_RIGHT,
+                   NumberFormat=fmt, CellProtection=unlocked)
+    make_style(doc, "P.In.Text", "P.Base", CellBackColor=INPUT_FILL, CharColor=0x0000FF,
+               CharWeight=150, HoriJustify=H_LEFT, CellProtection=unlocked)
+
+    conf = {"Verificado": (GREEN, POSITIVE_FILL), "Estimado": (0x9A6700, 0xFFF4CE),
+            "Supuesto": (RED, NEGATIVE_FILL), "Pendiente": (0x6B7280, 0xF1F3F5)}
+    for name, (fg, bg) in conf.items():
+        make_style(doc, f"P.Conf.{name}", "P.Base", CharColor=fg, CellBackColor=bg,
+                   CharWeight=150, HoriJustify=H_CENTER)
+
+    make_style(doc, "P.Total", "P.Base", CellBackColor=TOTAL_FILL, CharColor=NAVY,
+               CharWeight=150, HoriJustify=H_RIGHT, NumberFormat=money)
+    make_style(doc, "P.Total.Label", "P.Base", CellBackColor=TOTAL_FILL, CharColor=NAVY,
+               CharWeight=150, HoriJustify=H_LEFT)
+    make_style(doc, "P.Total.Pct", "P.Total", NumberFormat=pct)
+    make_style(doc, "P.KPI.Label", "P.Base", CharWeight=150, CharColor=TEXT,
+               CellBackColor=FORMULA_FILL, HoriJustify=H_LEFT)
+    make_style(doc, "P.KPI.Value", "P.Base", CharHeight=15, CharWeight=150, CharColor=NAVY,
+               CellBackColor=FORMULA_FILL, HoriJustify=H_RIGHT, NumberFormat=money)
+    make_style(doc, "P.KPI.Note", "P.Base", CharHeight=9, CharColor=0x6B7280,
+               CellBackColor=FORMULA_FILL, HoriJustify=H_LEFT)
+
+    # Destinos de FORMATO CONDICIONAL. No se aplican estáticamente salvo en la
+    # leyenda: pintarlos a mano es lo que hacía que los colores mintieran en
+    # cuanto alguien editaba un input.
+    make_style(doc, "P.Good", "P.Base", CharColor=GREEN, CellBackColor=POSITIVE_FILL,
+               CharWeight=150, HoriJustify=H_RIGHT)
+    make_style(doc, "P.Bad", "P.Base", CharColor=RED, CellBackColor=NEGATIVE_FILL,
+               CharWeight=150, HoriJustify=H_RIGHT)
+    make_style(doc, "P.Warn", "P.Base", CharColor=0x9A6700, CellBackColor=0xFFF4CE,
+               CharWeight=150, HoriJustify=H_RIGHT)
+    make_style(doc, "P.Neutral", "P.Base", CharColor=TEXT, CellBackColor=FORMULA_FILL,
+               HoriJustify=H_RIGHT)
+
+
+def sty(target, name):
+    """Aplica un estilo a una celda o a un rango completo."""
+    target.CellStyle = name
+
+
+# Capacidades UNO conseguidas o degradadas en esta corrida. Se imprime al final
+# y se escribe en el libro: si algo se degrada, el archivo lo dice en vez de
+# aparentar que está.
+CAPS = {}
+
+
+def cond_format(doc, rng, sheet_idx, col0, row0, rules):
+    """Formato condicional REAL. Antes los colores se pintaban desde Python
+    después de calculateAll(), así que mentían apenas alguien editaba un input.
+
+    Tres trampas: la propiedad ConditionalFormat es una COPIA (hay que
+    reasignarla), la fórmula se interpreta relativa a SourcePosition (se escribe
+    sin $ sobre la esquina superior izquierda), y un StyleName inexistente es un
+    no-op silencioso."""
+    try:
+        fam = doc.StyleFamilies.getByName("CellStyles")
+        src = uno.createUnoStruct("com.sun.star.table.CellAddress")
+        src.Sheet, src.Column, src.Row = sheet_idx, col0, row0
+        cf = rng.ConditionalFormat
+        cf.clear()
+        for formula, style_name in rules:
+            if not fam.hasByName(style_name):
+                raise RuntimeError(f"estilo inexistente: {style_name}")
+            cf.addNew((
+                prop("Operator", uno.Enum("com.sun.star.sheet.ConditionOperator", "FORMULA")),
+                prop("Formula1", formula),
+                prop("StyleName", style_name),
+                prop("SourcePosition", src),
+            ))
+        rng.ConditionalFormat = cf
+        CAPS["formato_condicional"] = True
+        return True
+    except Exception as exc:
+        CAPS["formato_condicional"] = f"degradado: {exc}"
+        return False
+
+
+def list_validation(cell, source_range, title, message):
+    """Desplegable real. El selector de escenario era texto libre: cualquier
+    typo caía en silencio al caso Base."""
+    try:
+        val = cell.Validation
+        val.Type = uno.Enum("com.sun.star.sheet.ValidationType", "LIST")
+        val.setFormula1(source_range)
+        val.Operator = uno.Enum("com.sun.star.sheet.ConditionOperator", "EQUAL")
+        val.ShowList = 1
+        val.ShowInputMessage = True
+        val.InputTitle, val.InputMessage = title, message
+        val.ShowErrorMessage = True
+        val.ErrorAlertStyle = uno.Enum("com.sun.star.sheet.ValidationAlertStyle", "STOP")
+        val.ErrorTitle = "Valor no permitido"
+        val.ErrorMessage = message
+        val.IgnoreBlankCells = False
+        cell.Validation = val
+        CAPS["validacion"] = True
+        return True
+    except Exception as exc:
+        CAPS["validacion"] = f"degradado: {exc}"
+        return False
+
+
+def add_autofilter(doc, name, sheet_idx, col0, row0, col1, row1):
+    try:
+        ranges = doc.DatabaseRanges
+        addr_ = uno.createUnoStruct("com.sun.star.table.CellRangeAddress")
+        addr_.Sheet, addr_.StartColumn, addr_.EndColumn = sheet_idx, col0, col1
+        addr_.StartRow, addr_.EndRow = row0, row1
+        if ranges.hasByName(name):
+            ranges.removeByName(name)
+        ranges.addNewByName(name, addr_)
+        ranges.getByName(name).AutoFilter = True
+        # Verificado: el exportador de xlsx de LibreOffice no emite <autoFilter>
+        # para rangos de base de datos creados por API, aunque el .ods sí los
+        # lleva. Se declara el alcance real en vez de anunciar una capacidad que
+        # el archivo de Excel no tiene.
+        CAPS["autofiltro"] = "sólo ODS (el exportador xlsx no lo emite)"
+        return True
+    except Exception as exc:
+        CAPS["autofiltro"] = f"degradado: {exc}"
+        return False
+
+
+def add_named_range(doc, name, content, sheet_idx=0, col=0, row=0):
+    try:
+        nr = doc.NamedRanges
+        if nr.hasByName(name):
+            return True
+        pos = uno.createUnoStruct("com.sun.star.table.CellAddress")
+        pos.Sheet, pos.Column, pos.Row = sheet_idx, col, row
+        nr.addNewByName(name, content, pos, 0)
+        CAPS["rangos_con_nombre"] = True
+        return True
+    except Exception as exc:
+        CAPS["rangos_con_nombre"] = f"degradado: {exc}"
+        return False
+
+
+def set_print_titles(sheet, sheet_idx, row):
+    try:
+        addr_ = uno.createUnoStruct("com.sun.star.table.CellRangeAddress")
+        addr_.Sheet, addr_.StartColumn, addr_.EndColumn = sheet_idx, 0, 20
+        addr_.StartRow = addr_.EndRow = row
+        sheet.setTitleRows(addr_)
+        CAPS["titulos_impresion"] = True
+        return True
+    except Exception as exc:
+        CAPS["titulos_impresion"] = f"degradado: {exc}"
+        return False
+
+
+def try_chart(sheet, name, x, y, w, h, ranges, kind="bar", title="", lines=0):
+    """Gráfico nativo. Siempre acompañado de barras REPT() en celda, de modo que
+    si esto falla el libro sigue mostrando la misma información."""
+    try:
+        rect = uno.createUnoStruct("com.sun.star.awt.Rectangle")
+        rect.X, rect.Y, rect.Width, rect.Height = x, y, w, h
+        addrs = []
+        for sheet_idx, c0, r0, c1, r1 in ranges:
+            a = uno.createUnoStruct("com.sun.star.table.CellRangeAddress")
+            a.Sheet, a.StartColumn, a.StartRow, a.EndColumn, a.EndRow = sheet_idx, c0, r0, c1, r1
+            addrs.append(a)
+        charts = sheet.Charts
+        if charts.hasByName(name):
+            charts.removeByName(name)
+        charts.addNewByName(name, rect, tuple(addrs), True, True)
+        chart = charts.getByName(name).EmbeddedObject
+        service = {"bar": "com.sun.star.chart.BarDiagram",
+                   "line": "com.sun.star.chart.LineDiagram",
+                   "xy": "com.sun.star.chart.XYDiagram"}[kind]
+        chart.setDiagram(chart.createInstance(service))
+        chart.HasMainTitle = True
+        chart.Title.String = title
+        if kind == "bar" and lines:
+            chart.Diagram.NumberOfLines = lines
+        if kind == "bar":
+            chart.Diagram.Vertical = False if name.startswith("Tornado") else True
+        CAPS["graficos"] = True
+        return True
+    except Exception as exc:
+        CAPS["graficos"] = f"degradado: {exc}"
+        return False
+
+
+def put(sheet, col, row, value, style=None):
+    cell = sheet.getCellByPosition(col, row)
+    if isinstance(value, str) and value.startswith("="):
+        cell.Formula = value
+    elif isinstance(value, str):
+        cell.String = value
+    elif value is None:
+        cell.String = "—"
+    else:
+        cell.Value = float(value)
+    if style:
+        cell.CellStyle = style
+    return cell
+
+
 def band_rows(sheet, first_row, last_row, first_col, last_col, colors=(0xFFFFFF, FORMULA_FILL)):
     for row in range(first_row, last_row + 1):
         rng = sheet.getCellRangeByPosition(first_col, row, last_col, row)
@@ -539,8 +998,10 @@ def build_inputs(doc, data, money_fmt, pct_fmt):
     add_title(sheet, "INPUTS Y SUPUESTOS DEL MODELO", "Edite sólo las celdas amarillas con fuente azul.")
     headers = ["Categoría", "Parámetro", "Valor", "Unidad", "Confianza", "Fuente", "Nota"]
     for col, val in enumerate(headers):
-        set_text(sheet, col, 3, val)
-    style_header(sheet, 3)
+        # El encabezado de la columna de valores va alineado a la derecha, sobre
+        # la columna numérica que encabeza.
+        put(sheet, col, 3, val, "P.HeaderNum" if col == 2 else "P.Header")
+    sheet.Rows.getByIndex(3).Height = 650
 
     base, market, prices, inputs, local, legal, financial = data
     rows = []
@@ -723,40 +1184,38 @@ def build_inputs(doc, data, money_fmt, pct_fmt):
     integer_fmt = number_format(doc, '#.##0')
     decimal_fmt = number_format(doc, '#.##0,00')
     positions = {}
-    row = 4
-    last_category = None
+    first_row = 4
+    row = first_row
+    # Sin bandas de sección fusionadas dentro de la tabla: una celda fusionada
+    # rompe el autofiltro y la validación. La columna Categoría ya agrupa, y
+    # ahora se puede filtrar por ella.
+    kind_style = {"money": "Money", "pct": "Pct", "number": "Int", "text": "Text"}
     for key, category, label, item, value, kind in rows:
-        if category != last_category:
-            style_section(sheet, row, category)
-            row += 1
-            last_category = category
         positions[key] = row
-        data_rng = sheet.getCellRangeByPosition(0, row, 6, row)
-        data_rng.CellBackColor = 0xFFFFFF if row % 2 == 0 else FORMULA_FILL
-        apply_border(data_rng)
-        values = [category, label, None, item.get("unidad", ""), item.get("confianza", ""), item.get("fuente", ""), item.get("nota", "")]
-        for col, val in enumerate(values):
-            if val is not None:
-                set_text(sheet, col, row, val)
-        if kind == "text":
-            set_text(sheet, 2, row, value)
-        else:
-            set_value(sheet, 2, row, value)
-        cell = sheet.getCellByPosition(2, row)
-        cell.CellBackColor = INPUT_FILL
-        cell.CharColor = 0x0000FF
-        cell.CharWeight = 150
-        if kind == "money": cell.NumberFormat = money_fmt
-        if kind == "pct": cell.NumberFormat = pct_fmt
-        if kind == "number": cell.NumberFormat = integer_fmt if float(value).is_integer() else decimal_fmt
+        # Cebra RELATIVA al inicio de la tabla: con la paridad absoluta anterior
+        # la fase del rayado se invertía en cada corte de sección.
+        alt = ".Alt" if (row - first_row) % 2 else ""
+        put(sheet, 0, row, category, "P.Label" + alt)
+        put(sheet, 1, row, label, "P.Label" + alt)
+        put(sheet, 3, row, item.get("unidad", ""), "P.Label" + alt)
         confidence = str(item.get("confianza", "")).upper()
-        confidence_cell = sheet.getCellByPosition(4, row)
-        confidence_cell.CharWeight = 150
-        confidence_cell.CharColor = {"VERIFICADO": GREEN, "ESTIMADO": 0x9A6700, "SUPUESTO": RED, "PENDIENTE": 0x6B7280}.get(confidence, TEXT)
+        put(sheet, 4, row, confidence, "P.Conf." + confidence.capitalize()
+            if confidence in ("VERIFICADO", "ESTIMADO", "SUPUESTO", "PENDIENTE") else "P.Label" + alt)
+        put(sheet, 5, row, item.get("fuente", "") or "", "P.Note" + alt)
+        put(sheet, 6, row, item.get("nota", "") or "", "P.Note" + alt)
+        if kind == "text":
+            put(sheet, 2, row, str(value), "P.In.Text")
+        else:
+            suffix = kind_style.get(kind, "Int")
+            if kind == "number" and not float(value).is_integer():
+                suffix = "Dec2"
+            put(sheet, 2, row, float(value), "P.In." + suffix)
         row += 1
-    sheet.getCellRangeByPosition(0, 4, 6, row - 1).IsTextWrapped = True
+    grid(sheet.getCellRangeByPosition(0, 3, 6, row - 1))
     format_columns(sheet, [2500, 5200, 2800, 3400, 2700, 9000, 10500])
-    sheet.getCellRangeByPosition(0, 3, 6, row - 1).Rows.OptimalHeight = True
+    # OptimalHeight es O(celdas) y es un punto caliente conocido: sólo sobre las
+    # dos columnas que realmente envuelven texto.
+    sheet.getCellRangeByPosition(5, 4, 6, row - 1).Rows.OptimalHeight = True
     sheet.TabColor = 0xF4B183
     return positions
 
@@ -943,11 +1402,11 @@ def scalar_cell(scalar, key):
 
 
 def main():
-    data = [load(name) for name in [
-        "supuestos.json", "parametros-01-mercado.json", "parametros-02-competencia.json",
-        "parametros-06-insumos.json", "parametros-07-local-habilitacion.json",
-        "parametros-08-legal-normativo.json", "parametros-10-financiero.json",
-    ]]
+    data_map = load_all()
+    # Las funciones de construcción del libro consumen la tupla posicional
+    # histórica; el motor Python consume el diccionario. Misma fuente.
+    data = [data_map[k] for k in ("base", "market", "prices", "inputs", "local",
+                                  "legal", "financial")]
     desktop, process, profile = connect_office()
     doc = None
     try:
@@ -963,6 +1422,14 @@ def main():
         money_fmt, pct_fmt = money_format(doc), pct_format(doc)
         integer_fmt = number_format(doc, '#.##0')
         decimal_fmt = number_format(doc, '#.##0,00')
+        build_style_system(doc, {"money": money_fmt, "pct": pct_fmt,
+                                 "int": integer_fmt, "dec": decimal_fmt})
+        # El recálculo automático dispara una pasada por cada fórmula escrita.
+        # Se apaga durante toda la construcción y se calcula una sola vez.
+        try:
+            doc.enableAutomaticCalculation(False)
+        except Exception:
+            pass
         pos = build_inputs(doc, data, money_fmt, pct_fmt)
         refs = {key: formula_ref(pos, key) for key in pos}
 
@@ -1166,14 +1633,73 @@ def main():
         set_formula(summary, 4, 11, f'=IF(ABS({addr(1,7,"Resumen")}-SUM({addr(1,b["rows"]["Flujo descontado"],"Calculos")}:{addr(6,b["rows"]["Flujo descontado"],"Calculos")}))<1;"OK";"REVISAR")')
         set_text(summary, 3, 12, "Flujo convencional")
         set_formula(summary, 4, 12, f'=IF(AND({addr(1,b["rows"]["Flujo libre"],"Calculos")}<0;{addr(6,b["rows"]["Flujo libre"],"Calculos")}>0);"OK";"REVISAR TIR")')
-        # Colorea la matriz según el VAN actual; las fórmulas siguen siendo dinámicas.
-        doc.calculateAll()
-        for row in range(4, 7):
-            for col in range(1, 4):
-                cell = sens.getCellByPosition(col, row)
-                cell.CellBackColor = POSITIVE_FILL if cell.Value >= 0 else NEGATIVE_FILL
-                cell.CharColor = GREEN if cell.Value >= 0 else RED
-                cell.CharWeight = 150
+        # Formato condicional VIVO. Antes esto era un bucle en Python que leía
+        # cell.Value tras calculateAll() y fijaba el color: quedaba congelado y
+        # mentía en cuanto el usuario editaba un input.
+        def sheet_index(sh):
+            return sh.getCellByPosition(0, 0).CellAddress.Sheet
+
+        sens_idx = sheet_index(sens)
+        cond_format(doc, sens.getCellRangeByPosition(1, 4, 3, 6), sens_idx, 1, 4,
+                    [("B5>=0", "P.Good"), ("B5<0", "P.Bad")])
+
+        # El dictamen estaba pintado de verde fijo, dijera lo que dijera la
+        # fórmula. Ahora el color lo decide la propia celda.
+        sum_idx = sheet_index(summary)
+        cond_format(doc, summary.getCellRangeByPosition(4, 9, 4, 9), sum_idx, 4, 9,
+                    [('EXACT(E10;"VIABLE · SUPUESTOS")', "P.Good"),
+                     ('NOT(EXACT(E10;"VIABLE · SUPUESTOS"))', "P.Bad")])
+        cond_format(doc, summary.getCellRangeByPosition(4, 11, 4, 12), sum_idx, 4, 11,
+                    [('EXACT(E12;"OK")', "P.Good"), ('NOT(EXACT(E12;"OK"))', "P.Warn")])
+        # Fondeo máximo contra el límite de capital: la restricción dura.
+        cond_format(doc, summary.getCellRangeByPosition(1, 6, 1, 6), sum_idx, 1, 6,
+                    [(f'B7<={refs["capital_limit"]}', "P.Good"),
+                     (f'B7>{refs["capital_limit"]}', "P.Bad")])
+
+        # Confianza por color, en Inputs y en Fuentes. Cuatro reglas no caben en
+        # un solo rango (el límite son 3), así que van en dos pasadas.
+        inputs_sheet = sheets.getByName("Inputs")
+        in_idx = sheet_index(inputs_sheet)
+        last_in = max(pos.values()) if pos else 4
+        conf_rng = inputs_sheet.getCellRangeByPosition(4, 4, 4, last_in)
+        cond_format(doc, conf_rng, in_idx, 4, 4,
+                    [('EXACT(E5;"VERIFICADO")', "P.Conf.Verificado"),
+                     ('EXACT(E5;"SUPUESTO")', "P.Conf.Supuesto"),
+                     ('EXACT(E5;"PENDIENTE")', "P.Conf.Pendiente")])
+
+        # Desplegable real para el escenario, con la lista en una hoja aparte.
+        sheets.insertNewByName("Listas", sheets.getCount())
+        listas = sheets.getByName("Listas")
+        for i, opt in enumerate(["Pesimista", "Base", "Optimista"]):
+            set_text(listas, 0, i, opt)
+        set_text(listas, 2, 0, "Origen de las validaciones del libro. No editar.")
+        list_validation(inputs_sheet.getCellByPosition(2, pos["scenario"]),
+                        "$Listas.$A$1:$A$3", "Escenario activo",
+                        "Use el desplegable: Pesimista, Base u Optimista.")
+        listas.IsVisible = False
+
+        add_autofilter(doc, "Tabla_Inputs", in_idx, 0, 3, 6, last_in)
+        for key, row in pos.items():
+            add_named_range(doc, "IN_" + re.sub(r"[^A-Za-z0-9_]", "_", key),
+                            f"$Inputs.$C${row + 1}", in_idx, 2, row)
+        for label, row in b["results"].items():
+            add_named_range(doc, "R_ACT_" + re.sub(r"[^A-Za-z0-9_]", "_",
+                            unicodedata.normalize("NFKD", label).encode("ascii", "ignore").decode()),
+                            f"$Calculos.$B${row + 1}", in_idx, 1, row)
+        for name in ["Inputs", "Flujo_Caja", "Fuentes", "Escenarios"]:
+            set_print_titles(sheets.getByName(name), sheet_index(sheets.getByName(name)), 3)
+
+        # Hojas de análisis económico. Se calculan con el motor Python —el mismo
+        # que el harness compara contra modelo.js— y se escriben congeladas con
+        # su guardián de frescura.
+        py_model = build_model(data_map)
+        results_rows = dict(b["results"])
+        results_rows["_flujo_libre_row"] = b["rows"]["Flujo libre"]
+        analysis = build_analysis_sheets(
+            doc, sheets, data_map, py_model,
+            {"money": money_fmt, "pct": pct_fmt, "int": integer_fmt, "dec": decimal_fmt},
+            refs, results_rows)
+
         calc.TabColor = 0xA5A5A5
         calc.IsVisible = False
         configure_print_layout(doc, sheets)
@@ -1187,7 +1713,72 @@ def main():
         doc.DocumentProperties.Title = "Evaluación económica pizzería B2B"
         doc.DocumentProperties.Subject = "Modelo financiero editable VAN, TIR y flujo de caja"
         doc.DocumentProperties.Author = "Dossier evaluación pizzería"
+
+        # Gráfico de caja acumulada contra el límite de capital. La barra REPT()
+        # de la hoja Auditoria muestra lo mismo si esto se degrada.
+        try_chart(summary, "CajaVsLimite", 500, 9000, 16000, 8000,
+                  [(sheet_index(sheets.getByName("Flujo_Caja")), 0, 3, 6, 3),
+                   (sheet_index(sheets.getByName("Flujo_Caja")), 0,
+                    4 + list(flow_rows).index("Flujo libre"), 6,
+                    4 + list(flow_rows).index("Flujo libre"))],
+                  kind="bar", title="Flujo libre por año (CLP)")
+
+        # Hoja de auditoría: qué capacidades se consiguieron y cuáles quedaron
+        # degradadas en esta build. Si algo falla, el libro lo declara.
+        sheets.insertNewByName("Auditoria", sheets.getCount())
+        audit = sheets.getByName("Auditoria")
+        add_title(audit, "AUDITORÍA DE LA CONSTRUCCIÓN",
+                  "Capacidades logradas o degradadas, y controles internos del modelo.")
+        set_text(audit, 0, 3, "Capacidad")
+        set_text(audit, 1, 3, "Estado")
+        style_header(audit, 3, 0, 1)
+        arow = 4
+        for cap in ["formato_condicional", "validacion", "autofiltro", "rangos_con_nombre",
+                    "titulos_impresion", "graficos", "proteccion"]:
+            put(audit, 0, arow, cap.replace("_", " ").capitalize(), "P.Label")
+            estado = CAPS.get(cap, "no intentado")
+            put(audit, 1, arow, "LOGRADO" if estado is True else str(estado), "P.Label")
+            arow += 1
+        arow += 1
+        put(audit, 0, arow, "Sello de construcción", "P.Section")
+        arow += 1
+        put(audit, 0, arow, "Generado", "P.Label")
+        put(audit, 1, arow, time.strftime("%Y-%m-%d %H:%M"), "P.Label")
+        arow += 1
+        put(audit, 0, arow, "Control VAN", "P.Label")
+        put(audit, 1, arow, f'={addr(4, 11, "Resumen")}', "P.Label")
+        arow += 1
+        put(audit, 0, arow, "Flujo convencional", "P.Label")
+        put(audit, 1, arow, f'={addr(4, 12, "Resumen")}', "P.Label")
+        arow += 1
+        put(audit, 0, arow, "TIR calculable", "P.Label")
+        put(audit, 1, arow,
+            f'=IF(ISNA({addr(1, b["results"]["TIR"], "Calculos")});"NO — flujo sin cambio de signo";"sí")',
+            "P.Label")
+        format_columns(audit, [7000, 9000])
+        audit.TabColor = 0xA5A5A5
+
+        # Protección: sólo las hojas CALCULADAS. Inputs queda editable y
+        # filtrable a propósito —Excel deshabilita el autofiltro en hojas
+        # protegidas— y el contrato "edite sólo las amarillas" ya viaja en el
+        # estilo de cada celda de entrada.
+        try:
+            for name in ["Flujo_Caja", "Escenarios", "Sensibilidad", "Fuentes",
+                         "Calculos", "Inversion", "Auditoria", "Listas"]:
+                sheets.getByName(name).protect("")
+            doc.protect("")
+            CAPS["proteccion"] = True
+        except Exception as exc:
+            CAPS["proteccion"] = f"degradado: {exc}"
+        put(audit, 1, 10, "LOGRADO" if CAPS.get("proteccion") is True else str(CAPS.get("proteccion")),
+            "P.Label")
+
+        try:
+            doc.enableAutomaticCalculation(True)
+        except Exception:
+            pass
         doc.calculateAll()
+        print("capacidades UNO:", json.dumps(CAPS, ensure_ascii=False))
         ODS_OUT.parent.mkdir(parents=True, exist_ok=True)
         ods_url = uno.systemPathToFileUrl(str(ODS_OUT))
         xlsx_url = uno.systemPathToFileUrl(str(XLSX_OUT))
@@ -1203,6 +1794,228 @@ def main():
         try: process.wait(timeout=5)
         except subprocess.TimeoutExpired: process.kill()
         shutil.rmtree(profile, ignore_errors=True)
+
+
+def bar(value, peak, width=22):
+    """Barra en celda. Se dibuja SIEMPRE, con o sin gráfico nativo."""
+    if not peak:
+        return ""
+    return "█" * max(0, min(width, int(round(abs(value) / peak * width))))
+
+
+def build_analysis_sheets(doc, sheets, data, m, fmts, refs, results_rows):
+    """Hojas de análisis económico calculadas en Python.
+
+    Van CONGELADAS a propósito: un tornado vivo son ~14.400 fórmulas y los
+    valores de quiebre no tienen forma cerrada (el capital de trabajo, el
+    arrastre de pérdidas y los MIN() de capacidad y caja no se invierten). Pero
+    ninguna finge estar viva: cada hoja lleva sello de construcción y un
+    guardián que se pone en rojo apenas el VAN del motor se aleja del valor con
+    el que se calcularon."""
+    money, pct, dec = fmts["money"], fmts["pct"], fmts["dec"]
+
+    def sheet_index(sh):
+        return sh.getCellByPosition(0, 0).CellAddress.Sheet
+
+    def new_sheet(name, tab=0xC00000):
+        sheets.insertNewByName(name, sheets.getCount())
+        sh = sheets.getByName(name)
+        sh.TabColor = tab
+        return sh
+
+    van_cell = addr(1, results_rows["VAN"], "Calculos")
+    guard = (f'=IF(ABS({van_cell}-({m["npv"]:.4f}))>1;'
+             f'"DESACTUALIZADO — reejecute generar_modelo_excel.py";"VIGENTE")')
+    stamp = f"Calculado el {time.strftime('%Y-%m-%d %H:%M')} sobre VAN base {m['npv']:,.0f} CLP."
+
+    def add_guard(sh, row):
+        put(sh, 0, row, "Estado de esta hoja", "P.Label")
+        put(sh, 1, row, guard, "P.Label")
+        idx = sheet_index(sh)
+        cond_format(doc, sh.getCellRangeByPosition(1, row, 1, row), idx, 1, row,
+                    [(f'EXACT(B{row+1};"VIGENTE")', "P.Good"),
+                     (f'NOT(EXACT(B{row+1};"VIGENTE"))', "P.Bad")])
+        put(sh, 0, row + 1, stamp, "P.Stamp")
+
+    # ---------------- Tornado ----------------
+    trows = tornado(data, m)
+    sh = new_sheet("Tornado", 0x2E75B6)
+    add_title(sh, "TORNADO · SENSIBILIDAD DE UNA VÍA",
+              "Cada parámetro movido solo, entre su banda declarada. Ordenado por impacto en el VAN.")
+    add_guard(sh, 3)
+    hdr = ["Parámetro", "Base", "Bajo", "Alto", "VAN bajo", "VAN alto", "Δ VAN",
+           "Δ Fondeo", "Impacto", "Origen de la banda"]
+    r0 = 6
+    for c, h in enumerate(hdr):
+        put(sh, c, r0, h, "P.HeaderNum" if 1 <= c <= 7 else "P.Header")
+    peak = max((t["d_npv"] for t in trows), default=1)
+    for i, t in enumerate(trows):
+        r = r0 + 1 + i
+        alt = ".Alt" if i % 2 else ""
+        put(sh, 0, r, t["label"], "P.Label" + alt)
+        for c, v in enumerate([t["base"], t["lo"], t["hi"], t["npv_lo"], t["npv_hi"],
+                               t["d_npv"], t["d_fund"]], start=1):
+            put(sh, c, r, v, ("P.Dec2" if c <= 3 else "P.Money") + alt)
+        put(sh, 8, r, bar(t["d_npv"], peak), "P.Label" + alt)
+        put(sh, 9, r, t["anchor"], "P.Note" + alt)
+    grid(sh.getCellRangeByPosition(0, r0, 9, r0 + len(trows)))
+    format_columns(sh, [5600, 3000, 3000, 3000, 4200, 4200, 4200, 4200, 5200, 9000])
+    try_chart(sh, "TornadoChart", 500, 1000 + 260 * len(trows), 17000, 9000,
+              [(sheet_index(sh), 0, r0, 0, r0 + len(trows)),
+               (sheet_index(sh), 6, r0, 6, r0 + len(trows))],
+              kind="bar", title="Impacto en el VAN (CLP)")
+
+    # ---------------- Valores de quiebre ----------------
+    sw = switching_values(data, m)
+    sh = new_sheet("Valores_Quiebre", 0xC00000)
+    add_title(sh, "VALORES DE QUIEBRE",
+              "Valor de cada parámetro que anula el VAN y valor que lleva el fondeo máximo al límite de capital.")
+    add_guard(sh, 3)
+    put(sh, 0, 5,
+        "El fondeo máximo actual ($%s) supera el límite de $%s. La columna «fondeo = límite» "
+        "ya no marca un punto de quiebre sino la MEJORA REQUERIDA para volver a caber."
+        % (f"{m['peakFunding']:,.0f}", f"{m['capitalLimit']:,.0f}"), "P.Note")
+    hdr = ["Parámetro", "Base", "VAN = 0", "Variación exigida", "Fondeo = límite",
+           "Variación exigida", "Origen de la banda"]
+    r0 = 7
+    for c, h in enumerate(hdr):
+        put(sh, c, r0, h, "P.HeaderNum" if 1 <= c <= 5 else "P.Header")
+    for i, s in enumerate(sw):
+        r = r0 + 1 + i
+        alt = ".Alt" if i % 2 else ""
+        put(sh, 0, r, s["label"], "P.Label" + alt)
+        put(sh, 1, r, s["base"], "P.Dec2" + alt)
+        for col, key in ((2, "npv"), (4, "fund")):
+            v = s.get(key)
+            if v is None:
+                put(sh, col, r, "SIN QUIEBRE EN EL RANGO", "P.Label" + alt)
+                put(sh, col + 1, r, "—", "P.Label" + alt)
+            else:
+                put(sh, col, r, v, "P.Dec2" + alt)
+                delta = (v / s["base"] - 1) if s["base"] else None
+                put(sh, col + 1, r, delta, "P.Pct" + alt)
+        put(sh, 6, r, s["anchor"], "P.Note" + alt)
+    grid(sh.getCellRangeByPosition(0, r0, 6, r0 + len(sw)))
+    format_columns(sh, [5600, 3400, 5200, 3600, 5200, 3600, 9000])
+
+    # ---------------- Monte Carlo ----------------
+    mc = monte_carlo(data, m)
+    sh = new_sheet("Monte_Carlo", 0xC00000)
+    add_title(sh, "MONTE CARLO · PERFIL DE RIESGO",
+              "Distribuciones triangulares sobre los parámetros CON banda publicada. Semilla fija.")
+    put(sh, 0, 3,
+        "PERFIL ILUSTRATIVO DE RIESGO. Las distribuciones son SUPUESTO; sólo sus anclas están "
+        "citadas. No es evidencia y no altera ninguna conclusión del dossier. Los parámetros sin "
+        "banda publicada quedan FUERA de la simulación: inventarles una distribución sería "
+        "exactamente la cifra plausible que la regla 7 prohíbe.", "P.Note")
+    sh.getCellRangeByPosition(0, 3, 6, 3).merge(True)
+    sh.Rows.getByIndex(3).Height = 1400
+    add_guard(sh, 5)
+    put(sh, 0, 8, "Distribuciones simuladas", "P.Section")
+    for c, h in enumerate(["Parámetro", "Mínimo", "Moda", "Máximo", "Ancla citada"]):
+        put(sh, c, 9, h, "P.HeaderNum" if 1 <= c <= 3 else "P.Header")
+    for i, (lbl, _p, lo, base, hi, anchor) in enumerate(mc["dists"]):
+        r = 10 + i
+        alt = ".Alt" if i % 2 else ""
+        put(sh, 0, r, lbl, "P.Label" + alt)
+        put(sh, 1, r, min(lo, base), "P.Dec2" + alt)
+        put(sh, 2, r, base, "P.Dec2" + alt)
+        put(sh, 3, r, max(hi, base), "P.Dec2" + alt)
+        put(sh, 4, r, anchor, "P.Note" + alt)
+    grid(sh.getCellRangeByPosition(0, 9, 4, 9 + len(mc["dists"])))
+    rr = 12 + len(mc["dists"])
+    put(sh, 0, rr, "Resultados", "P.Section")
+    stats = [("Iteraciones", mc["n"], "P.Dec2"), ("Semilla", mc["seed"], "P.Dec2"),
+             ("VAN P10", mc["p10"], "P.Money"), ("VAN P50 (mediana)", mc["p50"], "P.Money"),
+             ("VAN P90", mc["p90"], "P.Money"), ("VAN medio", mc["mean"], "P.Money"),
+             ("P(VAN > 0)", mc["p_npv_pos"], "P.Pct"),
+             ("P(fondeo máximo ≤ límite de capital)", mc["p_fits"], "P.Pct")]
+    for i, (lbl, val, st) in enumerate(stats):
+        put(sh, 0, rr + 1 + i, lbl, "P.KPI.Label")
+        put(sh, 1, rr + 1 + i, val, st.replace("P.", "P.") if st != "P.Money" else "P.KPI.Value")
+        if st == "P.Pct":
+            sh.getCellByPosition(1, rr + 1 + i).NumberFormat = pct
+    grid(sh.getCellRangeByPosition(0, rr + 1, 1, rr + len(stats)))
+    # Histograma
+    hr = rr + len(stats) + 3
+    put(sh, 0, hr, "Distribución del VAN", "P.Section")
+    lo_v, hi_v = mc["npvs"][0], mc["npvs"][-1]
+    step = (hi_v - lo_v) / 20 or 1
+    buckets = [0] * 20
+    for v in mc["npvs"]:
+        buckets[min(19, int((v - lo_v) / step))] += 1
+    put(sh, 0, hr + 1, "Desde", "P.HeaderNum")
+    put(sh, 1, hr + 1, "Hasta", "P.HeaderNum")
+    put(sh, 2, hr + 1, "Casos", "P.HeaderNum")
+    put(sh, 3, hr + 1, "Frecuencia", "P.Header")
+    peak_b = max(buckets) or 1
+    for i, cnt in enumerate(buckets):
+        r = hr + 2 + i
+        put(sh, 0, r, lo_v + i * step, "P.Money")
+        put(sh, 1, r, lo_v + (i + 1) * step, "P.Money")
+        put(sh, 2, r, cnt, "P.Dec2")
+        put(sh, 3, r, bar(cnt, peak_b, 30), "P.Label")
+    grid(sh.getCellRangeByPosition(0, hr + 1, 3, hr + 21))
+    format_columns(sh, [6200, 4600, 4600, 3400, 9000])
+    try_chart(sh, "HistogramaVAN", 9000, 1000, 15000, 9000,
+              [(sheet_index(sh), 0, hr + 1, 0, hr + 21),
+               (sheet_index(sh), 2, hr + 1, 2, hr + 21)],
+              kind="bar", title="Distribución del VAN")
+
+    # ---------------- Perfil VAN vs tasa (vivo) ----------------
+    sh = new_sheet("Tasa_Descuento", 0xC00000)
+    add_title(sh, "TASA DE DESCUENTO",
+              "Construcción de la TMAR y perfil del VAN frente a la tasa.")
+    put(sh, 0, 3, "Construcción declarada", "P.Section")
+    build_up = [
+        ("TPM Banco Central", 4.5, "Tasa de política monetaria vigente a la fecha base."),
+        ("Interés corriente CMF 200–5.000 UF ≥90 días", 20.46,
+         "CMF Certificado 07/2026. Es lo que los bancos cobraron por dinero del tamaño "
+         "y plazo del proyecto."),
+        ("Spread sobre TPM", 15.96,
+         "NO SE DESCOMPONE riesgo por riesgo: no hay fuente pública que lo permita. "
+         "Se declara el spread observado, no una construcción inventada."),
+        ("TMAR usada por el modelo", m["discount"] * 100,
+         "Piso observado. El capital propio es subordinado a esa deuda, así que la TMAR "
+         "correcta es mayor; usar el piso es conservador respecto del rechazo."),
+    ]
+    for c, h in enumerate(["Componente", "%", "Nota"]):
+        put(sh, c, 4, h, "P.HeaderNum" if c == 1 else "P.Header")
+    for i, (lbl, val, note) in enumerate(build_up):
+        r = 5 + i
+        alt = ".Alt" if i % 2 else ""
+        put(sh, 0, r, lbl, "P.Label" + alt)
+        put(sh, 1, r, val / 100, "P.Pct" + alt)
+        put(sh, 2, r, note, "P.Note" + alt)
+    grid(sh.getCellRangeByPosition(0, 4, 2, 4 + len(build_up)))
+
+    put(sh, 0, 11, "Perfil del VAN frente a la tasa (vivo)", "P.Section")
+    put(sh, 0, 12, "Tasa", "P.HeaderNum")
+    put(sh, 1, 12, "VAN", "P.HeaderNum")
+    put(sh, 2, 12, "Magnitud", "P.Header")
+    flow_row = results_rows.get("_flujo_libre_row")
+    npvs_profile = []
+    for i in range(11):
+        rate = 0.05 + i * 0.03
+        r = 13 + i
+        put(sh, 0, r, rate, "P.Pct")
+        if flow_row is not None:
+            # Cambiar la tasa no cambia los flujos: basta descontarlos otra vez.
+            terms = "+".join(
+                f"{addr(cc, flow_row, 'Calculos')}/(1+$A${r+1})^{cc-1}" for cc in range(1, 7))
+            put(sh, 1, r, f"={addr(1, results_rows['Inversión inicial'], 'Calculos')}*-1+{terms}",
+                "P.Money")
+        else:
+            v = build_model(data, overrides={"macro.tasa_descuento_pct": rate * 100})["npv"]
+            npvs_profile.append(v)
+            put(sh, 1, r, v, "P.Money")
+    grid(sh.getCellRangeByPosition(0, 12, 2, 23))
+    format_columns(sh, [3600, 5200, 6000, 9000])
+    try_chart(sh, "PerfilVAN", 9000, 1000, 15000, 9000,
+              [(sheet_index(sh), 0, 12, 0, 23), (sheet_index(sh), 1, 12, 1, 23)],
+              kind="xy", title="VAN frente a la tasa de descuento")
+
+    return {"tornado": trows, "switching": sw, "mc": mc}
 
 
 def check():
