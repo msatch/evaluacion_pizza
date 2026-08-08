@@ -92,18 +92,18 @@ def maybe(obj, path):
 
 
 def up(base, path, fallback):
-    """Misma precedencia que modelo.js: manda la etapa dueña, si no el stub E10."""
+    """Misma precedencia que motor.js: manda la etapa dueña, si no el stub E10."""
     return resolved(maybe(base, path), fallback)
 
 
 # ---------------------------------------------------------------------------
 # Motor de cálculo en Python.
 #
-# Es un ESPEJO LÍNEA A LÍNEA de buildModel() en modelo.js, no una segunda
+# Es un ESPEJO LÍNEA A LÍNEA de buildModel() en motor.js, no una segunda
 # formulación. Existe para alimentar tornado, valores de quiebre y Monte Carlo
 # —que no caben como fórmulas vivas— y para ser comparado contra el harness de
 # Node. Invariante del proyecto: tres motores (JS, Python, Calc), una prueba.
-# Si se toca modelo.js hay que tocar esto en el mismo commit.
+# Si se toca motor.js hay que tocar esto en el mismo commit.
 # ---------------------------------------------------------------------------
 
 EQUIPMENT_KEYS = ["abatidor", "amasadora", "horno", "selladora_vacio",
@@ -113,7 +113,7 @@ OTHER_FIXED_KEYS = ["servicios_fijos", "mantenimiento", "administracion", "venta
 
 
 def gv(obj, path, fallback=None):
-    """Equivalente de get() en modelo.js: devuelve .valor, o el fallback si la
+    """Equivalente de get() en motor.js: devuelve .valor, o el fallback si la
     ruta no existe o el valor es null."""
     cur = obj
     for key in path.split("."):
@@ -129,7 +129,7 @@ def npv_of(rate, flows):
 
 
 def irr_of(flows):
-    """Bisección idéntica a modelo.js: None si no hay cambio de signo."""
+    """Bisección idéntica a motor.js: None si no hay cambio de signo."""
     low, high = -0.99, 10.0
     low_v, high_v = npv_of(low, flows), npv_of(high, flows)
     if low_v * high_v > 0:
@@ -1017,7 +1017,7 @@ def build_inputs(doc, data, money_fmt, pct_fmt):
     add("capital_limit", "Modelo", "Capital máximo disponible", {"valor": base["meta"]["restriccion_capital_clp"], "unidad": "CLP", "confianza": "VERIFICADO", "fuente": "datos/supuestos.json#meta.restriccion_capital_clp", "nota": "Restricción declarada en el enunciado."}, kind="money")
     add("horizon", "Modelo", "Horizonte de evaluación", entry(financial, "modelo.horizonte_anios"))
     add("price", "Ventas", "Precio B2B neto base", resolved(entry(prices, "precios.precio_venta_b2b_familiar_clp"), entry(financial, "modelo.precio_b2b_familiar_base_clp")), kind="money")
-    # La rampa comercial es FORMA, no nivel (espeja modelo.js). La etapa 03 fija
+    # La rampa comercial es FORMA, no nivel (espeja motor.js). La etapa 03 fija
     # el nivel del año 1 vía SOM; la etapa 11 fija la forma de los años 2-5. Los
     # cinco volúmenes de la etapa 10 quedan como referencia: de ellos sale la
     # forma implícita cuando la etapa 11 aún no publicó factores.
@@ -1690,7 +1690,7 @@ def main():
             set_print_titles(sheets.getByName(name), sheet_index(sheets.getByName(name)), 3)
 
         # Hojas de análisis económico. Se calculan con el motor Python —el mismo
-        # que el harness compara contra modelo.js— y se escriben congeladas con
+        # que el harness compara contra motor.js— y se escriben congeladas con
         # su guardián de frescura.
         py_model = build_model(data_map)
         results_rows = dict(b["results"])
@@ -2269,7 +2269,16 @@ def build_analysis_sheets(doc, sheets, data, m, fmts, refs, results_rows):
 def check():
     """Imprime los indicadores del motor Python en JSON, para diferenciar contra
     el harness de Node. No abre LibreOffice."""
-    m = build_model(load_all())
+    data = load_all()
+    m = build_model(data)
+    # Debe replicar exactamente la cota de maquila del navegador y de la hoja
+    # Estructura_Capital: sin planta propia ni límite de capacidad propio, pero
+    # sin inventar una tarifa cuando todavía no existe cotización.
+    maquila = build_model(data, overrides={
+        "capex.equipamiento_base_clp": 0,
+        "local.habilitacion_sanitaria_clp": 0,
+        "produccion.capacidad_instalada_pizzas_dia": 100000
+    })
     out = {
         "capexTotal": m["totalCapex"], "initialNwc": m["initialNwc"],
         "initialInvestment": m["initialInvestment"], "peakFunding": m["peakFunding"],
@@ -2288,7 +2297,16 @@ def check():
     rounded = {k: (round(v, 4) if isinstance(v, (int, float)) else
                    ([round(x, 4) for x in v] if isinstance(v, list) else v))
                for k, v in out.items()}
-    print(json.dumps({"indicadores": rounded}, indent=2, ensure_ascii=False))
+    maquila_out = {
+        "totalCapex": maquila["totalCapex"],
+        "initialInvestment": maquila["initialInvestment"],
+        "peakFunding": maquila["peakFunding"],
+        "npv": maquila["npv"],
+        "variableBase": maquila["variableBase"]
+    }
+    maquila_rounded = {key: round(value, 4) for key, value in maquila_out.items()}
+    print(json.dumps({"indicadores": rounded, "maquila_sin_tarifa": maquila_rounded},
+                     indent=2, ensure_ascii=False))
 
 
 if __name__ == "__main__":

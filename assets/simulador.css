@@ -1,0 +1,299 @@
+/* ==========================================================================
+   Simulador financiero — etapa 10.
+   Extiende assets/estilo.css; no lo reemplaza. Consume sus custom properties
+   para heredar el tema y agrega sólo los componentes propios del simulador.
+   Sin dependencias externas: sin CDN, sin fuentes remotas.
+   ========================================================================== */
+
+/* --------------------------------------------- paleta de gráficos ----
+   Los tokens semánticos del dossier (--ok verde, --riesgo rojo) sirven para
+   insignias y avisos, pero FALLAN como paleta de gráficos: el par verde/rojo
+   queda en ΔE 3,1 bajo deuteranopía —invisible— y en modo oscuro esos tokens
+   están calibrados para texto sobre fondo, no para rellenos.
+   Estos dos pares se validaron con el verificador de paletas y pasan los seis
+   controles (banda de luminosidad, piso de croma, separación CVD, piso de
+   visión normal y contraste) en claro y en oscuro.
+   El signo del flujo lo lleva la POSICIÓN respecto del cero; el color es el
+   canal secundario, nunca el único.                                        */
+
+:root {
+  --g-neg: #b3421c;   /* salida de caja — terracota del dossier */
+  --g-pos: #0f6f9e;   /* entrada de caja — azul frío, profundizado */
+  --g-eje: var(--borde);
+  --g-texto: var(--texto-tenue);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root { --g-neg: #d4652f; --g-pos: #2f93bd; }
+}
+:root[data-theme="dark"]  { --g-neg: #d4652f; --g-pos: #2f93bd; }
+:root[data-theme="light"] { --g-neg: #b3421c; --g-pos: #0f6f9e; }
+
+/* ------------------------------------------------------- estructura ---- */
+
+/* Un `display` en una clase gana sobre la regla de user-agent para [hidden],
+   así que ocultar un elemento con el atributo dejaba visible, por ejemplo, el
+   chip "0 a mano". Se restablece explícitamente. */
+[hidden] { display: none !important; }
+
+.envoltorio-ancho { max-width: 84rem; }
+
+.disposicion {
+  display: grid;
+  grid-template-columns: minmax(0, 21rem) minmax(0, 1fr);
+  gap: 1.75rem;
+  align-items: start;
+}
+@media (max-width: 62rem) {
+  .disposicion { grid-template-columns: minmax(0, 1fr); }
+  .panel { position: static !important; max-height: none !important; }
+}
+
+/* ------------------------------------------------- panel de control ---- */
+
+.panel {
+  position: sticky;
+  top: 1rem;
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--bg-elev);
+  border: 1px solid var(--borde-fuerte);
+  border-radius: var(--radio);
+  box-shadow: var(--sombra);
+}
+
+.panel-cabecera {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--bg-elev);
+  border-bottom: 1px solid var(--borde);
+  padding: .9rem 1rem .8rem;
+}
+.panel-cabecera h2 { margin: 0 0 .5rem; padding: 0; border: 0; font-size: 1.05rem; }
+
+.panel-estado {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  flex-wrap: wrap;
+  font-size: .8rem;
+  color: var(--texto-suave);
+}
+
+.boton {
+  font: inherit;
+  font-size: .8rem;
+  font-family: var(--sans);
+  padding: .35rem .7rem;
+  border: 1px solid var(--borde-fuerte);
+  border-radius: 5px;
+  background: var(--bg-sunken);
+  color: var(--texto);
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+}
+.boton:hover:not(:disabled) { border-color: var(--acento); background: var(--acento-suave); }
+.boton:disabled { opacity: .5; cursor: default; }
+.boton-acento { border-color: var(--acento); color: var(--acento-texto); background: var(--acento-suave); }
+
+.fila-botones { display: flex; flex-wrap: wrap; gap: .4rem; }
+
+/* --------------------------------------------------------- presets ---- */
+
+.presets { padding: .8rem 1rem; border-bottom: 1px solid var(--borde); }
+.presets-titulo {
+  font-size: .72rem; text-transform: uppercase; letter-spacing: .1em;
+  color: var(--texto-tenue); font-family: var(--mono); margin-bottom: .5rem;
+}
+.preset-activo { border-color: var(--acento); background: var(--acento-suave); color: var(--acento-texto); font-weight: 650; }
+.sin-ancla {
+  margin: .6rem 0 0; padding: .5rem .6rem;
+  border-left: 3px solid var(--alerta); background: var(--alerta-suave);
+  border-radius: 0 4px 4px 0; font-size: .76rem; line-height: 1.5;
+}
+.sin-ancla code { background: none; border: none; padding: 0; font-size: .95em; }
+
+/* ---------------------------------------------------------- grupos ---- */
+
+.grupo { border-bottom: 1px solid var(--borde); }
+.grupo:last-child { border-bottom: none; }
+.grupo > summary {
+  cursor: pointer;
+  padding: .65rem 1rem;
+  font-weight: 650;
+  font-size: .88rem;
+  display: flex;
+  justify-content: space-between;
+  gap: .5rem;
+  align-items: center;
+  list-style: none;
+}
+.grupo > summary::-webkit-details-marker { display: none; }
+.grupo > summary::before {
+  content: "▸"; color: var(--texto-tenue); font-size: .8rem;
+  transition: transform .15s; display: inline-block;
+}
+.grupo[open] > summary::before { transform: rotate(90deg); }
+.grupo > summary:hover { background: var(--bg-sunken); }
+.grupo-nombre { flex: 1; }
+.grupo-cuenta { font-family: var(--mono); font-size: .7rem; color: var(--texto-tenue); }
+.grupo-cuerpo { padding: .2rem 1rem 1rem; }
+.grupo-nota { font-size: .76rem; color: var(--texto-tenue); margin: 0 0 .8rem; line-height: 1.5; }
+
+/* ------------------------------------------------ fila de control ---- */
+
+.control { padding: .7rem 0; border-top: 1px dashed var(--borde); }
+.control:first-child { border-top: none; }
+.control-modificado { background: linear-gradient(90deg, var(--acento-suave), transparent 60%); margin: 0 -1rem; padding: .7rem 1rem; }
+
+.control-cabecera { display: flex; align-items: baseline; gap: .4rem; flex-wrap: wrap; margin-bottom: .35rem; }
+.control-etiqueta { font-size: .85rem; font-weight: 650; }
+.control-fila { display: flex; align-items: center; gap: .6rem; }
+.control-fila input[type="range"] { flex: 1; min-width: 0; accent-color: var(--acento); margin: 0; }
+.control-fila input[type="number"] {
+  width: 7.5rem; flex: none;
+  font-family: var(--mono); font-size: .82rem;
+  padding: .28rem .4rem; text-align: right;
+  border: 1px solid var(--borde-fuerte); border-radius: 4px;
+  background: var(--bg); color: var(--texto);
+}
+.control-fila input:disabled { opacity: .45; cursor: not-allowed; }
+
+.control-pie {
+  display: flex; justify-content: space-between; gap: .5rem;
+  font-size: .72rem; color: var(--texto-tenue); margin-top: .3rem; line-height: 1.45;
+}
+.control-origen { font-family: var(--mono); }
+.control-volver {
+  font: inherit; font-size: .72rem; background: none; border: none; padding: 0;
+  color: var(--acento-texto); cursor: pointer; text-decoration: underline; white-space: nowrap;
+}
+.control-nota { font-size: .72rem; color: var(--texto-tenue); margin: .3rem 0 0; line-height: 1.45; }
+.control-aviso {
+  font-size: .72rem; margin: .35rem 0 0; padding: .3rem .5rem;
+  border-left: 2px solid var(--alerta); background: var(--alerta-suave);
+  border-radius: 0 3px 3px 0; line-height: 1.45;
+}
+.control-aviso-frio { border-left-color: var(--frio); background: var(--frio-suave); }
+
+/* ---------------------------------------------------------- kpis ---- */
+
+.tira-kpi {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: .75rem;
+  margin: 0 0 1.5rem;
+}
+.kpi {
+  background: var(--bg-elev); border: 1px solid var(--borde);
+  border-radius: var(--radio); padding: .8rem .9rem; box-shadow: var(--sombra);
+}
+.kpi-etiqueta { font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; color: var(--texto-tenue); margin-bottom: .25rem; }
+/* Se mantiene la serif de .cifra del dossier a propósito: la consistencia con
+   las otras trece páginas pesa más que la convención de usar sans en cifras. */
+.kpi-valor { font-family: var(--serif); font-size: 1.5rem; font-weight: 600; line-height: 1.15; color: var(--acento-texto); }
+.kpi-valor-nulo { color: var(--texto-tenue); font-size: 1.15rem; }
+.kpi-delta { font-family: var(--mono); font-size: .72rem; margin-top: .2rem; }
+.kpi-delta-mejor { color: var(--ok); }
+.kpi-delta-peor  { color: var(--riesgo); }
+.kpi-nota { font-size: .72rem; color: var(--texto-suave); margin-top: .2rem; line-height: 1.4; }
+
+/* --------------------------------------------------------- medidor ---- */
+
+.medidor { margin: 1.25rem 0; }
+.medidor-pista {
+  position: relative; height: 22px; border-radius: 4px;
+  background: var(--bg-sunken); border: 1px solid var(--borde); overflow: hidden;
+}
+.medidor-relleno { position: absolute; inset: 0 auto 0 0; background: var(--frio); }
+.medidor-exceso  { position: absolute; top: 0; bottom: 0; background: var(--g-neg); }
+.medidor-marca {
+  position: absolute; top: -3px; bottom: -3px; width: 2px;
+  background: var(--texto); opacity: .75;
+}
+.medidor-leyenda { display: flex; justify-content: space-between; gap: 1rem; font-size: .76rem; color: var(--texto-suave); margin-top: .35rem; }
+
+/* --------------------------------------------------------- gráficos ---- */
+
+.rejilla-graficos { display: grid; grid-template-columns: repeat(auto-fit, minmax(24rem, 1fr)); gap: 1rem; margin: 1.5rem 0; }
+
+.grafico {
+  margin: 0;
+  background: var(--bg-elev); border: 1px solid var(--borde);
+  border-radius: var(--radio); padding: 1rem 1.1rem 1.1rem;
+  box-shadow: var(--sombra);
+  position: relative;
+}
+.grafico figcaption { margin-bottom: .1rem; }
+.grafico-titulo { font-family: var(--serif); font-size: 1.02rem; font-weight: 600; }
+.grafico-bajada { font-size: .78rem; color: var(--texto-suave); margin: .15rem 0 .7rem; line-height: 1.5; }
+
+/* La caja reserva el alto del área de trazado MÁS la banda del eje x, para
+   que las etiquetas del eje nunca queden recortadas ni generen un scroll
+   vertical propio dentro de la tarjeta. */
+.grafico svg { display: block; width: 100%; height: auto; aspect-ratio: 720 / 300; overflow: visible; }
+.grafico-alto svg { aspect-ratio: 720 / 420; }
+
+.g-rejilla { stroke: var(--g-eje); stroke-width: 1; shape-rendering: crispEdges; }
+.g-cero    { stroke: var(--borde-fuerte); stroke-width: 1.5; shape-rendering: crispEdges; }
+.g-umbral  { stroke: var(--riesgo); stroke-width: 2; }
+.g-linea   { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.g-area    { opacity: .1; }
+.g-punto   { stroke: var(--bg-elev); stroke-width: 2; }
+.g-texto   { fill: var(--g-texto); font-family: var(--sans); font-size: 11px; font-variant-numeric: tabular-nums; }
+.g-texto-fuerte { fill: var(--texto); font-family: var(--sans); font-size: 11px; font-weight: 650; font-variant-numeric: tabular-nums; }
+.g-marca   { fill: var(--texto-suave); font-family: var(--sans); font-size: 10.5px; }
+
+.leyenda { display: flex; flex-wrap: wrap; gap: .35rem 1rem; font-size: .76rem; color: var(--texto-suave); margin-top: .6rem; }
+.leyenda span { display: inline-flex; align-items: center; gap: .35rem; }
+.leyenda i { width: 11px; height: 11px; border-radius: 2px; display: inline-block; }
+
+.tabla-alterna { margin-top: .7rem; font-size: .8rem; }
+.tabla-alterna summary { cursor: pointer; color: var(--texto-suave); font-size: .78rem; }
+.tabla-alterna table { min-width: 0; font-size: .8rem; }
+.tabla-alterna .tabla-envoltorio { margin: .5rem 0 0; }
+
+/* --------------------------------------------------------- tooltip ---- */
+
+.pista {
+  position: absolute; z-index: 5; pointer-events: none; opacity: 0;
+  transform: translate(-50%, -115%); transition: opacity .1s;
+  background: var(--bg-elev); border: 1px solid var(--borde-fuerte);
+  border-radius: 5px; box-shadow: var(--sombra);
+  padding: .4rem .55rem; font-size: .78rem; line-height: 1.45;
+  min-width: 8rem; max-width: 15rem;
+}
+.pista[data-visible="true"] { opacity: 1; }
+.pista-titulo { font-weight: 650; margin-bottom: .15rem; }
+.pista-valor { font-family: var(--mono); font-size: .82rem; }
+.pista-nota { color: var(--texto-tenue); font-size: .72rem; }
+
+/* -------------------------------------------------------- tornado ---- */
+
+.tornado-controles { display: flex; gap: .4rem; align-items: center; flex-wrap: wrap; margin-bottom: .6rem; font-size: .78rem; }
+
+/* -------------------------------------------------------- quiebres ---- */
+
+.quiebres td.sin { color: var(--texto-tenue); font-family: var(--sans); font-size: .82rem; }
+.quiebres .publicado { color: var(--texto-tenue); font-size: .78rem; }
+
+/* ---------------------------------------------------------- varios ---- */
+
+.chip-modificados {
+  display: inline-flex; align-items: center; gap: .4rem;
+  font-family: var(--mono); font-size: .68rem; letter-spacing: .06em; text-transform: uppercase;
+  padding: .2em .55em; border-radius: 4px;
+  color: var(--acento-texto); background: var(--acento-suave); border: 1px solid var(--acento);
+}
+.b-restriccion { color: var(--frio); background: var(--frio-suave); border-color: var(--frio); }
+.b-topado { color: var(--alerta); background: var(--alerta-suave); border-color: var(--alerta); }
+
+.copiado { font-size: .76rem; color: var(--ok); }
+
+@media print {
+  .panel, .presets, .fila-botones { display: none; }
+  .disposicion { grid-template-columns: 1fr; }
+  .grafico { break-inside: avoid; }
+}

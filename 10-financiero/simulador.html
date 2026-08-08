@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simulador financiero — VAN, fondeo y equilibrio en vivo</title>
+<link rel="stylesheet" href="../assets/estilo.css">
+<link rel="stylesheet" href="../assets/simulador.css">
+<script src="../datos/instantanea.js" defer></script>
+<script src="motor.js" defer></script>
+<script src="parametros-simulador.js" defer></script>
+<script src="simulador.js" defer></script>
+</head>
+<body><div class="envoltorio envoltorio-ancho">
+<nav class="migas"><a href="../index.html">Dossier</a> › <a href="index.html">Evaluación financiera</a> › Simulador</nav>
+
+<header class="cabecera">
+  <span class="etapa">Etapa 10 · Simulador</span>
+  <h1>Simulador financiero: mueva los parámetros, vea el resultado</h1>
+  <p class="bajada">El mismo motor que genera el libro de LibreOffice, con los mismos JSON del dossier, recalculando en el navegador mientras usted arrastra un control. Sin planilla.</p>
+  <div class="meta"><span><strong>Horizonte:</strong> 5 años</span><span><strong>Moneda:</strong> CLP nominales</span><span><strong>Flujo:</strong> económico, sin deuda</span><span id="meta-origen"><strong>Datos:</strong> cargando…</span></div>
+</header>
+
+<div id="error-carga" class="aviso aviso-riesgo" hidden><div class="aviso-titulo">Error de carga</div><p id="error-carga-texto"></p></div>
+<div id="aviso-instantanea" class="aviso aviso-vacio" hidden><div class="aviso-titulo">Leyendo una instantánea</div><p id="aviso-instantanea-texto"></p></div>
+
+<div id="veredicto" class="aviso aviso-riesgo"><div id="veredicto-titulo" class="aviso-titulo">Calculando…</div><p id="veredicto-texto">Cargando los parámetros enlazados.</p></div>
+<div id="aviso-maquila" class="aviso aviso-vacio" hidden><div class="aviso-titulo">Cota superior, no proyección</div><p id="aviso-maquila-texto"></p></div>
+
+<div class="disposicion">
+
+  <!-- ------------------------------------------------ panel de control -->
+  <form class="panel" id="panel" aria-label="Parámetros del modelo">
+    <div class="panel-cabecera">
+      <h2>Parámetros</h2>
+      <div class="selector-escenario" role="radiogroup" aria-label="Configuración evaluada">
+        <label><input type="radio" name="escenario" value="planta" checked> Planta propia</label>
+        <label><input type="radio" name="escenario" value="maquila"> Maquila</label>
+      </div>
+      <div class="panel-estado">
+        <span id="chip-modificados" class="chip-modificados" hidden></span>
+        <span id="chip-criticos" class="b b-pendiente">—</span>
+      </div>
+      <div class="fila-botones" style="margin-top:.6rem">
+        <button type="button" class="boton" id="btn-reiniciar" disabled>Volver al dossier</button>
+        <button type="button" class="boton" id="btn-enlace">Copiar enlace</button>
+        <span id="copiado" class="copiado" hidden>Copiado</span>
+      </div>
+    </div>
+
+    <div class="presets">
+      <div class="presets-titulo">Escenarios publicados</div>
+      <div class="fila-botones" id="presets"></div>
+      <div class="sin-ancla" id="sin-ancla" hidden></div>
+    </div>
+
+    <div id="grupos"></div>
+  </form>
+
+  <!-- ------------------------------------------------------ resultados -->
+  <main>
+    <div class="tira-kpi" id="kpis" aria-live="polite" aria-atomic="false"></div>
+
+    <section class="medidor" aria-labelledby="medidor-titulo">
+      <h3 id="medidor-titulo" class="sin-margen-sup">Punto de equilibrio contra la capacidad instalada</h3>
+      <p id="medidor-texto" class="tenue" style="font-size:.85rem">—</p>
+      <div class="medidor-pista" id="medidor-pista"
+           role="meter" aria-valuemin="0" aria-valuenow="0" aria-valuemax="100"
+           aria-labelledby="medidor-titulo" aria-valuetext="calculando"></div>
+      <div class="medidor-leyenda"><span id="medidor-izq">—</span><span id="medidor-der">—</span></div>
+    </section>
+
+    <div class="rejilla-graficos">
+      <figure class="grafico" id="g-caja">
+        <figcaption>
+          <div class="grafico-titulo">Caja acumulada contra el límite de capital</div>
+          <p class="grafico-bajada">Necesidad de financiamiento sin descontar, año a año. El punto más bajo es el fondeo máximo que hay que conseguir.</p>
+        </figcaption>
+        <svg viewBox="0 0 720 300" preserveAspectRatio="xMidYMid meet" role="img" aria-labelledby="g-caja-t g-caja-d"><title id="g-caja-t">Caja acumulada</title><desc id="g-caja-d"></desc></svg>
+        <div class="pista" data-visible="false"></div>
+        <details class="tabla-alterna"><summary>Ver datos</summary><div class="tabla-envoltorio"><table><thead><tr><th>Año</th><th class="num">Caja acumulada</th></tr></thead><tbody></tbody></table></div></details>
+      </figure>
+
+      <figure class="grafico" id="g-fcf">
+        <figcaption>
+          <div class="grafico-titulo">Flujo de caja libre por año</div>
+          <p class="grafico-bajada">Después de impuesto y de variación de capital de trabajo. El año 5 incluye las recuperaciones terminales.</p>
+        </figcaption>
+        <svg viewBox="0 0 720 300" preserveAspectRatio="xMidYMid meet" role="img" aria-labelledby="g-fcf-t g-fcf-d"><title id="g-fcf-t">Flujo de caja libre por año</title><desc id="g-fcf-d"></desc></svg>
+        <div class="pista" data-visible="false"></div>
+        <div class="leyenda"><span><i style="background:var(--g-neg)"></i>Salida de caja</span><span><i style="background:var(--g-pos)"></i>Entrada de caja</span></div>
+        <details class="tabla-alterna"><summary>Ver datos</summary><div class="tabla-envoltorio"><table><thead><tr><th>Año</th><th class="num">Flujo libre</th></tr></thead><tbody></tbody></table></div></details>
+      </figure>
+
+      <figure class="grafico" id="g-perfil">
+        <figcaption>
+          <div class="grafico-titulo">VAN según la tasa de descuento</div>
+          <p class="grafico-bajada">Dónde cruza el cero es la TIR. Si la curva no cruza, la TIR no existe.</p>
+        </figcaption>
+        <svg viewBox="0 0 720 300" preserveAspectRatio="xMidYMid meet" role="img" aria-labelledby="g-perfil-t g-perfil-d"><title id="g-perfil-t">VAN según la tasa de descuento</title><desc id="g-perfil-d"></desc></svg>
+        <div class="pista" data-visible="false"></div>
+        <details class="tabla-alterna"><summary>Ver datos</summary><div class="tabla-envoltorio"><table><thead><tr><th>Tasa</th><th class="num">VAN</th></tr></thead><tbody></tbody></table></div></details>
+      </figure>
+
+      <figure class="grafico grafico-alto" id="g-tornado">
+        <figcaption>
+          <div class="grafico-titulo">Sensibilidad por parámetro</div>
+          <p class="grafico-bajada">Efecto de mover cada parámetro ±20% desde el valor actual, dejando el resto quieto.</p>
+        </figcaption>
+        <div class="tornado-controles" role="radiogroup" aria-label="Indicador del tornado">
+          <label><input type="radio" name="tornado-metrica" value="npv" checked> VAN</label>
+          <label><input type="radio" name="tornado-metrica" value="peakFunding"> Fondeo máximo</label>
+        </div>
+        <svg viewBox="0 0 720 420" preserveAspectRatio="xMidYMid meet" role="img" aria-labelledby="g-tornado-t g-tornado-d"><title id="g-tornado-t">Sensibilidad por parámetro</title><desc id="g-tornado-d"></desc></svg>
+        <div class="pista" data-visible="false"></div>
+        <div class="leyenda"><span><i style="background:var(--g-pos)"></i>Mejora el indicador</span><span><i style="background:var(--g-neg)"></i>Lo empeora</span></div>
+        <details class="tabla-alterna"><summary>Ver datos</summary><div class="tabla-envoltorio"><table><thead><tr><th>Parámetro</th><th class="num">−20%</th><th class="num">+20%</th><th class="num">Rango</th></tr></thead><tbody></tbody></table></div></details>
+      </figure>
+    </div>
+
+    <h2>Inversión inicial</h2>
+    <div class="tabla-envoltorio"><table>
+      <caption>El capital de trabajo se calcula con ventas y costos del año 1; la garantía se recupera al término.</caption>
+      <thead><tr><th>Partida</th><th class="num">CLP netos</th></tr></thead>
+      <tbody id="inversion-cuerpo"></tbody>
+      <tfoot><tr><td>Inversión inicial total</td><td id="inversion-total" class="num">—</td></tr></tfoot>
+    </table></div>
+
+    <h2>Flujo de caja</h2>
+    <div class="tabla-envoltorio"><table>
+      <caption>El año 5 recupera capital de trabajo, garantía y valor residual neto de impuesto.</caption>
+      <thead id="flujo-cabecera"></thead><tbody id="flujo-cuerpo"></tbody>
+    </table></div>
+
+    <h2>Sensibilidad al precio y al volumen</h2>
+    <p id="sensibilidad-nota" class="tenue" style="font-size:.85rem"></p>
+    <div class="tabla-envoltorio"><table>
+      <caption>Filas: cambio de volumen. Columnas: cambio de precio. Celda: VAN del escenario recalculado completo.</caption>
+      <thead id="sensibilidad-cabecera"></thead><tbody id="sensibilidad-cuerpo"></tbody>
+    </table></div>
+
+    <h2>Valores de quiebre</h2>
+    <p>Cuánto tendría que valer cada palanca, dejando el resto como está ahora, para que el VAN llegue a cero o para que el fondeo máximo quepa bajo el límite de capital. Se calcula por bisección sobre el mismo motor; cuando no hay cambio de signo en el rango se dice, en vez de inventar una raíz.</p>
+    <div class="fila-botones"><button type="button" class="boton boton-acento" id="btn-quiebres">Calcular valores de quiebre</button></div>
+    <div class="tabla-envoltorio" id="quiebres-envoltorio" hidden><table class="quiebres">
+      <thead><tr><th>Parámetro</th><th class="num">Ahora</th><th class="num">VAN = 0</th><th class="num">Fondeo = límite</th></tr></thead>
+      <tbody id="quiebres-cuerpo"></tbody>
+    </table></div>
+
+    <h2>Trazabilidad</h2>
+    <p>Qué dice el dossier, qué está usando el simulador y con qué confianza. Mover un control cambia el valor usado; <strong>no</strong> cambia la confianza, porque escribir un número no es evidencia.</p>
+    <div class="tabla-envoltorio"><table>
+      <thead><tr><th>Parámetro</th><th class="num">Dossier</th><th class="num">Simulador</th><th>Origen efectivo</th><th>Confianza</th></tr></thead>
+      <tbody id="trazabilidad-cuerpo"></tbody>
+    </table></div>
+
+    <h2>Parámetros críticos sin cerrar</h2>
+    <p id="criticos-texto">—</p>
+    <ul id="criticos-lista" class="lista-critica"></ul>
+
+    <div class="aviso aviso-vacio"><div class="aviso-titulo">Alcance</div><p>Modelo de preinversión conceptual. La matemática es reproducible y es la misma del libro; la calidad de la decisión sigue limitada por los parámetros <span class="b b-supuesto">Supuesto</span> y <span class="b b-pendiente">Pendiente</span>. Este simulador sirve para explorar sensibilidad y para saber qué medir primero, no para aprobar una inversión.</p></div>
+
+    <footer class="pie">
+      <span>Etapa 10 · Ingeniería económica</span>
+      <span><a href="index.html">Volver a la evaluación</a></span>
+      <span><a href="evaluacion-economica-pizzeria-libreoffice.ods" download>Descargar modelo ODS</a></span>
+      <span><a href="../index.html">Volver al dossier</a></span>
+    </footer>
+  </main>
+</div>
+</div></body></html>

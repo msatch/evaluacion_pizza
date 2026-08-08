@@ -2,6 +2,7 @@
   "meta": {
     "proposito": "Registro operativo de lo que falta para transformar la investigación pública en una decisión de inversión.",
     "estado_global": "VALIDACION_PENDIENTE",
+    "fecha_corte": "2026-08-06",
     "regla": "Un gate se cierra solo con evidencia fechada y enlazada al parámetro dueño; una estimación no sustituye evidencia de terreno o una cotización vigente."
   },
   "gates": [
