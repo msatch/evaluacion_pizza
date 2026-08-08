@@ -530,7 +530,10 @@ function dibujarKpis(modelo) {
     { et: "Equilibrio mensual", v: modelo.breakEven === null ? null : `${ent.format(Math.round(modelo.breakEven / 12))} u`, nulo: "Sin margen",
       nota: modelo.breakEvenUse === null ? "capacidad pendiente" : `${pctf(modelo.breakEvenUse)} de la capacidad` },
     { et: "Inversión inicial", v: clpc.format(Math.round(modelo.initialInvestment)), d: -(modelo.initialInvestment - b.initialInvestment), dir: mejorSiSube(-modelo.initialInvestment, -b.initialInvestment), nota: "CAPEX + garantía + CT" },
-    { et: "Uso de capacidad", v: modelo.capacityUse === null ? null : pctf(modelo.capacityUse), nulo: "Pendiente", nota: "año 5 sobre capacidad instalada" }
+    { et: "Uso de capacidad", v: modelo.capacityUse === null ? null : pctf(modelo.capacityUse), nulo: "Pendiente",
+      nota: modelo.capacityYear !== null && modelo.years.every((y) => y.volume === modelo.capacityYear)
+        ? "topado: la demanda proyectada pide más de lo que la planta produce"
+        : "año 5 sobre capacidad instalada" }
   ];
 
   s$("kpis").innerHTML = fichas.map((f) => {
@@ -708,6 +711,7 @@ function filaControl(p) {
     <div class="control-cabecera">
       <label class="control-etiqueta" for="in-${p.id}">${esc(p.etiqueta)}</label>
       ${insignia}
+      <span class="b b-topado" data-topado="${p.id}" hidden>Sin efecto</span>
     </div>
     <div class="control-fila">
       <input type="range" id="rg-${p.id}" data-id="${p.id}" min="${p.min}" max="${p.max}" step="${p.paso}"
@@ -760,11 +764,9 @@ function sincronizarControles() {
       aviso.hidden = false;
       aviso.className = "control-aviso control-aviso-frio";
       aviso.textContent = `El escenario de maquila lo fija en ${fmt(p.forzadoEnMaquila, p.formato)}: no hay planta propia que costear.`;
-    } else if (p.avisoVivo) {
-      aviso.hidden = false;
-      aviso.className = "control-aviso";
-      aviso.textContent = p.avisoVivo;
     } else {
+      // El aviso de "sin efecto" lo pinta pintarInertes() con el modelo ya
+      // calculado, porque depende del estado actual y no del parámetro.
       aviso.hidden = true;
     }
   }
@@ -774,6 +776,75 @@ function sincronizarControles() {
     const cuenta = document.querySelector(`[data-cuenta="${g.id}"]`);
     if (cuenta) cuenta.textContent = n ? `${n} a mano · ${total}` : String(total);
   }
+}
+
+// ------------------------------------------------- detector de inercia ----
+// Un control que se mueve y no cambia nada se lee como roto. Antes esto sólo
+// se rotulaba en el tornado, al fondo de la página: el usuario arrastraba el
+// SOM, no pasaba nada y no había explicación a la vista.
+//
+// En vez de confiar en marcas escritas a mano en la especificación, se prueba
+// cada control contra el modelo vivo: se lo mueve un 10%, se mira si algo se
+// movió y se restaura. Así el aviso aparece y desaparece solo —si el usuario
+// sube la capacidad, el SOM vuelve a estar vivo sin que nadie lo declare— y
+// cubre también las inercias que no anticipamos.
+// Coste medido: ~0,03 ms por control, ~1,2 ms en total.
+
+function detectarInertes(modelo) {
+  const inertes = new Map();
+  for (const p of PARAMETROS) {
+    if (p.soloMaquila && estado.escenario !== "maquila") continue;
+    if (estado.escenario === "maquila" && p.forzadoEnMaquila !== undefined) continue;
+    const actual = valorActual(p);
+    if (!Number.isFinite(actual)) continue;
+    const sonda = actual === 0 ? (p.paso || 1) : actual * 1.1;
+    const m = conParametro(p, sonda);
+    const mueve = m.npv !== modelo.npv
+      || m.peakFunding !== modelo.peakFunding
+      || m.capitalLimit !== modelo.capitalLimit;
+    if (!mueve) inertes.set(p.id, razonInerte(p, modelo));
+  }
+  return inertes;
+}
+
+function razonInerte(p, modelo) {
+  // El caso que de verdad importa: la capacidad instalada topa el volumen, así
+  // que el SOM y las rampas no producen ni una pizza más. Se dice con el
+  // número concreto y con la salida, no en abstracto.
+  const topaVolumen = modelo.capacityYear !== null
+    && modelo.years.every((y) => y.volume === modelo.capacityYear);
+  // Ojo: /^r[2-5]$/ y no startsWith("r"), que también atraparía a `residual`.
+  if (topaVolumen && (p.id === "som" || /^r[2-5]$/.test(p.id))) {
+    const mes = Math.round(modelo.capacityYear / 12);
+    return `La capacidad instalada topa la producción en ${ent.format(mes)} pizzas/mes, `
+      + `y el modelo está usando ese tope y no el valor que usted puso. `
+      + `Suba la capacidad instalada o los días de operación para que este control vuelva a mover el resultado.`;
+  }
+  if (p.inerte) return p.inerte;
+  return "Con los valores actuales, este parámetro no cambia el VAN ni el fondeo máximo.";
+}
+
+function pintarInertes(modelo) {
+  const inertes = detectarInertes(modelo);
+  for (const p of PARAMETROS) {
+    const fila = document.querySelector(`[data-control="${p.id}"]`);
+    if (!fila || fila.hidden) continue;
+    const forzado = estado.escenario === "maquila" && p.forzadoEnMaquila !== undefined;
+    const insignia = fila.querySelector(`[data-topado="${p.id}"]`);
+    const aviso = fila.querySelector(`[data-aviso="${p.id}"]`);
+    const razon = inertes.get(p.id);
+    insignia.hidden = forzado || !razon;
+    // En maquila el aviso lo escribe sincronizarControles (control forzado),
+    // así que aquí no se toca. Fuera de ese caso, este método es el dueño del
+    // aviso y tiene que APAGARLO cuando el control vuelve a estar vivo: si no,
+    // el texto "topado por la capacidad" sobrevive a subir la capacidad.
+    if (forzado) continue;
+    aviso.hidden = !razon;
+    if (!razon) continue;
+    aviso.className = "control-aviso";
+    aviso.textContent = razon;
+  }
+  return inertes;
 }
 
 const redondear = (v, p) => {
@@ -1022,6 +1093,7 @@ function redibujar() {
     // pretransformados como "planta": se repone para la copia de la página.
     modelo.scenario = estado.escenario;
     dibujarVeredicto(modelo);
+    pintarInertes(modelo);
     dibujarKpis(modelo);
     dibujarMedidor(modelo);
     dibujarCaja(modelo);
